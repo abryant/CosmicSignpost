@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 
+#ifdef ARDUINO
+
 #include <Arduino.h>
 
 void checkArgumentOrReset(bool check, std::string errorMessage) {
@@ -13,3 +15,14 @@ void checkArgumentOrReset(bool check, std::string errorMessage) {
     ESP.restart();
   }
 }
+
+#else
+
+void checkArgumentOrReset(bool check, std::string errorMessage) {
+  if (!check) {
+    std::cerr << errorMessage << std::endl;
+    abort();
+  }
+}
+
+#endif

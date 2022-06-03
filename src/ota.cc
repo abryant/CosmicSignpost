@@ -4,6 +4,7 @@
 
 #include <string>
 
+#ifdef ARDUINO
 #include <ArduinoOTA.h>
 
 void otaStart() {
@@ -46,3 +47,15 @@ void ota::setUp(int32_t port, std::string password) {
 void ota::checkForOta() {
   ArduinoOTA.handle();
 }
+
+#else
+
+void ota::setUp(int32_t port, std::string password) {
+  // Not on Arduino, do nothing.
+}
+
+void ota::checkForOta() {
+  // Not on Arduino, do nothing.
+}
+
+#endif

@@ -1,3 +1,5 @@
+#ifndef UNIT_TEST
+
 #include <Arduino.h>
 
 #include <AccelStepper.h>
@@ -34,3 +36,5 @@ void loop() {
   stepper.run();
   ota::checkForOta();
 }
+
+#endif
