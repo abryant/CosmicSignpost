@@ -1,6 +1,9 @@
 #ifndef SPACEPOINTER_SRC_LOCATION_H_
 #define SPACEPOINTER_SRC_LOCATION_H_
 
+#include "cartesian_location.h"
+#include "direction.h"
+
 class Location {
   private:
     // Latitude in degrees, positive means north.
@@ -9,7 +12,7 @@ class Location {
     // Longitude in degrees from the prime meridian [-180, 180).
     double longitude;
 
-    // Elevation above sea level in metres.
+    // Elevation above Earth's ellipsoid in metres.
     double elevation;
 
   public:
@@ -17,6 +20,9 @@ class Location {
     double getLatitude();
     double getLongitude();
     double getElevation();
+    CartesianLocation getCartesian();
+    Vector getNormal();
+    Direction directionTo(Location other);
 };
 
 #endif
