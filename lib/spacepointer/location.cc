@@ -44,7 +44,7 @@ CartesianLocation Location::getCartesian() {
         (n * (earthPolarRadius * earthPolarRadius) / (earthEquatorialRadius * earthEquatorialRadius))
         + this->elevation)
     * std::sin(latitudeRadians);
-  return CartesianLocation(x, y, z);
+  return CartesianLocation(x, y, z, ReferenceFrame::EARTH_FIXED);
 }
 
 Vector Location::getNormal() {

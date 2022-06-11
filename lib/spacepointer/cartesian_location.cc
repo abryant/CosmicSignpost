@@ -3,17 +3,27 @@
 #include <cmath>
 
 #include "direction.h"
+#include "error_utils.h"
 #include "quaternion.h"
 #include "vector.h"
 
-CartesianLocation::CartesianLocation(double x, double y, double z)
-  : x(x), y(y), z(z) {}
+CartesianLocation::CartesianLocation(double x, double y, double z, ReferenceFrame referenceFrame)
+  : x(x), y(y), z(z), referenceFrame(referenceFrame) {}
+
+CartesianLocation CartesianLocation::fixed(double x, double y, double z) {
+  return CartesianLocation(x, y, z, ReferenceFrame::EARTH_FIXED);
+}
 
 Vector CartesianLocation::towards(CartesianLocation other) {
+  checkArgumentOrReset(referenceFrame == other.referenceFrame, "mismatched reference frames");
   return Vector(other.x - x, other.y - y, other.z - z).normalized();
 }
 
 Direction CartesianLocation::directionTowards(CartesianLocation other, Vector up) {
+  checkArgumentOrReset(referenceFrame == other.referenceFrame, "mismatched reference frames");
+  checkArgumentOrReset(
+      referenceFrame == ReferenceFrame::EARTH_FIXED,
+      "directions only make sense in EARTH_FIXED");
   Vector toOther = towards(other);
   double altitudeDegrees = 90.0 - up.angleDegrees(toOther);
 
