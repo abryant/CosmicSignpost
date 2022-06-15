@@ -1,5 +1,5 @@
-#ifndef SPACEPOINTER_SRC_REFERENCE_FRAME_H_
-#define SPACEPOINTER_SRC_REFERENCE_FRAME_H_
+#ifndef SPACEPOINTER_LIB_SPACEPOINTER_REFERENCE_FRAME_H_
+#define SPACEPOINTER_LIB_SPACEPOINTER_REFERENCE_FRAME_H_
 
 enum ReferenceFrame {
   // https://en.wikipedia.org/wiki/Earth-centered,_Earth-fixed_coordinate_system
