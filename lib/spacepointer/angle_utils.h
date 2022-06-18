@@ -4,4 +4,6 @@
 // Wraps degrees to [-180,180).
 double wrapDegrees(double degrees);
 
+double degreesToRadians(double degrees);
+
 #endif
