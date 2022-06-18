@@ -5,4 +5,6 @@
 
 void checkArgumentOrReset(bool check, std::string errorMessage);
 
+void failWithError(std::string errorMessage);
+
 #endif
