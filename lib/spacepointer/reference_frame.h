@@ -11,6 +11,9 @@ enum ReferenceFrame {
   // https://en.wikipedia.org/wiki/Ecliptic_coordinate_system
   // (like EARTH_EQUATORIAL, but with the plane of the ecliptic instead of the equator)
   EARTH_ECLIPTIC,
+  // https://en.wikipedia.org/wiki/Ecliptic_coordinate_system
+  // (like EARTH_ECLIPTIC, but with the sun as the centre instead of the earth)
+  SUN_ECLIPTIC,
 };
 
 #endif
