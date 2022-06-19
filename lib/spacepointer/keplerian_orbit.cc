@@ -32,7 +32,7 @@ CartesianLocation KeplerianOrbit::findPosition(
     double longitudeOfAscendingNodeRadians,
     double argumentOfPeriapsisRadians,
     double meanAnomalyRadians) {
-  checkArgumentOrReset(
+  checkArgument(
     referenceFrame != ReferenceFrame::EARTH_FIXED,
     "Cannot use the non-inertial reference frame EARTH_FIXED to calculate a keplerian position");
 

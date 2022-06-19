@@ -20,13 +20,13 @@ CartesianLocation CartesianLocation::fixed(double x, double y, double z) {
 }
 
 Vector CartesianLocation::towards(CartesianLocation other) {
-  checkArgumentOrReset(referenceFrame == other.referenceFrame, "mismatched reference frames");
+  checkArgument(referenceFrame == other.referenceFrame, "mismatched reference frames");
   return Vector(other.x - x, other.y - y, other.z - z).normalized();
 }
 
 Direction CartesianLocation::directionTowards(CartesianLocation other, Vector up) {
-  checkArgumentOrReset(referenceFrame == other.referenceFrame, "mismatched reference frames");
-  checkArgumentOrReset(
+  checkArgument(referenceFrame == other.referenceFrame, "mismatched reference frames");
+  checkArgument(
       referenceFrame == ReferenceFrame::EARTH_FIXED,
       "directions only make sense in EARTH_FIXED");
   Vector toOther = towards(other);

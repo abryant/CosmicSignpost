@@ -13,7 +13,7 @@ const double earthEquatorialRadius = 6378137; // semi-major axis
 const double earthPolarRadius = 6356752.314; // semi-minor axis
 
 Location::Location(double latitude, double longitude, double elevation) {
-  checkArgumentOrReset(-90.0 <= latitude && latitude <= 90.0, "latitude not in range [-90, 90]");
+  checkArgument(-90.0 <= latitude && latitude <= 90.0, "latitude not in range [-90, 90]");
   this->latitude = latitude;
   this->longitude = wrapDegrees(longitude);
   this->elevation = elevation;

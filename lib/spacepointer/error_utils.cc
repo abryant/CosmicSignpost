@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 
-void checkArgumentOrReset(bool check, std::string errorMessage) {
+void checkArgument(bool check, std::string errorMessage) {
   if (!check) {
     failWithError(errorMessage);
   }

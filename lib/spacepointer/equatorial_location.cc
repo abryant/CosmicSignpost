@@ -6,7 +6,7 @@
 
 EquatorialLocation::EquatorialLocation(double rightAscension, double declination) {
   this->rightAscension = wrapDegrees(rightAscension);
-  checkArgumentOrReset(-90.0 <= declination && declination <= 90.0, "declination not in range [-90, 90]");
+  checkArgument(-90.0 <= declination && declination <= 90.0, "declination not in range [-90, 90]");
   this->declination = declination;
 }
 

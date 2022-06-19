@@ -5,7 +5,7 @@
 
 Direction::Direction(double azimuth, double altitude) {
   this->azimuth = wrapDegrees(azimuth);
-  checkArgumentOrReset(-90.0 <= altitude && altitude <= 90.0, "altitude not in range [-90, 90]");
+  checkArgument(-90.0 <= altitude && altitude <= 90.0, "altitude not in range [-90, 90]");
   this->altitude = altitude;
 }
 
