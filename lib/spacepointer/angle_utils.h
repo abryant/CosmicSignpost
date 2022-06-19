@@ -3,6 +3,8 @@
 
 // Wraps degrees to [-180,180).
 double wrapDegrees(double degrees);
+// Wraps radians to [-pi,pi).
+double wrapRadians(double radians);
 
 double degreesToRadians(double degrees);
 
