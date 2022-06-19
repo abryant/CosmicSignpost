@@ -1,11 +1,16 @@
 #include "cartesian_location.h"
 
 #include <cmath>
+#include <cstdint>
 
+#include "angle_utils.h"
 #include "direction.h"
 #include "error_utils.h"
 #include "quaternion.h"
+#include "time_utils.h"
 #include "vector.h"
+
+const double EARTH_AXIAL_TILT_DEGREES = 23.43928;
 
 CartesianLocation::CartesianLocation(double x, double y, double z, ReferenceFrame referenceFrame)
   : x(x), y(y), z(z), referenceFrame(referenceFrame) {}
@@ -70,4 +75,47 @@ Direction CartesianLocation::directionTowards(CartesianLocation other, Vector up
 
   // The Direction constructor wraps the azimuth.
   return Direction(azimuthDegrees, altitudeDegrees);
+}
+
+CartesianLocation CartesianLocation::toFixed(int64_t timeMillis) {
+  if (referenceFrame == ReferenceFrame::EARTH_FIXED) {
+    return *this;
+  }
+
+  if (referenceFrame == ReferenceFrame::EARTH_EQUATORIAL) {
+    // Note that this is only an approximation of the correct rotation, because
+    // EARTH_EQUATORIAL (ECI)'s axis is not quite aligned with EARTH_FIXED (ECEF)'s axis
+    // over time due to the precession and nutation of the earth's axis.
+    // See https://space.stackexchange.com/questions/38807/transform-eci-to-ecef
+    double days = daysSinceJ2000(timeMillis);
+    // From: https://en.wikipedia.org/wiki/Sidereal_time#Earth_rotation_angle
+    double earthRotationAngle = 2 * M_PI * (0.779057273264 + (1.00273781191135448 * days));
+    // Use the negative angle, because we want to go backwards from the ECI angle to ECEF
+    double cosAngle = std::cos(-earthRotationAngle);
+    double sinAngle = std::sin(-earthRotationAngle);
+
+    return CartesianLocation(
+      x * cosAngle - y * sinAngle,
+      x * sinAngle + y * cosAngle,
+      z,
+      ReferenceFrame::EARTH_FIXED
+    );
+  }
+
+  if (referenceFrame == ReferenceFrame::EARTH_ECLIPTIC) {
+    // Convert to EARTH_EQUATORIAL first.
+    double axialTiltRadians = degreesToRadians(EARTH_AXIAL_TILT_DEGREES);
+    double sinAngle = std::sin(axialTiltRadians);
+    double cosAngle = std::cos(axialTiltRadians);
+    return CartesianLocation(
+      x,
+      y * cosAngle - z * sinAngle,
+      y * sinAngle + z * cosAngle,
+      ReferenceFrame::EARTH_EQUATORIAL
+    ).toFixed(timeMillis);
+  }
+
+  failWithError("Unknown reference frame");
+  // unreachable
+  return *this;
 }

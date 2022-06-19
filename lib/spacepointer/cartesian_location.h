@@ -1,6 +1,8 @@
 #ifndef SPACEPOINTER_LIB_SPACEPOINTER_CARTESIAN_LOCATION_H_
 #define SPACEPOINTER_LIB_SPACEPOINTER_CARTESIAN_LOCATION_H_
 
+#include <cstdint>
+
 #include "direction.h"
 #include "reference_frame.h"
 #include "vector.h"
@@ -24,6 +26,8 @@ class CartesianLocation {
 
     Vector towards(CartesianLocation other);
     Direction directionTowards(CartesianLocation other, Vector up);
+
+    CartesianLocation toFixed(int64_t timeMillis);
 };
 
 #endif
