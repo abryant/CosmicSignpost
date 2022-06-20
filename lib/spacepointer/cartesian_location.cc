@@ -6,6 +6,8 @@
 #include "angle_utils.h"
 #include "direction.h"
 #include "error_utils.h"
+#include "moon_orbit.h"
+#include "planetary_orbit.h"
 #include "quaternion.h"
 #include "time_utils.h"
 #include "vector.h"
@@ -112,6 +114,19 @@ CartesianLocation CartesianLocation::toFixed(int64_t timeMillis) {
       y * cosAngle - z * sinAngle,
       y * sinAngle + z * cosAngle,
       ReferenceFrame::EARTH_EQUATORIAL
+    ).toFixed(timeMillis);
+  }
+
+  if (referenceFrame == ReferenceFrame::SUN_ECLIPTIC) {
+    CartesianLocation earthMoonBarycentreLocationFromSun =
+        PlanetaryOrbit::EARTH_MOON_BARYCENTRE.toCartesian(timeMillis);
+    CartesianLocation earthMoonBarycentreLocationFromEarth =
+        MoonOrbit::earthMoonBarycentreAt(timeMillis);
+    return CartesianLocation(
+      earthMoonBarycentreLocationFromEarth.x - earthMoonBarycentreLocationFromSun.x,
+      earthMoonBarycentreLocationFromEarth.y - earthMoonBarycentreLocationFromSun.y,
+      earthMoonBarycentreLocationFromEarth.z - earthMoonBarycentreLocationFromSun.z,
+      ReferenceFrame::EARTH_ECLIPTIC
     ).toFixed(timeMillis);
   }
 
