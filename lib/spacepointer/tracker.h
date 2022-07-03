@@ -31,7 +31,7 @@ class Tracker {
     void setCurrentDirection(Direction direction);
     void setTrackedObject(std::function<CartesianLocation(int64_t)> trackedObject);
 
-    Direction getDirection();
+    Direction getDirectionAt(int64_t timeMillis);
 };
 
 #endif

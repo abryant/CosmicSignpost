@@ -1,5 +1,7 @@
 #include "tracker.h"
 
+#include <cstddef>
+
 #include <sys/time.h>
 
 Tracker::Tracker(
@@ -34,8 +36,8 @@ int64_t Tracker::getCurrentTimeMillis() {
   return resultMillis;
 }
 
-Direction Tracker::getDirection() {
-  CartesianLocation trackedObjectLocation = trackedObject(getCurrentTimeMillis());
-  return currentLocation.getCartesian().directionTowards(
-      trackedObjectLocation, currentLocation.getNormal());
+Direction Tracker::getDirectionAt(int64_t timeMillis) {
+  CartesianLocation trackedObjectLocation = trackedObject(timeMillis);
+  return currentLocation.getCartesian().toFixed(timeMillis).directionTowards(
+      trackedObjectLocation.toFixed(timeMillis), currentLocation.getNormal());
 }
