@@ -5,17 +5,21 @@
 
 const double EPSILON = 0.000000001;
 
-TEST(Location, Create) {
-  Location loc = Location(5, 10, 15);
-  EXPECT_DOUBLE_EQ(loc.getLatitude(), 5);
-  EXPECT_DOUBLE_EQ(loc.getLongitude(), 10);
-  EXPECT_DOUBLE_EQ(loc.getElevation(), 15);
-}
+#ifndef ARDUINO
 
 TEST(LocationDeathTest, Create_LatutudeNotInRange) {
   ASSERT_DEATH(
     Location(91, 10, 15),
     "latitude not in range");
+}
+
+#endif
+
+TEST(Location, Create) {
+  Location loc = Location(5, 10, 15);
+  EXPECT_DOUBLE_EQ(loc.getLatitude(), 5);
+  EXPECT_DOUBLE_EQ(loc.getLongitude(), 10);
+  EXPECT_DOUBLE_EQ(loc.getElevation(), 15);
 }
 
 TEST(Location, Create_WrapLongitudeForwards) {
