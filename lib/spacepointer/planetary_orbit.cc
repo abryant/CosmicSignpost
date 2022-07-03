@@ -9,6 +9,8 @@
 #include "reference_frame.h"
 #include "time_utils.h"
 
+const double METRES_PER_AU = 149597870700.0;
+
 PlanetaryOrbit::PlanetaryOrbit(
     double semiMajorAxisAuJ2000,
     double semiMajorAxisAuDelta,

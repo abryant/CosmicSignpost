@@ -4,8 +4,6 @@
 #include "cartesian_location.h"
 #include "reference_frame.h"
 
-double METRES_PER_AU = 149597870700.0;
-
 // Planetary orbit tracker, based on https://ssd.jpl.nasa.gov/planets/approx_pos.html
 class PlanetaryOrbit {
   private:

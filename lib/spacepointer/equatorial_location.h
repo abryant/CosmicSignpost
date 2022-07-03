@@ -3,10 +3,10 @@
 
 #include "cartesian_location.h"
 
+const double DEFAULT_CARTESIAN_RANGE = 1e200;
+
 class EquatorialLocation {
   private:
-    static const double DEFAULT_CARTESIAN_RANGE = 1e200;
-
     // Right ascension in degrees, J2000.
     double rightAscension;
     // Declination in degrees, J2000.
