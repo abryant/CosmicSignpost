@@ -9,6 +9,7 @@ class Direction {
     double altitude;
 
   public:
+    Direction();
     Direction(double azimuth, double altitude);
     double getAzimuth();
     double getAltitude();

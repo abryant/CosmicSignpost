@@ -3,6 +3,8 @@
 #include "angle_utils.h"
 #include "error_utils.h"
 
+Direction::Direction() : Direction(0.0, 0.0) {}
+
 Direction::Direction(double azimuth, double altitude) {
   this->azimuth = wrapDegrees(azimuth);
   checkArgument(-90.0 <= altitude && altitude <= 90.0, "altitude not in range [-90, 90]");
