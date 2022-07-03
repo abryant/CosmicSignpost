@@ -10,6 +10,6 @@
 #include "moon_orbit.h"
 #include "planetary_orbit.h"
 
-const std::map<std::string, std::function<CartesianLocation(int64_t)>> TRACKABLE_OBJECTS;
+extern const std::map<std::string, std::function<CartesianLocation(int64_t)>> TRACKABLE_OBJECTS;
 
 #endif
