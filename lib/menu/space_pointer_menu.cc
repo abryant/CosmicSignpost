@@ -12,12 +12,12 @@
 #include "info_menu_entry.h"
 #include "number_menu_entry.h"
 
-Menu buildSpacePointerMenu() {
+std::shared_ptr<Menu> buildSpacePointerMenu() {
   std::vector<std::shared_ptr<MenuEntry>> mainEntries = {
     std::make_shared<ActionMenuEntry>("Action", []() {}),
     std::make_shared<InfoMenuEntry>("Info", []() {return "Some info";}),
     std::make_shared<BooleanMenuEntry>("Boolean", [](bool b) {}, false),
     std::make_shared<NumberMenuEntry>("Latitude", "Lt: ~###.######N", [](std::string value) {})
   };
-  return Menu("Main menu", mainEntries);
+  return std::make_shared<Menu>("Main menu", mainEntries);
 }
