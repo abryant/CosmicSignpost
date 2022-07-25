@@ -12,8 +12,8 @@
 class BooleanMenuEntry : public MenuEntry {
   private:
     std::string name;
-    bool state;
     std::function<void(bool)> updateFunction;
+    bool state;
     void updateMenuEntryName();
 
   public:
