@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "menu.h"
+class Menu;
 
 class MenuEntry {
   private:

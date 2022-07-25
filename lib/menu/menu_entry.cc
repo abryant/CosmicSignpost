@@ -1,5 +1,7 @@
 #include "menu_entry.h"
 
+#include "menu.h"
+
 MenuEntry::MenuEntry(std::string name) : name(name), parent(NULL) {}
 
 std::string MenuEntry::getName() {
