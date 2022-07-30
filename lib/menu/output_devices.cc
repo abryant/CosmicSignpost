@@ -3,35 +3,27 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-const std::vector<uint8_t> INIT_COMMANDS {
-  // Set colour to red
-  0x7C, // Setting mode
-  '+', // Set colour
-  255, 0, 0, // RGB
-
-  // Set to two lines
-  0x7C, // Setting mode
-  0x06, // 2 lines
-};
-
 uint8_t OutputDevices::lcdAddress;
 std::string OutputDevices::lastString;
-bool OutputDevices::updatedSettings;
 std::vector<uint8_t> OutputDevices::settings;
 
 void OutputDevices::initLcd(uint8_t lcdAddress) {
   OutputDevices::lcdAddress = lcdAddress;
   OutputDevices::lastString = "";
   OutputDevices::settings = {};
-  OutputDevices::updatedSettings = false;
 
-  sendToLcd(INIT_COMMANDS);
+  setTwoLines();
   disableCursor();
+  setBacklightColour(255, 0, 0);
 }
 
 void OutputDevices::display(std::string str) {
-  if (str == lastString && !updatedSettings) {
+  if (str == lastString && settings.size() == 0) {
     return;
+  }
+  if (settings.size() > 0) {
+    sendToLcd(settings);
+    settings = {};
   }
   std::vector<uint8_t> data {
     0x7C, // Setting mode
@@ -39,28 +31,43 @@ void OutputDevices::display(std::string str) {
   };
   data.insert(data.end(), str.begin(), str.end());
   sendToLcd(data);
-  sendToLcd(settings);
   lastString = str;
-  updatedSettings = false;
+}
+
+void OutputDevices::setTwoLines() {
+  std::vector<uint8_t> twoLinesSettings = {
+    0x7C, // Setting mode
+    0x06, // 2 lines
+  };
+  settings.insert(settings.end(), twoLinesSettings.begin(), twoLinesSettings.end());
 }
 
 void OutputDevices::setCursor(uint8_t row, uint8_t column) {
-  char ROW_OFFSETS[4] = {0x00, 0x40, 0x14, 0x54};
-  settings = {
+  uint8_t ROW_OFFSETS[4] = {0x00, 0x40, 0x14, 0x54};
+  std::vector<uint8_t> cursorSettings = {
     254, // Special mode
     0x08 | 0x04 | 0x02, // Display control: Display on, Cursor on
     254, // Special mode
     (uint8_t) (0x80 | (uint8_t) (ROW_OFFSETS[row] + column)) // Set cursor
   };
-  updatedSettings = true;
+  settings.insert(settings.end(), cursorSettings.begin(), cursorSettings.end());
 }
 
 void OutputDevices::disableCursor() {
-  settings = {
+  std::vector<uint8_t> cursorSettings = {
     254, // Special mode
     0x08 | 0x04, // Display control: Display on, Cursor off
   };
-  updatedSettings = true;
+  settings.insert(settings.end(), cursorSettings.begin(), cursorSettings.end());
+}
+
+void OutputDevices::setBacklightColour(uint8_t red, uint8_t green, uint8_t blue) {
+  std::vector<uint8_t> colourSettings = {
+    0x7C, // Setting mode
+    '+', // Set colour
+    red, green, blue
+  };
+  settings.insert(settings.end(), colourSettings.begin(), colourSettings.end());
 }
 
 void OutputDevices::sendToLcd(std::vector<uint8_t> data) {
