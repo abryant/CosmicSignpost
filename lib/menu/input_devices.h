@@ -23,10 +23,21 @@ namespace InputDevices {
   extern size_t inputQueueWritePos;
   extern portMUX_TYPE inputQueueMux;
 
-  extern int8_t rotaryEncoderOldState;
   extern int32_t rotaryEncoderCount;
   extern int32_t encoderPinA;
   extern int32_t encoderPinB;
+  // A 2-bit number representing the state.
+  // pin A uses the high bit (0x2), and pin B uses the low bit (0x1).
+  extern volatile int8_t encoderState;
+  extern volatile int64_t lastEncoderTimeMicros;
+
+  extern int32_t selectPin;
+  extern volatile bool selectState;
+  extern volatile int64_t lastSelectTimeMicros;
+
+  extern int32_t backPin;
+  extern volatile bool backState;
+  extern volatile int64_t lastBackTimeMicros;
 
   // Input queue functions, for internal use only.
   // The caller must hold inputQueueMux while calling these.
@@ -40,7 +51,9 @@ namespace InputDevices {
 
   void IRAM_ATTR handleSelectButtonInterrupt();
   void IRAM_ATTR handleBackButtonInterrupt();
-  void IRAM_ATTR handleRotaryEncoderInterrupt();
+  void IRAM_ATTR handleRotaryEncoderInterrupt(int32_t pin, int8_t bitMask);
+  void IRAM_ATTR handleRotaryEncoderAInterrupt();
+  void IRAM_ATTR handleRotaryEncoderBInterrupt();
 
   void controlMenu(std::shared_ptr<Menu> menu);
   bool processSingleQueueEntry(std::shared_ptr<Menu> menu);
