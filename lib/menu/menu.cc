@@ -14,7 +14,9 @@ const uint32_t MAX_ENTRY_LENGTH = DISPLAY_LENGTH - 4;
 Menu::Menu(std::string name, std::vector<std::shared_ptr<MenuEntry>> entries)
     : MenuEntry(name),
       entries(entries),
-      currentPosition(0) {
+      currentPosition(0),
+      isCurrentActive(false),
+      displayedText("") {
   updateDisplayedText();
 }
 
@@ -42,6 +44,7 @@ std::string Menu::getDisplayedText() {
 void Menu::onBack() {
   if (isCurrentActive) {
     entries[currentPosition]->onBack();
+    updateDisplayedText();
     return;
   }
   currentPosition = 0;
@@ -51,6 +54,7 @@ void Menu::onBack() {
 void Menu::onRotateClockwise() {
   if (isCurrentActive) {
     entries[currentPosition]->onRotateClockwise();
+    updateDisplayedText();
     return;
   }
   if (this->currentPosition < entries.size() - 1) {
@@ -62,6 +66,7 @@ void Menu::onRotateClockwise() {
 void Menu::onRotateAnticlockwise() {
   if (isCurrentActive) {
     entries[currentPosition]->onRotateAnticlockwise();
+    updateDisplayedText();
     return;
   }
   if (this->currentPosition > 0) {
@@ -73,8 +78,10 @@ void Menu::onRotateAnticlockwise() {
 void Menu::onSelect() {
   if (isCurrentActive) {
     entries[currentPosition]->onSelect();
+    updateDisplayedText();
     return;
   }
   isCurrentActive = true;
   entries[currentPosition]->onActivate(this);
+  updateDisplayedText();
 }
