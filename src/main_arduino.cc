@@ -37,7 +37,6 @@ const int32_t ENCODER_BUTTON_PIN = 13;
 WiFiManager wifiManager;
 AccelStepper stepper = AccelStepper(AccelStepper::DRIVER, AZIMUTH_STEP_PIN, AZIMUTH_DIR_PIN);
 std::shared_ptr<Menu> menu;
-std::string lastMenuText = "";
 
 void setup() {
   Serial.begin(115200);
@@ -47,7 +46,6 @@ void setup() {
   InputDevices::initRotaryEncoder(ENCODER_A_PIN, ENCODER_B_PIN);
   InputDevices::initSelectButton(ENCODER_BUTTON_PIN);
   InputDevices::initBackButton(BUTTON_PIN);
-
   OutputDevices::initLcd(LCD_ADDRESS);
 
   wifiManager.setHostname("spacepointer");
@@ -61,11 +59,9 @@ void setup() {
 void loop() {
   InputDevices::controlMenu(menu);
   std::string menuText = menu->getDisplayedText();
-  if (menuText != lastMenuText) {
-    lastMenuText = menuText;
-    OutputDevices::display(menuText);
-  }
-  stepper.run();
+  // OutputDevices won't send it to the LCD again unless it has changed.
+  OutputDevices::display(menuText);
+
   ota::checkForOta();
 }
 
