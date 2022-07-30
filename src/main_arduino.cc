@@ -59,11 +59,7 @@ void setup() {
 }
 
 void loop() {
-  if (!stepper.isRunning()) {
-    stepper.moveTo(stepper.currentPosition() + (STEPS_PER_ROTATION * 5));
-    delay(1000);
-  }
-  InputDevices::controlMenu(*menu);
+  InputDevices::controlMenu(menu);
   std::string menuText = menu->getDisplayedText();
   if (menuText != lastMenuText) {
     lastMenuText = menuText;

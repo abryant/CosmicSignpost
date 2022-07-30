@@ -98,14 +98,14 @@ void IRAM_ATTR InputDevices::handleBackButtonInterrupt() {
   portEXIT_CRITICAL_ISR(&InputDevices::inputQueueMux);
 }
 
-void InputDevices::controlMenu(Menu &menu) {
+void InputDevices::controlMenu(std::shared_ptr<Menu> menu) {
   bool done = false;
   while (!done) {
     done = processSingleQueueEntry(menu);
   }
 }
 
-bool InputDevices::processSingleQueueEntry(Menu &menu) {
+bool InputDevices::processSingleQueueEntry(std::shared_ptr<Menu> menu) {
   bool empty = true;
   InputDevices::InputButton button = InputDevices::InputButton::SELECT;
   portENTER_CRITICAL(&InputDevices::inputQueueMux);
@@ -118,16 +118,16 @@ bool InputDevices::processSingleQueueEntry(Menu &menu) {
   if (!empty) {
     switch (button) {
       case SELECT:
-        menu.onSelect();
+        menu->onSelect();
         break;
       case BACK:
-        menu.onBack();
+        menu->onBack();
         break;
       case CLOCKWISE:
-        menu.onRotateClockwise();
+        menu->onRotateClockwise();
         break;
       case ANTICLOCKWISE:
-        menu.onRotateAnticlockwise();
+        menu->onRotateAnticlockwise();
         break;
     }
   }

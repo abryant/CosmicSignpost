@@ -1,6 +1,7 @@
 #ifndef SPACEPOINTER_LIB_MENU_INPUT_DEVICES_H_
 #define SPACEPOINTER_LIB_MENU_INPUT_DEVICES_H_
 
+#include <memory>
 #include <stdint.h>
 
 #include <Arduino.h>
@@ -41,8 +42,8 @@ namespace InputDevices {
   void IRAM_ATTR handleBackButtonInterrupt();
   void IRAM_ATTR handleRotaryEncoderInterrupt();
 
-  void controlMenu(Menu &menu);
-  bool processSingleQueueEntry(Menu &menu);
+  void controlMenu(std::shared_ptr<Menu> menu);
+  bool processSingleQueueEntry(std::shared_ptr<Menu> menu);
 };
 
 #endif
