@@ -10,6 +10,7 @@
 #include "menu_entry.h"
 #include "action_menu_entry.h"
 #include "boolean_menu_entry.h"
+#include "brightness_menu_entry.h"
 #include "info_menu_entry.h"
 #include "number_menu_entry.h"
 
@@ -28,7 +29,8 @@ std::shared_ptr<Menu> buildSpacePointerMenu() {
     std::make_shared<NumberMenuEntry>("Latitude", "Lt: ~##.######N", [](std::string value) {
       Serial.print("Latitude: ");
       Serial.println(value.c_str());
-    })
+    }),
+    std::make_shared<BrightnessMenuEntry>(),
   };
   return std::make_shared<Menu>("Main menu", mainEntries);
 }
