@@ -10,20 +10,18 @@ std::vector<uint8_t> OutputDevices::settings;
 void OutputDevices::initLcd(uint8_t lcdAddress) {
   OutputDevices::lcdAddress = lcdAddress;
   OutputDevices::lastString = "";
-  OutputDevices::settings = {};
 
+  settings = {};
   setTwoLines();
   disableCursor();
   setBacklightColour(255, 0, 0);
+  sendToLcd(settings);
+  settings = {};
 }
 
 void OutputDevices::display(std::string str) {
   if (str == lastString && settings.size() == 0) {
     return;
-  }
-  if (settings.size() > 0) {
-    sendToLcd(settings);
-    settings = {};
   }
   std::vector<uint8_t> data {
     0x7C, // Setting mode
@@ -32,6 +30,10 @@ void OutputDevices::display(std::string str) {
   data.insert(data.end(), str.begin(), str.end());
   sendToLcd(data);
   lastString = str;
+  if (settings.size() > 0) {
+    sendToLcd(settings);
+    settings = {};
+  }
 }
 
 void OutputDevices::setTwoLines() {
