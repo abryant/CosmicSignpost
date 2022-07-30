@@ -1,10 +1,16 @@
 #include "number_menu_entry.h"
 
+#include "output_devices.h"
+
 NumberMenuEntry::NumberMenuEntry(std::string name, std::string numberFormatString, std::function<void(std::string)> submitFunction)
   : MenuEntry(name) {
   this->numberFormatString = numberFormatString;
   this->submitFunction = submitFunction;
+}
 
+void NumberMenuEntry::onActivate(Menu *parent) {
+  MenuEntry::onActivate(parent);
+  digitsByPosition.clear();
   for (uint32_t i = 0; i < numberFormatString.length(); ++i) {
     if (numberFormatString.at(i) == DIGIT_FORMAT_CHAR) {
       digitsByPosition.push_back(std::make_pair(i, '0'));
@@ -13,31 +19,43 @@ NumberMenuEntry::NumberMenuEntry(std::string name, std::string numberFormatStrin
       digitsByPosition.push_back(std::make_pair(i, '+'));
     }
   }
+  currentDigitIndex = 0;
+  updatedFormattedString();
 }
 
 void NumberMenuEntry::updatedFormattedString() {
   std::string formatted = numberFormatString;
-  for (auto it = digitsByPosition.begin(); it != digitsByPosition.end(); ++it) {
-    formatted[it->first] = it->second;
+  int32_t cursorPos = 0;
+  for (int32_t i = 0; i < digitsByPosition.size(); ++i) {
+    std::pair<int32_t, char> indexAndDigit = digitsByPosition[i];
+    formatted[indexAndDigit.first] = indexAndDigit.second;
+    if (i == currentDigitIndex) {
+      cursorPos = indexAndDigit.first;
+    }
   }
+  OutputDevices::setCursor(0, cursorPos);
   formattedString = formatted;
 }
 
 void NumberMenuEntry::onSelect() {
   if (currentDigitIndex == digitsByPosition.size() - 1) {
     submitFunction(formattedString);
+    OutputDevices::disableCursor();
     deactivate();
     return;
   }
   currentDigitIndex++;
+  updatedFormattedString();
 }
 
 void NumberMenuEntry::onBack() {
   if (currentDigitIndex == 0) {
+    OutputDevices::disableCursor();
     deactivate();
     return;
   }
   currentDigitIndex--;
+  updatedFormattedString();
 }
 
 void NumberMenuEntry::onRotateClockwise() {

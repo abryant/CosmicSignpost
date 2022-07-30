@@ -26,6 +26,7 @@ class NumberMenuEntry : public MenuEntry {
     static const char SIGN_FORMAT_CHAR = '~';
     static const char DIGIT_FORMAT_CHAR = '#';
     NumberMenuEntry(std::string name, std::string numberFormatString, std::function<void(std::string)> submitFunction);
+    virtual void onActivate(Menu *parent);
     virtual void onSelect();
     virtual void onBack();
     virtual void onRotateClockwise();
