@@ -6,6 +6,15 @@
 
 DirectionQueue::DirectionQueue() {}
 
+bool DirectionQueue::isFull() {
+  bool result;
+  {
+    std::unique_lock<std::mutex> lock(mutex);
+    result = directionsByTimeMillis.size() >= DirectionQueue::DIRECTION_QUEUE_CAPACITY;
+  }
+  return result;
+}
+
 void DirectionQueue::addDirection(int64_t timeMillis, Direction direction) {
   {
     std::unique_lock<std::mutex> lock(mutex);
@@ -17,19 +26,36 @@ void DirectionQueue::addDirection(int64_t timeMillis, Direction direction) {
   condition.notify_one();
 }
 
-Direction DirectionQueue::getDirectionAt(int64_t timeMillis) {
-  Direction result;
+std::pair<int64_t, Direction> DirectionQueue::getDirectionAtOrAfter(int64_t timeMillis) {
+  std::pair<int64_t, Direction> result;
   {
     std::unique_lock<std::mutex> lock(mutex);
-    std::map<int64_t, Direction>::iterator it = directionsByTimeMillis.find(timeMillis);
-    // TODO: what if we never find timeMillis and the queue fills up?
+    std::map<int64_t, Direction>::iterator it = directionsByTimeMillis.lower_bound(timeMillis);
     while (it == directionsByTimeMillis.end()) {
       condition.wait(lock);
-      it = directionsByTimeMillis.find(timeMillis);
+      it = directionsByTimeMillis.lower_bound(timeMillis);
     }
-    result = it->second;
+    result = std::make_pair(it->first, it->second);
     directionsByTimeMillis.erase(directionsByTimeMillis.begin(), it);
   }
+  condition.notify_one();
+  return result;
+}
+
+std::pair<int64_t, Direction> DirectionQueue::peekDirectionAtOrAfter(int64_t timeMillis) {
+  std::pair<int64_t, Direction> result;
+  {
+    std::unique_lock<std::mutex> lock(mutex);
+    std::map<int64_t, Direction>::iterator it = directionsByTimeMillis.lower_bound(timeMillis);
+    while (it == directionsByTimeMillis.end()) {
+      condition.wait(lock);
+      it = directionsByTimeMillis.lower_bound(timeMillis);
+    }
+    result = std::make_pair(it->first, it->second);
+  }
+  // Wake up something else, just to avoid getting stuck.
+  // If there's one reader and one writer, this shouldn't be needed, but it also shouldn't cause
+  // any problems.
   condition.notify_one();
   return result;
 }

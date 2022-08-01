@@ -3,12 +3,14 @@
 
 #include <functional>
 #include <cstdint>
+#include <memory>
 
 #include "direction.h"
+#include "direction_queue.h"
 
 class StepperMotors {
   private:
-    std::function<Direction(int64_t)> directionGenerator;
+    std::shared_ptr<DirectionQueue> directionQueue;
     int32_t azimuthStepPin;
     int32_t azimuthDirectionPin;
     int32_t altitudeStepPin;
@@ -20,7 +22,7 @@ class StepperMotors {
 
   public:
     StepperMotors(
-        std::function<Direction(int64_t)> directionGenerator,
+        std::shared_ptr<DirectionQueue> directionQueue,
         int32_t azimuthStepPin,
         int32_t azimuthDirectionPin,
         int32_t altitudeStepPin,

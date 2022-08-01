@@ -1,24 +1,25 @@
 #include "stepper_motors.h"
 
 #include <cmath>
+#include <memory>
 
 #include "Arduino.h"
 #include <sys/time.h>
 
 #include "angle_utils.h"
+#include "direction_queue.h"
 #include "time_utils.h"
 
 const int32_t STEPS_PER_AZIMUTH_360_DEGREES = 200 * 16;
-// TODO: figure out what gear scaling we're going to have. 60 is a complete guess.
-const int32_t STEPS_PER_ALTITUDE_360_DEGREES = 200 * 16 * 60;
+const int32_t STEPS_PER_ALTITUDE_360_DEGREES = 200 * 16;
 
 StepperMotors::StepperMotors(
-    std::function<Direction(int64_t)> directionGenerator,
+    std::shared_ptr<DirectionQueue> directionQueue,
     int32_t azimuthStepPin,
     int32_t azimuthDirectionPin,
     int32_t altitudeStepPin,
     int32_t altitudeDirectionPin)
-    : directionGenerator(directionGenerator),
+    : directionQueue(directionQueue),
       azimuthStepPin(azimuthStepPin),
       azimuthDirectionPin(azimuthDirectionPin),
       altitudeStepPin(altitudeStepPin),
@@ -30,18 +31,22 @@ StepperMotors::StepperMotors(
 }
 
 Direction StepperMotors::getDirectionAt(int64_t timeMillis) {
-  // TODO: generate these in another thread and cache them
-  //       (it takes too long to do in the motor control thread)
   int64_t lowerTime = (timeMillis / 5) * 5;
   int64_t upperTime = lowerTime + 5;
-  int64_t interpolation = timeMillis % 5;
-  Direction lower = directionGenerator(lowerTime);
-  Direction upper = directionGenerator(upperTime);
-  double azimuthChange = (wrapDegrees(upper.getAzimuth() - lower.getAzimuth())) / 5.0;
-  double altitudeChange = (upper.getAltitude() - lower.getAltitude()) / 5.0;
+  std::pair<int64_t, Direction> lower = directionQueue->getDirectionAtOrAfter(lowerTime);
+  std::pair<int64_t, Direction> upper = directionQueue->peekDirectionAtOrAfter(upperTime);
+  int64_t timeDiff = upper.first - lower.first;
+  if (timeDiff <= 0) {
+    return lower.second;
+  }
+  Direction lowerDir = lower.second;
+  Direction upperDir = upper.second;
+  double interpolation = (timeMillis - lower.first) / timeDiff;
+  double azimuthChange = wrapDegrees(upperDir.getAzimuth() - lowerDir.getAzimuth());
+  double altitudeChange = upperDir.getAltitude() - lowerDir.getAltitude();
   return Direction(
-      lower.getAzimuth() + (interpolation * azimuthChange),
-      lower.getAltitude() + (interpolation * altitudeChange));
+      lowerDir.getAzimuth() + (interpolation * azimuthChange),
+      lowerDir.getAltitude() + (interpolation * altitudeChange));
 }
 
 // Wraps an azimuth in steps to the range [-180, 180]
@@ -110,7 +115,7 @@ void StepperMotors::control() {
     }
 
 
-    if (now > nextSliceStart) {
+    if (now >= nextSliceStart) {
       sliceStart = nextSliceStart;
       nextSliceStart = nextSliceStart.plusMicros(SLICE_LENGTH_MICROS);
       current = next;
