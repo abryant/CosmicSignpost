@@ -1,7 +1,16 @@
 #include "info_menu_entry.h"
 
-InfoMenuEntry::InfoMenuEntry(std::string name, std::function<std::string()> infoFunction)
-  : MenuEntry(name), infoFunction(infoFunction) {
+#include "Arduino.h"
+
+InfoMenuEntry::InfoMenuEntry(
+  std::string name,
+  std::function<std::string()> infoFunction,
+  int64_t updateIntervalMicros)
+  : MenuEntry(name),
+    infoFunction(infoFunction),
+    updateIntervalMicros(updateIntervalMicros),
+    lastInfo(""),
+    lastUpdateMicros(0) {
 }
 
 void InfoMenuEntry::onSelect() {
@@ -19,5 +28,10 @@ void InfoMenuEntry::onRotateAnticlockwise() {
 }
 
 std::string InfoMenuEntry::getDisplayedText() {
-  return infoFunction();
+  int64_t time = micros();
+  if (time - lastUpdateMicros > updateIntervalMicros) {
+    lastInfo = infoFunction();
+    lastUpdateMicros = time;
+  }
+  return lastInfo;
 }
