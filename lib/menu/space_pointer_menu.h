@@ -5,6 +5,6 @@
 
 #include "menu.h"
 
-std::shared_ptr<Menu> buildSpacePointerMenu();
+std::shared_ptr<Menu> buildSpacePointerMenu(std::function<void(int32_t)> updateAngle);
 
 #endif

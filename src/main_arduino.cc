@@ -39,10 +39,10 @@ const int32_t ENCODER_B_PIN = 14;
 const int32_t ENCODER_BUTTON_PIN = 13;
 
 WiFiManager wifiManager;
-AccelStepper stepper = AccelStepper(AccelStepper::DRIVER, AZIMUTH_STEP_PIN, AZIMUTH_DIR_PIN);
 std::shared_ptr<Menu> menu;
 
 TaskHandle_t motorControlTaskHandle;
+Direction currentDirection;
 std::shared_ptr<DirectionQueue> directionQueue;
 TimeMillisMicros lastAddedTime;
 
@@ -69,8 +69,6 @@ void setup() {
   wifiManager.autoConnect("Space Pointer", WIFI_MANAGER_PASSWORD.c_str());
   ota::setUp(1420, OTA_PASSWORD);
 
-  stepper.setMaxSpeed(5000.0);
-  stepper.setAcceleration(1000.0);
   directionQueue = std::make_shared<DirectionQueue>();
 
   motors = std::make_shared<StepperMotors>(
@@ -89,7 +87,10 @@ void setup() {
       &motorControlTaskHandle,
       /* core= */ 0);
 
-  menu = buildSpacePointerMenu();
+  currentDirection = Direction(90, 0);
+  menu = buildSpacePointerMenu([](int32_t newAngle) {
+    currentDirection = Direction(newAngle, 0);
+  });
   lastAddedTime = TimeMillisMicros::now();
 }
 
@@ -99,11 +100,10 @@ void loop() {
   // OutputDevices won't send it to the LCD again unless it has changed.
   OutputDevices::display(menuText);
 
-  lastAddedTime = lastAddedTime.plusMicros(5000);
-  Direction direction = Direction(90, 0);
   if (!directionQueue->isFull()) {
-    int64_t timeMillis = (lastAddedTime.millis / 5) * 5;
-    directionQueue->addDirection(timeMillis, direction);
+    lastAddedTime = lastAddedTime.plusMicros(50000);
+    int64_t timeMillis = (lastAddedTime.millis / 50) * 50;
+    directionQueue->addDirection(timeMillis, currentDirection);
   }
 
   ota::checkForOta();
