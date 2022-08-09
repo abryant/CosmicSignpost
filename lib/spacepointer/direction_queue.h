@@ -10,7 +10,7 @@
 
 class DirectionQueue {
   private:
-    static const int32_t DIRECTION_QUEUE_CAPACITY = 100;
+    static const int32_t DIRECTION_QUEUE_CAPACITY = 10;
     std::map<int64_t, Direction> directionsByTimeMillis;
     std::condition_variable condition;
     std::mutex mutex;
