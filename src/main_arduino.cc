@@ -103,7 +103,7 @@ void loop() {
   if (!directionQueue->isFull()) {
     lastAddedTime = lastAddedTime.plusMicros(50000);
     int64_t timeMillis = (lastAddedTime.millis / 50) * 50;
-    directionQueue->addDirection(timeMillis, Direction(timeMillis / 1000, 0));
+    directionQueue->addDirection(timeMillis, Direction(timeMillis / 100.0, 0));
   }
 
   ota::checkForOta();
