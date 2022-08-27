@@ -16,11 +16,11 @@ class TimeMillisMicros {
     int32_t micros;
 
     TimeMillisMicros();
-    TimeMillisMicros(int64_t millis, int32_t micros);
+    TimeMillisMicros(int64_t millis, int64_t micros);
     static TimeMillisMicros now();
-    static TimeMillisMicros ofMicros(int32_t micros);
-    TimeMillisMicros plusMicros(int32_t addedMicros) const;
-    TimeMillisMicros minusMicros(int32_t subtractedMicros) const;
+    static TimeMillisMicros ofMicros(int64_t micros);
+    TimeMillisMicros plusMicros(int64_t addedMicros) const;
+    TimeMillisMicros minusMicros(int64_t subtractedMicros) const;
     int64_t deltaMicrosSince(TimeMillisMicros other) const;
 
     // operator<=> only works in C++20, and ESP32 can't use that yet.
