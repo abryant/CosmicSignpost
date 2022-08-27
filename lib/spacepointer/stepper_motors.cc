@@ -49,6 +49,58 @@ Direction StepperMotors::getDirectionAt(int64_t timeMillis) {
       lowerDir.getAltitude() + (interpolation * altitudeChange));
 }
 
+double azimuthDegreesToSteps(double degrees) {
+  return degrees * STEPS_PER_AZIMUTH_360_DEGREES / 360.0;
+}
+
+double altitudeDegreesToSteps(double degrees) {
+  return degrees * STEPS_PER_ALTITUDE_360_DEGREES / 360.0;
+}
+
+// Converts a number of steps, speed, or acceleration from azimuth motor units to altitude motor
+// units. This is only necessary if the motors are geared differently, e.g. if altitude needs one
+// full rotation to compensate for two full azimuth rotations, then this just applies a linear
+// conversion factor.
+double convertAzimuthToAltitude(double azimuth) {
+  return (azimuth * STEPS_PER_ALTITUDE_360_DEGREES) / STEPS_PER_AZIMUTH_360_DEGREES;
+}
+
+double findSpeedCorrection(double diffSteps) {
+  double QUADRATIC_REGION_STEPS = 10.0; // 1.125 degrees
+  double scaledSteps = diffSteps / QUADRATIC_REGION_STEPS;
+  double result;
+  // We need a function that guarantees the acceleration is under a certain constant value,
+  // regardless of the input. If x=distance (diff) and t=time, then we need:
+  // d^2x/dt^2 = 1
+  // Integrating dt, we get:
+  // dx/dt = t + c (let's take c=0, since we're making this up)
+  // dx/dt is what we need (the speed), but it's in terms of time rather than distance.
+  // Integrating again:
+  // x = 1/2t^2 + c (let's take c=0 again)
+  // giving: t = sqrt(2x)
+  // which we can substitute in to the speed equation to get:
+  // dx/dt = sqrt(2x)
+  // So using a function proportional to sqrt(x) gives us a constant acceleration.
+  //
+  // Unfortunately, when we're close to zero we don't want a constant acceleration, since that will
+  // make us oscillate around zero instead of slowing down to reach it. Instead, we want to
+  // decrease the acceleration closer to zero the closer the diff is to zero.
+  //
+  // To work around this, we can use a piecewise function that uses sqrt(x) for large values of x,
+  // and x^2 for small values of x, with some constants to line up the speed and gradient at the
+  // boundaries:
+  if (scaledSteps > 1) {
+    result = std::sqrt(scaledSteps) - 0.75;
+  } else if (scaledSteps < -1) {
+    result = -std::sqrt(-scaledSteps) + 0.75;
+  } else {
+    result = scaledSteps * std::abs(scaledSteps) / 4.0;
+  }
+  // Conversion factor from diff steps to steps per microsecond:
+  double SPEED_PER_DIFF_STEP = 10.0 / 1000000.0; // 10 steps per second per step of diff
+  return result * QUADRATIC_REGION_STEPS * SPEED_PER_DIFF_STEP;
+}
+
 // Wraps an azimuth in steps to the range [-180, 180]
 double wrapAzimuthSteps(double azimuthSteps) {
   azimuthSteps = std::fmod(azimuthSteps, STEPS_PER_AZIMUTH_360_DEGREES);
@@ -68,15 +120,17 @@ void StepperMotors::control() {
   const int32_t SLICE_LENGTH_MICROS = 50000;
   Direction current = Direction(0.0, 0.0);
   Direction next = current;
+  Direction afterNext = next;
   // Wrapped between -180 and 180 degrees, but measured in steps.
-  int32_t currentAzimuthSteps = 0;
-  int32_t currentAltitudeSteps = 0;
+  double currentAzimuthSteps = 0;
+  double currentAltitudeSteps = 0;
   // Acceleration in steps per microsecond^2.
   double currentAzimuthAcceleration = 0.0;
   double currentAltitudeAcceleration = 0.0;
 
   TimeMillisMicros sliceStart = TimeMillisMicros::now();
   TimeMillisMicros nextSliceStart = sliceStart.plusMicros(SLICE_LENGTH_MICROS);
+  TimeMillisMicros afterNextSliceStart = nextSliceStart.plusMicros(SLICE_LENGTH_MICROS);
   TimeMillisMicros lastAzimuthStepTime = sliceStart;
   TimeMillisMicros lastAltitudeStepTime = sliceStart;
   // Speed in steps per microsecond.
@@ -88,24 +142,26 @@ void StepperMotors::control() {
     // Calculate the current speeds in steps per microsecond.
     double currentAzimuthSpeed = sliceStartAzimuthSpeed + (currentAzimuthAcceleration * timeDeltaMicros);
     double currentAltitudeSpeed = sliceStartAltitudeSpeed + (currentAltitudeAcceleration * timeDeltaMicros);
-    if (currentAzimuthSpeed != 0) {
+    // If the speed is so low that the time until the next step overflows an int32, don't step.
+    if (((double) INT32_MAX) * std::abs(currentAzimuthSpeed) > 1.0) {
       // Find the next azimuth step time based on the current speed (after current acceleration).
       TimeMillisMicros nextAzimuthStepTime =
-          lastAzimuthStepTime.plusMicros((int32_t) (1.0 / std::abs(currentAzimuthSpeed)));
+          lastAzimuthStepTime.plusMicros((int64_t) (1.0 / std::abs(currentAzimuthSpeed)));
       if (now >= nextAzimuthStepTime) {
         int8_t stepDirection = currentAzimuthSpeed > 0 ? 1 : -1;
         stepAzimuth(stepDirection > 0);
         currentAzimuthSteps = wrapAzimuthSteps(currentAzimuthSteps + stepDirection);
         // Moving the azimuth motor always moves the altitude too, because of the way the gears are attached.
         // So we need to subtract all azimuth steps from the altitude steps to compensate.
-        currentAltitudeSteps -= stepDirection;
+        currentAltitudeSteps -= convertAzimuthToAltitude(stepDirection);
         lastAzimuthStepTime = now;
       }
     }
-    if (currentAltitudeSpeed != 0) {
+    // If the speed is so low that the time until the next step overflows an int32, don't step.
+    if (((double) INT32_MAX) * std::abs(currentAltitudeSpeed) > 1.0) {
       // Find the next altitude step time based on the current speed (after current acceleration).
       TimeMillisMicros nextAltitudeStepTime =
-          lastAltitudeStepTime.plusMicros((int32_t) (1.0 / std::abs(currentAltitudeSpeed)));
+          lastAltitudeStepTime.plusMicros((int64_t) (1.0 / std::abs(currentAltitudeSpeed)));
       if (now >= nextAltitudeStepTime) {
         int8_t stepDirection = currentAltitudeSpeed > 0 ? 1 : -1;
         stepAltitude(stepDirection > 0);
@@ -118,182 +174,64 @@ void StepperMotors::control() {
     if (now >= nextSliceStart) {
       sliceStart = now;
       while (now >= nextSliceStart) {
-        nextSliceStart = nextSliceStart.plusMicros(SLICE_LENGTH_MICROS);
+        nextSliceStart = afterNextSliceStart;
+        afterNextSliceStart = afterNextSliceStart.plusMicros(SLICE_LENGTH_MICROS);
       }
       current = next;
-      next = getDirectionAt(nextSliceStart.millis);
+      next = afterNext;
+      afterNext = getDirectionAt(afterNextSliceStart.millis);
       int64_t lastSliceMicros = timeDeltaMicros;
       int64_t nextSliceMicros = nextSliceStart.deltaMicrosSince(sliceStart);
 
       // Azimuth
       sliceStartAzimuthSpeed += currentAzimuthAcceleration * lastSliceMicros;
-      double endAzimuth = next.getAzimuth();
-      double endAzimuthSteps = endAzimuth * STEPS_PER_AZIMUTH_360_DEGREES / 360.0;
+
+      // Find the average speed from current to afterNext:
+      double azimuthEndOfSliceSpeedTarget =
+          wrapAzimuthSteps(azimuthDegreesToSteps(afterNext.getAzimuth() - current.getAzimuth()))
+          / afterNextSliceStart.deltaMicrosSince(now);
+      // Speed correction for converging on the correct position:
+      double endAzimuthSteps = azimuthDegreesToSteps(next.getAzimuth());
       double azimuthDiff = wrapAzimuthSteps(endAzimuthSteps - currentAzimuthSteps);
-      double maxAzimuthDiff =
-          // s = ut + 1/2*a*t^2 from https://en.wikipedia.org/wiki/Equations_of_motion
-          ((currentAzimuthSpeed * nextSliceMicros)
-          + (MAX_ACCELERATION * nextSliceMicros * nextSliceMicros / 2.0));
-      double minAzimuthDiff =
-          // s = ut + 1/2*a*t^2 from https://en.wikipedia.org/wiki/Equations_of_motion
-          ((currentAzimuthSpeed * nextSliceMicros)
-          - (MAX_ACCELERATION * nextSliceMicros * nextSliceMicros / 2.0));
-
-      double realAzimuthDiff;
-      if (std::abs(azimuthDiff) <= 0.5 && std::abs(currentAzimuthSpeed * nextSliceMicros) <= 10) {
-        // We're moving really slowly and don't need to get anywhere, so zero out the speed for
-        // the next slice.
-        sliceStartAzimuthSpeed = 0;
-        currentAzimuthAcceleration = 0;
-        realAzimuthDiff = azimuthDiff;
-      } else if (minAzimuthDiff <= azimuthDiff && azimuthDiff <= maxAzimuthDiff) {
-        // The azimuth is reachable, set the acceleration to reach it.
-        // s = u*t + 1/2*a*t^2
-        // => a = 2(s/t^2 - u/t)
-        currentAzimuthAcceleration =
-            2 * (
-              (((double) azimuthDiff) / (nextSliceMicros * nextSliceMicros))
-              - (currentAzimuthSpeed / nextSliceMicros));
-        realAzimuthDiff = azimuthDiff;
-      } else {
-        // The azimuth is unreachable this time slice. We need to decide whether to accelerate or
-        // decelerate so that we don't overshoot the target, based on our stopping distance.
-        //
-        // If we base the calculation on our current stopping distance, then we might decide that
-        // we don't need to decelerate yet and so decide to accelerate instead. This could mean
-        // that our speed at the end of the next slice is too high to decelerate in time to reach
-        // our target, causing an overshoot.
-        //
-        // To avoid this problem, we will simulate one slice worth of movement and find the
-        // stopping distance after that. To begin with, we make a naive decision to accelerate
-        // towards the positive or the negative for one more time slice, based on which way we need
-        // to go to reach azimuthDiff.
-        double naiveAcceleration = (azimuthDiff > 0) ? MAX_ACCELERATION : -MAX_ACCELERATION;
-        // Simulate the next time slice:
-        // s = u*t + 1/2*a*t^2
-        double nextSliceAzimuthDiff =
-            (currentAzimuthSpeed * nextSliceMicros)
-            + (naiveAcceleration * nextSliceMicros * nextSliceMicros / 2.0);
-        // v = u + a*t
-        double nextSliceAzimuthSpeed =
-            currentAzimuthSpeed + (nextSliceMicros * naiveAcceleration);
-        if ((nextSliceAzimuthSpeed < 0) != (currentAzimuthSpeed < 0)) {
-          // We're about to change directions, which means our stopping distance is within the next
-          // time slice. Disable overshoot protection and choose the naive approach, because
-          // (a) overshoot protection would make us accelerate away from the desired location, and
-          // (b) our speed will at least be in the right direction after we reverse.
-          currentAzimuthAcceleration = naiveAcceleration;
-        } else {
-          // Calculate the stopping distance after the next time slice:
-          // v^2 = u^2 + 2*a*s from https://en.wikipedia.org/wiki/Equations_of_motion
-          // Stopping distance: s = (v^2 - u^2) / 2*a
-          // v = 0, so s = -u^2 / 2*a, and a is negative for deceleration, so:
-          double nextSliceAzimuthStoppingDistanceSteps =
-              nextSliceAzimuthSpeed * nextSliceAzimuthSpeed / (2.0 * MAX_ACCELERATION);
-          // This equation does not tell us the direction that we'll stop in, so:
-          double nextSliceAzimuthStopDiffSteps =
-              (nextSliceAzimuthSpeed > 0 ? 1 : -1) * nextSliceAzimuthStoppingDistanceSteps;
-          double naiveAzimuthStopDiffSteps =
-              nextSliceAzimuthDiff + nextSliceAzimuthStopDiffSteps;
-
-          // We want to accelerate/decelerate based on the direction we're aiming for and whether the
-          // stopping distance is before or after our destination. It turns out that the direction of
-          // acceleration/deceleration cancels out with the orientation of before/after for the
-          // stopping diff. Here are the two cases:
-          // azimuthDiff is positive: accelerate(+) iff naiveAzimuthStopDiffSteps is lower than it.
-          // azimuthDiff is negative: accelerate(-) iff naiveAzimuthStopDiffSteps is higher than it.
-          currentAzimuthAcceleration =
-              (naiveAzimuthStopDiffSteps < azimuthDiff) ? MAX_ACCELERATION : -MAX_ACCELERATION;
-        }
-
-        realAzimuthDiff =
-            // s = ut + 1/2*a*t^2 from https://en.wikipedia.org/wiki/Equations_of_motion
-            ((currentAzimuthSpeed * nextSliceMicros)
-            + (currentAzimuthAcceleration * nextSliceMicros * nextSliceMicros / 2.0));
+      azimuthEndOfSliceSpeedTarget += findSpeedCorrection(azimuthDiff);
+      // Accelerate to match this speed target:
+      // v = u + a*t from https://en.wikipedia.org/wiki/Equations_of_motion
+      // => a = (v - u) / t
+      currentAzimuthAcceleration =
+          (azimuthEndOfSliceSpeedTarget - currentAzimuthSpeed) / nextSliceMicros;
+      if (currentAzimuthAcceleration > MAX_ACCELERATION) {
+        currentAzimuthAcceleration = MAX_ACCELERATION;
+      } else if (currentAzimuthAcceleration < -MAX_ACCELERATION) {
+        currentAzimuthAcceleration = -MAX_ACCELERATION;
       }
+
+      // Find the azimuth speed at the end of the next slice, so that we can adjust the altitude
+      // speed correctly.
+      double realAzimuthEndOfSliceSpeed =
+          sliceStartAzimuthSpeed + (currentAzimuthAcceleration * nextSliceMicros);
 
       // Altitude
       sliceStartAltitudeSpeed += currentAltitudeAcceleration * lastSliceMicros;
-      double endAltitude = next.getAltitude();
-      double endAltitudeSteps =
-          endAltitude * STEPS_PER_ALTITUDE_360_DEGREES / 360.0;
-      double altitudeDiff = endAltitudeSteps - currentAltitudeSteps;
-      // Moving the azimuth motor always moves the altitude too, because of the way the gears are
-      // attached. So we need to subtract the real azimuth steps from the next slice from the
-      // altitude steps to compensate.
-      altitudeDiff -= realAzimuthDiff;
-      double maxAltitudeDiff =
-          // s = ut + 1/2*a*t^2 from https://en.wikipedia.org/wiki/Equations_of_motion
-          ((currentAltitudeSpeed * nextSliceMicros)
-          + (MAX_ACCELERATION * nextSliceMicros * nextSliceMicros / 2.0));
-      double minAltitudeDiff =
-          // s = ut + 1/2*a*t^2 from https://en.wikipedia.org/wiki/Equations_of_motion
-          ((currentAltitudeSpeed * nextSliceMicros)
-          - (MAX_ACCELERATION * nextSliceMicros * nextSliceMicros / 2.0));
 
-      if (std::abs(altitudeDiff) <= 0.5 && std::abs(currentAltitudeSpeed * nextSliceMicros) <= 10) {
-          // We're moving really slowly and don't need to get anywhere, so zero out the speed for
-        // the next slice.
-        sliceStartAltitudeSpeed = 0;
-        currentAltitudeAcceleration = 0;
-      } else if (minAltitudeDiff <= altitudeDiff && altitudeDiff <= maxAltitudeDiff) {
-        // The altitude is reachable, set the acceleration to reach it.
-        // s = u*t + 1/2*a*t^2
-        // => a = 2(s/t^2 - u/t)
-        currentAltitudeAcceleration =
-            2 * (
-              (((double) altitudeDiff) / (nextSliceMicros * nextSliceMicros))
-              - (currentAltitudeSpeed / nextSliceMicros));
-      } else {
-        // The altitude is unreachable this time slice. We need to decide whether to accelerate or
-        // decelerate so that we don't overshoot the target, based on our stopping distance.
-        //
-        // If we base the calculation on our current stopping distance, then we might decide that
-        // we don't need to decelerate yet and so decide to accelerate instead. This could mean
-        // that our speed at the end of the next slice is too high to decelerate in time to reach
-        // our target, causing an overshoot.
-        //
-        // To avoid this problem, we will simulate one slice worth of movement and find the
-        // stopping distance after that. To begin with, we make a naive decision to accelerate
-        // towards the positive or the negative for one more time slice, based on which way we need
-        // to go to reach altitudeDiff.
-        double naiveAcceleration = (azimuthDiff > 0) ? MAX_ACCELERATION : -MAX_ACCELERATION;
-        // Simulate the next time slice:
-        // s = u*t + 1/2*a*t^2
-        double nextSliceAltitudeDiff =
-            (currentAltitudeSpeed * nextSliceMicros)
-            + (naiveAcceleration * nextSliceMicros * nextSliceMicros / 2.0);
-        // v = u + a*t
-        double nextSliceAltitudeSpeed =
-            currentAltitudeSpeed + (nextSliceMicros * naiveAcceleration);
-        if ((nextSliceAltitudeSpeed < 0) != (currentAltitudeSpeed < 0)) {
-          // We're about to change directions, which means our stopping distance is within the next
-          // time slice. Disable overshoot protection and choose the naive approach, because
-          // (a) overshoot protection would make us accelerate away from the desired location, and
-          // (b) our speed will at least be in the right direction after we reverse.
-          currentAltitudeAcceleration = naiveAcceleration;
-        } else {
-          // Calculate the stopping distance after the next time slice:
-          // v^2 = u^2 + 2*a*s from https://en.wikipedia.org/wiki/Equations_of_motion
-          // Stopping distance: s = (v^2 - u^2) / 2*a
-          // v = 0, so s = -u^2 / 2*a, and a is negative for deceleration, so:
-          double nextSliceAltitudeStoppingDistanceSteps =
-              nextSliceAltitudeSpeed * nextSliceAltitudeSpeed / (2.0 * MAX_ACCELERATION);
-          // This equation does not tell us the direction that we'll stop in, so:
-          double nextSliceAltitudeStopDiffSteps =
-              (nextSliceAltitudeSpeed > 0 ? 1 : -1) * nextSliceAltitudeStoppingDistanceSteps;
-          double naiveAltitudeStopDiffSteps =
-              nextSliceAltitudeDiff + nextSliceAltitudeStopDiffSteps;
-
-          // We want to accelerate/decelerate based on the direction we're aiming for and whether the
-          // stopping distance is before or after our destination. It turns out that the direction of
-          // acceleration/deceleration cancels out with the orientation of before/after for the
-          // stopping diff. Here are the two cases:
-          // altitudeDiff is positive: accelerate(+) iff naiveAltitudeStopDiffSteps is lower than it.
-          // altitudeDiff is negative: accelerate(-) iff naiveAltitudeStopDiffSteps is higher than it.
-          currentAltitudeAcceleration =
-              (naiveAltitudeStopDiffSteps < altitudeDiff) ? MAX_ACCELERATION : -MAX_ACCELERATION;
-        }
+      // Find the average speed from current to afterNext:
+      double altitudeEndOfSliceSpeedTarget =
+          (altitudeDegreesToSteps(afterNext.getAltitude() - current.getAltitude()))
+          / afterNextSliceStart.deltaMicrosSince(now);
+      // Correct for azimuth rotation, which we always need to match:
+      altitudeEndOfSliceSpeedTarget += convertAzimuthToAltitude(realAzimuthEndOfSliceSpeed);
+      // Speed correction for converging on the correct position:
+      double endAltitudeSteps = altitudeDegreesToSteps(next.getAltitude());
+      double altitudeDiff = endAltitudeSteps - std::round(currentAltitudeSteps);
+      altitudeEndOfSliceSpeedTarget += findSpeedCorrection(altitudeDiff);
+      // Accelerate to match this speed target:
+      // v = u + a*t from https://en.wikipedia.org/wiki/Equations_of_motion
+      // => a = (v - u) / t
+      currentAltitudeAcceleration =
+          (altitudeEndOfSliceSpeedTarget - currentAltitudeSpeed) / nextSliceMicros;
+      if (currentAltitudeAcceleration > MAX_ACCELERATION) {
+        currentAltitudeAcceleration = MAX_ACCELERATION;
+      } else if (currentAltitudeAcceleration < -MAX_ACCELERATION) {
+        currentAltitudeAcceleration = -MAX_ACCELERATION;
       }
     }
   }
