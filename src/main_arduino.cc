@@ -56,6 +56,16 @@ void controlStepperMotors(void *param) {
   }
 }
 
+void waitForTime() {
+  int year = 0;
+  while (year < 2000) {
+    std::time_t time = std::time(nullptr);
+    std::tm *utcTime = std::gmtime(&time);
+    year = utcTime->tm_year + 1900;
+    delay(10);
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
@@ -68,6 +78,9 @@ void setup() {
   wifiManager.setHostname("spacepointer");
   wifiManager.autoConnect("Space Pointer", WIFI_MANAGER_PASSWORD.c_str());
   ota::setUp(1420, OTA_PASSWORD);
+
+  configTime(0, 0, "pool.ntp.org");
+  waitForTime();
 
   directionQueue = std::make_shared<DirectionQueue>();
 
