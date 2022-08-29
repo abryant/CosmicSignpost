@@ -13,9 +13,11 @@
 #include "menu.h"
 #include "space_pointer_menu.h"
 
+#include "cartesian_location.h"
 #include "direction_queue.h"
 #include "stepper_motors.h"
 #include "time_utils.h"
+#include "tracker.h"
 
 #include "ota.h"
 #include "secrets.h"
@@ -40,6 +42,12 @@ const int32_t ENCODER_BUTTON_PIN = 13;
 
 WiFiManager wifiManager;
 std::shared_ptr<Menu> menu;
+Tracker tracker(
+  Location(51.500804, -0.124340, 10),
+  Direction(0, 0),
+  [](int32_t timeMillis) {
+    return CartesianLocation(0, 0, 0, ReferenceFrame::SUN_ECLIPTIC);
+  });
 
 TaskHandle_t motorControlTaskHandle;
 Direction currentDirection;
@@ -116,7 +124,7 @@ void loop() {
   if (!directionQueue->isFull()) {
     lastAddedTime = lastAddedTime.plusMicros(50000);
     int64_t timeMillis = (lastAddedTime.millis / 50) * 50;
-    directionQueue->addDirection(timeMillis, Direction(timeMillis / 100.0, 0));
+    directionQueue->addDirection(timeMillis, tracker.getDirectionAt(timeMillis));
   }
 
   ota::checkForOta();
