@@ -1,11 +1,15 @@
 #include "output_devices.h"
 
+#include <sstream>
+
 #include <Arduino.h>
 #include <Wire.h>
 
 uint8_t OutputDevices::lcdAddress;
 std::string OutputDevices::lastString;
 std::vector<uint8_t> OutputDevices::settings;
+
+uint8_t ROW_OFFSETS[4] = {0x00, 0x40, 0x14, 0x54};
 
 void OutputDevices::initLcd(uint8_t lcdAddress) {
   OutputDevices::lcdAddress = lcdAddress;
@@ -23,11 +27,24 @@ void OutputDevices::display(std::string str) {
   if (str == lastString && settings.size() == 0) {
     return;
   }
+  std::istringstream input(str);
+  std::string line1;
+  std::string line2;
+  std::getline(input, line1);
+  std::getline(input, line2);
   std::vector<uint8_t> data {
     0x7C, // Setting mode
     0x2D  // Clear and home
   };
-  data.insert(data.end(), str.begin(), str.end());
+  data.insert(data.end(), line1.begin(), line1.end());
+  if (line2.length() > 0) {
+    std::vector<uint8_t> changeLine {
+      254, // Special mode
+      (uint8_t) (0x80 | ROW_OFFSETS[1]) // Set cursor position to start of second line.
+    };
+    data.insert(data.end(), changeLine.begin(), changeLine.end());
+    data.insert(data.end(), line2.begin(), line2.end());
+  }
   sendToLcd(data);
   lastString = str;
   if (settings.size() > 0) {
@@ -45,7 +62,6 @@ void OutputDevices::setTwoLines() {
 }
 
 void OutputDevices::setCursor(uint8_t row, uint8_t column) {
-  uint8_t ROW_OFFSETS[4] = {0x00, 0x40, 0x14, 0x54};
   std::vector<uint8_t> cursorSettings = {
     254, // Special mode
     0x08 | 0x04 | 0x02, // Display control: Display on, Cursor on

@@ -2,6 +2,9 @@
 
 #include <memory>
 #include <string>
+#include <sstream>
+#include <iomanip>
+#include <ctime>
 
 #include "Arduino.h"
 #include "WiFi.h"
@@ -18,6 +21,13 @@ std::shared_ptr<Menu> buildSpacePointerMenu(std::function<void(int32_t)> updateA
   std::vector<std::shared_ptr<MenuEntry>> mainEntries = {
     std::make_shared<InfoMenuEntry>("Wireless IP", []() {
       return std::string(WiFi.localIP().toString().c_str());
+    }),
+    std::make_shared<InfoMenuEntry>("Date/Time", []() {
+      std::time_t time = std::time(nullptr);
+      std::tm *utcTime = std::gmtime(&time);
+      std::ostringstream timeStr;
+      timeStr << std::put_time(utcTime, "%Y-%m-%d\n%H:%M:%S");
+      return timeStr.str();
     }),
     std::make_shared<ActionMenuEntry>("Action", []() {
       Serial.println("Action pressed");
