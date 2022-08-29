@@ -20,8 +20,6 @@ class Tracker {
     // Tracked location.
     std::function<CartesianLocation(int64_t)> trackedObject;
 
-    int64_t getCurrentTimeMillis();
-
   public:
     Tracker(
       Location currentLocation,
