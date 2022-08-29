@@ -93,9 +93,8 @@ CartesianLocation CartesianLocation::toFixed(int64_t timeMillis) {
     double days = daysSinceJ2000(timeMillis);
     // From: https://en.wikipedia.org/wiki/Sidereal_time#Earth_rotation_angle
     double earthRotationAngle = 2 * M_PI * (0.779057273264 + (1.00273781191135448 * days));
-    // Use the negative angle, because we want to go backwards from the ECI angle to ECEF
-    double cosAngle = std::cos(-earthRotationAngle);
-    double sinAngle = std::sin(-earthRotationAngle);
+    double cosAngle = std::cos(earthRotationAngle);
+    double sinAngle = std::sin(earthRotationAngle);
 
     return CartesianLocation(
       x * cosAngle - y * sinAngle,

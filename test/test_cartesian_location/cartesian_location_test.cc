@@ -119,20 +119,22 @@ TEST(CartesianLocation, DirectionTowardsSouthEast_FromSouthernHemisphere) {
   EXPECT_DOUBLE_EQ(d.getAltitude(), 0);
 }
 
-TEST(CartesianLocation, EquatorialToFixedAtJ2000) {
-  int64_t timeMillis = J2000_UTC_MILLIS;
+TEST(CartesianLocation, EquatorialToFixedWhenRotationAngleIsZero) {
+  // At 05:17:17.331 after J2000, the Earth Rotation Angle is very close to zero.
+  int64_t timeMillis = J2000_UTC_MILLIS + 19037331;
   CartesianLocation fixed = CartesianLocation(1, 2, 3, ReferenceFrame::EARTH_EQUATORIAL).toFixed(timeMillis);
-  EXPECT_DOUBLE_EQ(fixed.x, 1);
-  EXPECT_DOUBLE_EQ(fixed.y, 2);
+  EXPECT_NEAR(fixed.x, 1, 0.000001);
+  EXPECT_NEAR(fixed.y, 2, 0.000001);
   EXPECT_DOUBLE_EQ(fixed.z, 3);
   EXPECT_EQ(fixed.referenceFrame, ReferenceFrame::EARTH_FIXED);
 }
 
-TEST(CartesianLocation, EquatorialToFixed6HoursAfterJ2000) {
-  int64_t timeMillis = J2000_UTC_MILLIS;
+TEST(CartesianLocation, EquatorialToFixedWhenRotationAngleIs90Degrees) {
+  // At 11:16:18.356 after J2000, the Earth Rotation Angle is very close to 90 degrees.
+  int64_t timeMillis = J2000_UTC_MILLIS + 40578356;
   CartesianLocation fixed = CartesianLocation(1, 2, 3, ReferenceFrame::EARTH_EQUATORIAL).toFixed(timeMillis);
-  EXPECT_DOUBLE_EQ(fixed.x, -2);
-  EXPECT_DOUBLE_EQ(fixed.y, 1);
+  EXPECT_NEAR(fixed.x, -2, 0.000001);
+  EXPECT_NEAR(fixed.y, 1, 0.000001);
   EXPECT_DOUBLE_EQ(fixed.z, 3);
   EXPECT_EQ(fixed.referenceFrame, ReferenceFrame::EARTH_FIXED);
 }
