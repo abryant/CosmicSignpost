@@ -1,7 +1,9 @@
 #ifndef SPACEPOINTER_LIB_SPACEPOINTER_REFERENCE_FRAME_H_
 #define SPACEPOINTER_LIB_SPACEPOINTER_REFERENCE_FRAME_H_
 
-enum ReferenceFrame {
+#include <string>
+
+enum class ReferenceFrame {
   // https://en.wikipedia.org/wiki/Earth-centered,_Earth-fixed_coordinate_system
   EARTH_FIXED,
   // https://en.wikipedia.org/wiki/Equatorial_coordinate_system
@@ -15,5 +17,21 @@ enum ReferenceFrame {
   // (like EARTH_ECLIPTIC, but with the sun as the centre instead of the earth)
   SUN_ECLIPTIC,
 };
+
+inline std::string referenceFrameToString(ReferenceFrame value) {
+  switch (value)
+  {
+  case ReferenceFrame::EARTH_FIXED:
+    return "EARTH_FIXED";
+  case ReferenceFrame::EARTH_EQUATORIAL:
+    return "EARTH_EQUATORIAL";
+  case ReferenceFrame::EARTH_ECLIPTIC:
+    return "EARTH_ECLIPTIC";
+  case ReferenceFrame::SUN_ECLIPTIC:
+    return "SUN_ECLIPTIC";
+  default:
+    return "Unknown ReferenceFrame";
+  }
+}
 
 #endif

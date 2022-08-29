@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <cstdint>
+#include <sstream>
 
 #include "angle_utils.h"
 #include "direction.h"
@@ -123,9 +124,9 @@ CartesianLocation CartesianLocation::toFixed(int64_t timeMillis) {
     CartesianLocation earthMoonBarycentreLocationFromEarth =
         MoonOrbit::earthMoonBarycentreAt(timeMillis);
     return CartesianLocation(
-      earthMoonBarycentreLocationFromEarth.x - earthMoonBarycentreLocationFromSun.x,
-      earthMoonBarycentreLocationFromEarth.y - earthMoonBarycentreLocationFromSun.y,
-      earthMoonBarycentreLocationFromEarth.z - earthMoonBarycentreLocationFromSun.z,
+      earthMoonBarycentreLocationFromEarth.x - earthMoonBarycentreLocationFromSun.x + x,
+      earthMoonBarycentreLocationFromEarth.y - earthMoonBarycentreLocationFromSun.y + y,
+      earthMoonBarycentreLocationFromEarth.z - earthMoonBarycentreLocationFromSun.z + z,
       ReferenceFrame::EARTH_ECLIPTIC
     ).toFixed(timeMillis);
   }
@@ -133,4 +134,10 @@ CartesianLocation CartesianLocation::toFixed(int64_t timeMillis) {
   failWithError("Unknown reference frame");
   // unreachable
   return *this;
+}
+
+std::string CartesianLocation::toString() {
+  std::ostringstream ss;
+  ss << "[" << x << ", " << y << ", " << z << " in " << referenceFrameToString(referenceFrame) << "]";
+  return ss.str();
 }

@@ -28,6 +28,8 @@ class CartesianLocation {
     Direction directionTowards(CartesianLocation other, Vector up);
 
     CartesianLocation toFixed(int64_t timeMillis);
+
+    std::string toString();
 };
 
 #endif

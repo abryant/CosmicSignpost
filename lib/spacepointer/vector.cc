@@ -1,6 +1,7 @@
 #include "vector.h"
 
 #include <cmath>
+#include <sstream>
 
 Vector::Vector(double x, double y, double z) {
   this->x = x;
@@ -62,4 +63,10 @@ Vector Vector::operator-(Vector other) {
     y - other.y,
     z - other.z
   );
+}
+
+std::string Vector::toString() const {
+  std::ostringstream ss;
+  ss << "[" << x << ", " << y << ", " << z << "]";
+  return ss.str();
 }

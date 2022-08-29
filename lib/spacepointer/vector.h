@@ -1,6 +1,8 @@
 #ifndef SPACEPOINTER_LIB_SPACEPOINTER_VECTOR_H_
 #define SPACEPOINTER_LIB_SPACEPOINTER_VECTOR_H_
 
+#include <string>
+
 class Vector {
   private:
     double x;
@@ -19,6 +21,7 @@ class Vector {
     double getZ();
     Vector operator+(Vector other);
     Vector operator-(Vector other);
+    std::string toString() const;
 };
 
 #endif
