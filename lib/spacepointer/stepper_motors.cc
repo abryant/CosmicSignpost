@@ -3,7 +3,10 @@
 #include <cmath>
 #include <memory>
 
-#include "Arduino.h"
+#ifdef ARDUINO
+#include <Arduino.h>
+#endif
+
 #include <sys/time.h>
 
 #include "angle_utils.h"
@@ -24,10 +27,12 @@ StepperMotors::StepperMotors(
       azimuthDirectionPin(azimuthDirectionPin),
       altitudeStepPin(altitudeStepPin),
       altitudeDirectionPin(altitudeDirectionPin) {
+#ifdef ARDUINO
   pinMode(azimuthStepPin, OUTPUT);
   pinMode(azimuthDirectionPin, OUTPUT);
   pinMode(altitudeStepPin, OUTPUT);
   pinMode(altitudeDirectionPin, OUTPUT);
+#endif
 }
 
 Direction StepperMotors::getDirectionAt(int64_t timeMillis) {
@@ -239,17 +244,21 @@ void StepperMotors::control() {
 }
 
 void StepperMotors::stepAzimuth(bool clockwise) {
+#ifdef ARDUINO
   digitalWrite(azimuthDirectionPin, clockwise);
   delayMicroseconds(2);
   digitalWrite(azimuthStepPin, HIGH);
   delayMicroseconds(2);
   digitalWrite(azimuthStepPin, LOW);
+#endif
 }
 
 void StepperMotors::stepAltitude(bool north) {
+#ifdef ARDUINO
   digitalWrite(altitudeDirectionPin, north);
   delayMicroseconds(2);
   digitalWrite(altitudeStepPin, HIGH);
   delayMicroseconds(2);
   digitalWrite(altitudeStepPin, LOW);
+#endif
 }
