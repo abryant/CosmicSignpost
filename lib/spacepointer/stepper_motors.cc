@@ -143,6 +143,7 @@ void StepperMotors::control() {
     double currentAzimuthSpeed = sliceStartAzimuthSpeed + (currentAzimuthAcceleration * timeDeltaMicros);
     double currentAltitudeSpeed = sliceStartAltitudeSpeed + (currentAltitudeAcceleration * timeDeltaMicros);
     // If the speed is so low that the time until the next step overflows an int32, don't step.
+    // (this corresponds to around one step every 35 minutes)
     if (((double) INT32_MAX) * std::abs(currentAzimuthSpeed) > 1.0) {
       // Find the next azimuth step time based on the current speed (after current acceleration).
       TimeMillisMicros nextAzimuthStepTime =
@@ -158,6 +159,7 @@ void StepperMotors::control() {
       }
     }
     // If the speed is so low that the time until the next step overflows an int32, don't step.
+    // (this corresponds to around one step every 35 minutes)
     if (((double) INT32_MAX) * std::abs(currentAltitudeSpeed) > 1.0) {
       // Find the next altitude step time based on the current speed (after current acceleration).
       TimeMillisMicros nextAltitudeStepTime =
@@ -169,7 +171,6 @@ void StepperMotors::control() {
         lastAltitudeStepTime = now;
       }
     }
-
 
     if (now >= nextSliceStart) {
       sliceStart = now;
