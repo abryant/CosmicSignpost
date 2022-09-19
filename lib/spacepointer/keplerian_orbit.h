@@ -21,19 +21,6 @@ namespace KeplerianOrbit {
     double longitudeOfAscendingNodeRadians,
     double argumentOfPeriapsisRadians,
     double meanAnomalyRadians);
-
-  // Finds the position of a given object in its orbit, given the orbital parameters,
-  // in an inertial reference frame.
-  CartesianLocation findPosition(
-    int64_t timeMillis,
-    ReferenceFrame referenceFrame,
-    double semiMajorAxisMetres,
-    double eccentricity,
-    double inclinationRadians,
-    double longitudeOfAscendingNodeRadians,
-    double argumentOfPeriapsisRadians,
-    double meanAnomalyJ2000Radians,
-    double periodJulianDays);
 };
 
 #endif
