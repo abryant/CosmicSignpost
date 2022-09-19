@@ -17,6 +17,9 @@ class Quaternion {
     Vector rotate(Vector v);
     Quaternion conjugate();
     Quaternion operator*(Quaternion other);
+    static Quaternion rotateX(double angleRadians);
+    static Quaternion rotateY(double angleRadians);
+    static Quaternion rotateZ(double angleRadians);
 };
 
 #endif

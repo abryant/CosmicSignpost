@@ -13,9 +13,10 @@ Quaternion::Quaternion(double angleRadians, Vector axis) {
   double halfAngleRadians = angleRadians / 2.0;
   axis = axis.normalized();
   this->a = std::cos(halfAngleRadians);
-  this->b = axis.getX() * std::sin(halfAngleRadians);
-  this->c = axis.getY() * std::sin(halfAngleRadians);
-  this->d = axis.getZ() * std::sin(halfAngleRadians);
+  double sinHalfAngle = std::sin(halfAngleRadians);
+  this->b = axis.getX() * sinHalfAngle;
+  this->c = axis.getY() * sinHalfAngle;
+  this->d = axis.getZ() * sinHalfAngle;
 }
 
 Vector Quaternion::rotate(Vector v) {
@@ -35,4 +36,16 @@ Quaternion Quaternion::operator*(Quaternion other) {
     a * other.c - b * other.d + c * other.a + d * other.b,
     a * other.d + b * other.c - c * other.b + d * other.a
   );
+}
+
+Quaternion Quaternion::rotateX(double angleRadians) {
+  return Quaternion(angleRadians, Vector(1, 0, 0));
+}
+
+Quaternion Quaternion::rotateY(double angleRadians) {
+  return Quaternion(angleRadians, Vector(0, 1, 0));
+}
+
+Quaternion Quaternion::rotateZ(double angleRadians) {
+  return Quaternion(angleRadians, Vector(0, 0, 1));
 }
