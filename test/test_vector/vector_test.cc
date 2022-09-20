@@ -40,12 +40,16 @@ TEST(Vector, AngleRadians) {
   EXPECT_DOUBLE_EQ(Vector(2, 0, 0).angleRadians(Vector(0, 0, 5)), M_PI / 2);
   EXPECT_DOUBLE_EQ(Vector(0, -1, 0).angleRadians(Vector(1, 0, 0)), M_PI / 2);
   EXPECT_DOUBLE_EQ(Vector(1, 1, 0).angleRadians(Vector(1, 0, 0)), M_PI / 4);
+  EXPECT_DOUBLE_EQ(Vector(1, 0, 0).angleRadians(Vector(-1, -1, 0)), 3 * M_PI / 4);
+  EXPECT_DOUBLE_EQ(Vector(0, 0, -1).angleRadians(Vector(0, 1, 1)), 3 * M_PI / 4);
 }
 
 TEST(Vector, AngleDegrees) {
   EXPECT_DOUBLE_EQ(Vector(2, 0, 0).angleDegrees(Vector(0, 0, 5)), 90.0);
   EXPECT_DOUBLE_EQ(Vector(0, -1, 0).angleDegrees(Vector(1, 0, 0)), 90.0);
   EXPECT_DOUBLE_EQ(Vector(1, 1, 0).angleDegrees(Vector(1, 0, 0)), 45.0);
+  EXPECT_DOUBLE_EQ(Vector(1, 0, 0).angleDegrees(Vector(-1, -1, 0)), 135.0);
+  EXPECT_DOUBLE_EQ(Vector(0, 0, -1).angleDegrees(Vector(0, 1, 1)), 135.0);
 }
 
 TEST(Vector, Add) {
