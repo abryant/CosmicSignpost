@@ -3,7 +3,7 @@
 
 #include "cartesian_location.h"
 
-const double DEFAULT_CARTESIAN_RANGE = 1e200;
+const double DEFAULT_CARTESIAN_RANGE = 1e100;
 
 class EquatorialLocation {
   private:
