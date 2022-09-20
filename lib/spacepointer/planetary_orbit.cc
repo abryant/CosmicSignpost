@@ -46,22 +46,6 @@ PlanetaryOrbit::PlanetaryOrbit(
   this->fFrequencyMultiplier = degreesToRadians(fFrequencyMultiplier);
 }
 
-double PlanetaryOrbit::findEccentricAnomaly(double meanAnomaly, double eccentricity) const {
-  // Solve Kepler's equation using the Newton-Raphson method.
-  double eccentricAnomaly = meanAnomaly + (eccentricity * std::sin(meanAnomaly));
-  double deltaE;
-  do {
-    // F(En) = M - En + e * sin(En)
-    double fE = meanAnomaly - eccentricAnomaly + (eccentricity * std::sin(eccentricAnomaly));
-    // F'(En) = -1 + e * cos(En)
-    double fPrimeE = -1.0 + eccentricity * std::cos(eccentricAnomaly);
-    // En+1 = En - F(En) / F'(En)
-    deltaE = fE / fPrimeE;
-    eccentricAnomaly = eccentricAnomaly - deltaE;
-  } while (std::abs(deltaE) < 1e-6);
-  return eccentricAnomaly;
-}
-
 CartesianLocation PlanetaryOrbit::toCartesian(long timeMillis) const {
   // Steps taken from: https://ssd.jpl.nasa.gov/planets/approx_pos.html
   long timeSinceJ2000Millis = timeMillis - J2000_UTC_MILLIS;

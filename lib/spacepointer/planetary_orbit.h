@@ -25,9 +25,6 @@ class PlanetaryOrbit {
     double sSineCoefficient; // radians
     double fFrequencyMultiplier; // radians per century
 
-    // Finds the eccentric anomaly in radians, given mean anomaly in radians.
-    double findEccentricAnomaly(double meanAnomalyRadians, double eccentricity) const;
-
   public:
     PlanetaryOrbit(
         double semiMajorAxisAuJ2000,
