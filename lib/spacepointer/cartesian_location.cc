@@ -16,16 +16,16 @@
 
 const double EARTH_AXIAL_TILT_DEGREES = 23.43929111;
 
-CartesianLocation::CartesianLocation(double x, double y, double z, ReferenceFrame referenceFrame)
-  : x(x), y(y), z(z), referenceFrame(referenceFrame) {}
+CartesianLocation::CartesianLocation(Vector position, ReferenceFrame referenceFrame)
+  : position(position), referenceFrame(referenceFrame) {}
 
-CartesianLocation CartesianLocation::fixed(double x, double y, double z) {
-  return CartesianLocation(x, y, z, ReferenceFrame::EARTH_FIXED);
+CartesianLocation CartesianLocation::fixed(Vector position) {
+  return CartesianLocation(position, ReferenceFrame::EARTH_FIXED);
 }
 
 Vector CartesianLocation::towards(CartesianLocation other) {
   checkArgument(referenceFrame == other.referenceFrame, "mismatched reference frames");
-  return Vector(other.x - x, other.y - y, other.z - z).normalized();
+  return (other.position - position).normalized();
 }
 
 Direction CartesianLocation::directionTowards(CartesianLocation other, Vector up) {
@@ -105,9 +105,7 @@ CartesianLocation CartesianLocation::toFixed(int64_t timeMillis) {
     CartesianLocation earthMoonBarycentreLocationFromEarth =
         MoonOrbit::earthMoonBarycentreAt(timeMillis);
     return CartesianLocation(
-      earthMoonBarycentreLocationFromEarth.x - earthMoonBarycentreLocationFromSun.x + x,
-      earthMoonBarycentreLocationFromEarth.y - earthMoonBarycentreLocationFromSun.y + y,
-      earthMoonBarycentreLocationFromEarth.z - earthMoonBarycentreLocationFromSun.z + z,
+      earthMoonBarycentreLocationFromEarth.position - earthMoonBarycentreLocationFromSun.position + position,
       ReferenceFrame::EARTH_ECLIPTIC
     ).toFixed(timeMillis);
   }
@@ -119,6 +117,6 @@ CartesianLocation CartesianLocation::toFixed(int64_t timeMillis) {
 
 std::string CartesianLocation::toString() {
   std::ostringstream ss;
-  ss << "[" << x << ", " << y << ", " << z << " in " << referenceFrameToString(referenceFrame) << "]";
+  ss << "[" << position.toString() << " in " << referenceFrameToString(referenceFrame) << "]";
   return ss.str();
 }

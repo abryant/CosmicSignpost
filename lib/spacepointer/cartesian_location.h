@@ -9,20 +9,12 @@
 
 class CartesianLocation {
   public:
-    // X coordinate in metres.
-    // The X axis points towards the prime meridian at the equator.
-    const double x;
-    // Y coordinate in metres.
-    // The Y axis points towards 90 degrees east of the prime meridian at the equator.
-    const double y;
-    // Z coordinate in metres.
-    // The Z axis points towards the north pole.
-    const double z;
-
+    // X,Y,Z coordinates in metres. The meanings of X, Y, and Z depend on the reference frame.
+    const Vector position;
     const ReferenceFrame referenceFrame;
 
-    CartesianLocation(double x, double y, double z, ReferenceFrame referenceFrame);
-    static CartesianLocation fixed(double x, double y, double z);
+    CartesianLocation(Vector position, ReferenceFrame referenceFrame);
+    static CartesianLocation fixed(Vector position);
 
     Vector towards(CartesianLocation other);
     Direction directionTowards(CartesianLocation other, Vector up);

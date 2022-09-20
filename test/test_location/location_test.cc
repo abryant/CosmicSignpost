@@ -39,49 +39,49 @@ TEST(Location, Create_WrapLongitudeBackwards) {
 TEST(Location, GetCartesianAtEquator) {
   Location loc = Location(0, 0, 0);
   CartesianLocation c = loc.getCartesian();
-  EXPECT_NEAR(c.x, 6378137, EPSILON);
-  EXPECT_NEAR(c.y, 0, EPSILON);
-  EXPECT_NEAR(c.z, 0, EPSILON);
+  EXPECT_NEAR(c.position.getX(), 6378137, EPSILON);
+  EXPECT_NEAR(c.position.getY(), 0, EPSILON);
+  EXPECT_NEAR(c.position.getZ(), 0, EPSILON);
 }
 
 TEST(Location, GetCartesianAtEquator_NonZeroLongitude) {
   Location loc = Location(0, 90, 0);
   CartesianLocation c = loc.getCartesian();
-  EXPECT_NEAR(c.x, 0, EPSILON);
-  EXPECT_NEAR(c.y, 6378137, EPSILON);
-  EXPECT_NEAR(c.z, 0, EPSILON);
+  EXPECT_NEAR(c.position.getX(), 0, EPSILON);
+  EXPECT_NEAR(c.position.getY(), 6378137, EPSILON);
+  EXPECT_NEAR(c.position.getZ(), 0, EPSILON);
 }
 
 TEST(Location, GetCartesianAtNorthPole) {
   Location loc = Location(90, 0, 0);
   CartesianLocation c = loc.getCartesian();
-  EXPECT_NEAR(c.x, 0, EPSILON);
-  EXPECT_NEAR(c.y, 0, EPSILON);
-  EXPECT_NEAR(c.z, 6356752.314, EPSILON);
+  EXPECT_NEAR(c.position.getX(), 0, EPSILON);
+  EXPECT_NEAR(c.position.getY(), 0, EPSILON);
+  EXPECT_NEAR(c.position.getZ(), 6356752.314, EPSILON);
 }
 
 TEST(Location, GetCartesianAt45Degrees) {
   Location loc = Location(45, 0, 0);
   CartesianLocation c = loc.getCartesian();
-  EXPECT_NEAR(c.x, 4517590.8789357608, EPSILON);
-  EXPECT_NEAR(c.y, 0, EPSILON);
-  EXPECT_NEAR(c.z, 4487348.4086060142, EPSILON);
+  EXPECT_NEAR(c.position.getX(), 4517590.8789357608, EPSILON);
+  EXPECT_NEAR(c.position.getY(), 0, EPSILON);
+  EXPECT_NEAR(c.position.getZ(), 4487348.4086060142, EPSILON);
 }
 
 TEST(Location, GetCartesian_AllPositive) {
   Location loc = Location(5, 10, 1234);
   CartesianLocation c = loc.getCartesian();
-  EXPECT_NEAR(c.x, 6258706.4889101423, EPSILON);
-  EXPECT_NEAR(c.y, 1103578.8183300032, EPSILON);
-  EXPECT_NEAR(c.z, 552291.5101718856, EPSILON);
+  EXPECT_NEAR(c.position.getX(), 6258706.4889101423, EPSILON);
+  EXPECT_NEAR(c.position.getY(), 1103578.8183300032, EPSILON);
+  EXPECT_NEAR(c.position.getZ(), 552291.5101718856, EPSILON);
 }
 
 TEST(Location, GetCartesian_AllNegative) {
   Location loc = Location(-85, -165, -1234);
   CartesianLocation c = loc.getCartesian();
-  EXPECT_NEAR(c.x, -538638.40358762501, EPSILON);
-  EXPECT_NEAR(c.y, -144327.72525369341, EPSILON);
-  EXPECT_NEAR(c.z, -6331171.5594826229, EPSILON);
+  EXPECT_NEAR(c.position.getX(), -538638.40358762501, EPSILON);
+  EXPECT_NEAR(c.position.getY(), -144327.72525369341, EPSILON);
+  EXPECT_NEAR(c.position.getZ(), -6331171.5594826229, EPSILON);
 }
 
 TEST(Location, GetNormal_X) {

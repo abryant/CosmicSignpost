@@ -15,7 +15,7 @@ const std::map<std::string, std::function<CartesianLocation(int64_t)>> TRACKABLE
   {"GPS 0,0", [](int64_t timeMillis) { return Location(0.0, 0.0, 0).getCartesian(); }},
   {"Polaris", [](int64_t timeMillis) { return EquatorialLocation(37.9500, 89.2642).farCartesian(); }},
   {"Ursa Major", [](int64_t timeMillis) { return EquatorialLocation(160.05, 55.38).farCartesian(); }},
-  {"Sun", [](int64_t timeMillis) { return CartesianLocation(0, 0, 0, ReferenceFrame::SUN_ECLIPTIC); }},
+  {"Sun", [](int64_t timeMillis) { return CartesianLocation(Vector(0, 0, 0), ReferenceFrame::SUN_ECLIPTIC); }},
   {"Moon", [](int64_t timeMillis) { return MoonOrbit::positionAt(timeMillis); }},
   {"Mercury", [](int64_t timeMillis) { return PlanetaryOrbit::MERCURY.toCartesian(timeMillis); }},
   {"Venus", [](int64_t timeMillis) { return PlanetaryOrbit::VENUS.toCartesian(timeMillis); }},

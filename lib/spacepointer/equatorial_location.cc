@@ -12,5 +12,5 @@ EquatorialLocation::EquatorialLocation(double rightAscension, double declination
 
 CartesianLocation EquatorialLocation::farCartesian(double range) {
   CartesianLocation fixed = Location(declination, rightAscension, range).getCartesian();
-  return CartesianLocation(fixed.x, fixed.y, fixed.z, ReferenceFrame::EARTH_EQUATORIAL);
+  return CartesianLocation(fixed.position, ReferenceFrame::EARTH_EQUATORIAL);
 }

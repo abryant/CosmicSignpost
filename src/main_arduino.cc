@@ -15,9 +15,12 @@
 
 #include "cartesian_location.h"
 #include "direction_queue.h"
+#include "equatorial_location.h"
+#include "moon_orbit.h"
 #include "stepper_motors.h"
 #include "time_utils.h"
 #include "tracker.h"
+#include "vector.h"
 
 #include "ota.h"
 #include "secrets.h"
@@ -46,7 +49,7 @@ Tracker tracker(
   Location(51.500804, -0.124340, 10),
   Direction(0, 0),
   [](int32_t timeMillis) {
-    return CartesianLocation(0, 0, 0, ReferenceFrame::SUN_ECLIPTIC);
+    return CartesianLocation(Vector(6378000, 0, 0), ReferenceFrame::EARTH_FIXED);
   });
 
 TaskHandle_t motorControlTaskHandle;

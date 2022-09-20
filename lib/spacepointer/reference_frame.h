@@ -5,16 +5,22 @@
 
 enum class ReferenceFrame {
   // https://en.wikipedia.org/wiki/Earth-centered,_Earth-fixed_coordinate_system
+  // X axis: always towards the prime meridian at the equator (rotating, not inertial)
+  // Z axis: towards the north pole
+  // Y axis: towards 90 degrees east at the equator
   EARTH_FIXED,
   // https://en.wikipedia.org/wiki/Equatorial_coordinate_system
-  // (like EARTH_FIXED, but with a rotating primary direction based on J2000.0 instead of the prime
-  // meridian)
+  // X axis: towards the vernal equinox at J2000
+  // Z axis: towards the north pole
+  // Y axis: such that Z = X cross Y (right handed coordinate system)
   EARTH_EQUATORIAL,
   // https://en.wikipedia.org/wiki/Ecliptic_coordinate_system
-  // (like EARTH_EQUATORIAL, but with the plane of the ecliptic instead of the equator)
+  // X axis: towards the vernal equinox at J2000 (like EARTH_EQUATORIAL)
+  // Z axis: perpendicular to the earth's orbital plane, in the same general direction as the equatorial Z axis
+  // Y axis: on the earth's orbital plane, such that Z = X cross Y (right handed coordinate system)
   EARTH_ECLIPTIC,
   // https://en.wikipedia.org/wiki/Ecliptic_coordinate_system
-  // (like EARTH_ECLIPTIC, but with the sun as the centre instead of the earth)
+  // Axes are the same as EARTH_ECLIPTIC, but centred on the Solar System Barycentre.
   SUN_ECLIPTIC,
 };
 
