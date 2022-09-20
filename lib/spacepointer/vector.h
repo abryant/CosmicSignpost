@@ -11,16 +11,17 @@ class Vector {
 
   public:
     Vector(double x, double y, double z);
-    Vector normalized();
-    double dotProduct(Vector other);
-    Vector crossProduct(Vector other);
-    double angleRadians(Vector other);
-    double angleDegrees(Vector other);
-    double getX();
-    double getY();
-    double getZ();
-    Vector operator+(Vector other);
-    Vector operator-(Vector other);
+    Vector normalized() const;
+    double dotProduct(Vector other) const;
+    Vector crossProduct(Vector other) const;
+    double angleRadians(Vector other) const;
+    double angleDegrees(Vector other) const;
+    double getX() const;
+    double getY() const;
+    double getZ() const;
+    Vector operator+(Vector other) const;
+    Vector operator-(Vector other) const;
+    Vector operator*(double scale) const;
     std::string toString() const;
 };
 

@@ -9,7 +9,7 @@ Vector::Vector(double x, double y, double z) {
   this->z = z;
 }
 
-Vector Vector::normalized() {
+Vector Vector::normalized() const {
   double length = std::sqrt((x * x) + (y * y) + (z * z));
   if (length == 0) {
     return Vector(x, y, z);
@@ -17,19 +17,19 @@ Vector Vector::normalized() {
   return Vector(x / length, y / length, z / length);
 }
 
-double Vector::dotProduct(Vector other) {
+double Vector::dotProduct(Vector other) const {
   return (x * other.x) + (y * other.y) + (z * other.z);
 }
 
-double Vector::angleRadians(Vector other) {
+double Vector::angleRadians(Vector other) const {
   return std::acos(normalized().dotProduct(other.normalized()));
 }
 
-double Vector::angleDegrees(Vector other) {
+double Vector::angleDegrees(Vector other) const {
   return angleRadians(other) * 180.0 / M_PI;
 }
 
-Vector Vector::crossProduct(Vector other) {
+Vector Vector::crossProduct(Vector other) const {
   return Vector(
     y * other.z - z * other.y,
     z * other.x - x * other.z,
@@ -37,19 +37,19 @@ Vector Vector::crossProduct(Vector other) {
   );
 }
 
-double Vector::getX() {
+double Vector::getX() const {
   return x;
 }
 
-double Vector::getY() {
+double Vector::getY() const {
   return y;
 }
 
-double Vector::getZ() {
+double Vector::getZ() const {
   return z;
 }
 
-Vector Vector::operator+(Vector other) {
+Vector Vector::operator+(Vector other) const {
   return Vector(
     x + other.x,
     y + other.y,
@@ -57,11 +57,19 @@ Vector Vector::operator+(Vector other) {
   );
 }
 
-Vector Vector::operator-(Vector other) {
+Vector Vector::operator-(Vector other) const {
   return Vector(
     x - other.x,
     y - other.y,
     z - other.z
+  );
+}
+
+Vector Vector::operator*(double scale) const {
+  return Vector(
+    x * scale,
+    y * scale,
+    z * scale
   );
 }
 
