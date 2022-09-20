@@ -6,6 +6,7 @@
 
 #include "angle_utils.h"
 #include "direction.h"
+#include "earth_rotation.h"
 #include "error_utils.h"
 #include "moon_orbit.h"
 #include "planetary_orbit.h"
@@ -13,7 +14,7 @@
 #include "time_utils.h"
 #include "vector.h"
 
-const double EARTH_AXIAL_TILT_DEGREES = 23.43928;
+const double EARTH_AXIAL_TILT_DEGREES = 23.43929111;
 
 CartesianLocation::CartesianLocation(double x, double y, double z, ReferenceFrame referenceFrame)
   : x(x), y(y), z(z), referenceFrame(referenceFrame) {}
@@ -86,35 +87,16 @@ CartesianLocation CartesianLocation::toFixed(int64_t timeMillis) {
   }
 
   if (referenceFrame == ReferenceFrame::EARTH_EQUATORIAL) {
-    // Note that this is only an approximation of the correct rotation, because
-    // EARTH_EQUATORIAL (ECI)'s axis is not quite aligned with EARTH_FIXED (ECEF)'s axis
-    // over time due to the precession and nutation of the earth's axis.
-    // See https://space.stackexchange.com/questions/38807/transform-eci-to-ecef
-    double days = daysSinceJ2000(timeMillis);
-    // From: https://en.wikipedia.org/wiki/Sidereal_time#Earth_rotation_angle
-    double earthRotationAngle = 2 * M_PI * (0.779057273264 + (1.00273781191135448 * days));
-    double cosAngle = std::cos(earthRotationAngle);
-    double sinAngle = std::sin(earthRotationAngle);
-
-    return CartesianLocation(
-      x * cosAngle - y * sinAngle,
-      x * sinAngle + y * cosAngle,
-      z,
-      ReferenceFrame::EARTH_FIXED
-    );
+    Vector fixedPos = EarthRotation::earthEquatorialToEarthFixed(position, timeMillis);
+    return CartesianLocation(fixedPos, ReferenceFrame::EARTH_FIXED);
   }
 
   if (referenceFrame == ReferenceFrame::EARTH_ECLIPTIC) {
     // Convert to EARTH_EQUATORIAL first.
     double axialTiltRadians = degreesToRadians(EARTH_AXIAL_TILT_DEGREES);
-    double sinAngle = std::sin(axialTiltRadians);
-    double cosAngle = std::cos(axialTiltRadians);
-    return CartesianLocation(
-      x,
-      y * cosAngle - z * sinAngle,
-      y * sinAngle + z * cosAngle,
-      ReferenceFrame::EARTH_EQUATORIAL
-    ).toFixed(timeMillis);
+    Quaternion axialTiltRotation = Quaternion::rotateX(axialTiltRadians);
+    Vector tiltedPos = axialTiltRotation.rotate(position);
+    return CartesianLocation(tiltedPos, ReferenceFrame::EARTH_EQUATORIAL).toFixed(timeMillis);
   }
 
   if (referenceFrame == ReferenceFrame::SUN_ECLIPTIC) {
