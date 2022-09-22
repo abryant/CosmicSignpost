@@ -66,4 +66,16 @@ TEST(Vector, Subtract) {
   EXPECT_DOUBLE_EQ(v.getZ(), 3.0);
 }
 
+TEST(Vector, MultiplyDouble) {
+  Vector v = Vector(2, 4, 8) * 3;
+  EXPECT_DOUBLE_EQ(v.getX(), 6.0);
+  EXPECT_DOUBLE_EQ(v.getY(), 12.0);
+  EXPECT_DOUBLE_EQ(v.getZ(), 24.0);
+}
+
+TEST(Vector, Length) {
+  EXPECT_DOUBLE_EQ(Vector(2, 3, 6).getLength(), 7.0);
+  EXPECT_DOUBLE_EQ(Vector(9, 6, 2).getLength(), 11.0);
+}
+
 #include "test_runner.inc"
