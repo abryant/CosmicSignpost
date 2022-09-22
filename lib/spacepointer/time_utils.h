@@ -9,9 +9,15 @@ const int64_t J2000_UTC_MILLIS = 946727935816;
 // January 1, 2000, 12:00:00.000 UTC
 const int64_t JANUARY_1_2000_12PM_UTC_MILLIS = 946728000000;
 
+// January 1, 2000, 00:00:00.000 UTC
+const int64_t JANUARY_1_2000_MIDNIGHT_UTC_MILLIS = 946684800000;
+
 double daysSinceJ2000(int64_t unixTimeMillis);
 
 double millisToJulianDays(int64_t milliseconds);
+
+int64_t unixTimeToApproxUt1(int64_t unixTimeMillis);
+int64_t approxUt1ToUnixTime(int64_t timeUt1Millis);
 
 class TimeMillisMicros {
   public:

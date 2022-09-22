@@ -96,17 +96,12 @@ Vector EarthRotation::applySiderealRotation(
     long timeUtcMillis) {
   // Account for the earth's rotation using Greenwich Mean Sidereal Time.
   // See https://gssc.esa.int/navipedia/index.php/CEP_to_ITRF
-  // Note that Greenwich Mean Sidereal Time is defined in terms of UT1 and not UTC.
-  // We can live with this approximation because UTC is adjusted using leap seconds to be less
-  // than 0.9s away from UT1. However, this does mean that we need to account for leap seconds
-  // when converting between the two, because while UT1 is monotonically increasing, it does
-  // not use standard SI seconds, and subtracting two UTC times from each other requires
-  // accounting for leap seconds.
-  // TODO: maybe update this to use the IETF leap second file.
-  const int LEAP_SECONDS_SINCE_2000_MILLIS = 5000;
+  // Greenwich Mean Sidereal Time is defined in terms of UT1 and not UTC. It's easy to find an
+  // approximate value for UT1, because UTC is adjusted using leap seconds to be less than 0.9s
+  // away from UT1, but it's much more difficult to find it exactly. For this use-case, we can live
+  // with the approximation.
   double ut1JulianDays =
-      millisToJulianDays(
-        timeUtcMillis + LEAP_SECONDS_SINCE_2000_MILLIS - JANUARY_1_2000_12PM_UTC_MILLIS);
+      millisToJulianDays(unixTimeToApproxUt1(timeUtcMillis - JANUARY_1_2000_MIDNIGHT_UTC_MILLIS));
   double tu = ut1JulianDays / 36525;
   double gmst0 =
           (6 + (41.0/60)

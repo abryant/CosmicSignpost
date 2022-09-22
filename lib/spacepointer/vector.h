@@ -19,6 +19,7 @@ class Vector {
     double getX() const;
     double getY() const;
     double getZ() const;
+    double getLength() const;
     Vector operator+(Vector other) const;
     Vector operator-(Vector other) const;
     Vector operator*(double scale) const;

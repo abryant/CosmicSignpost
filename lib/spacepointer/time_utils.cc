@@ -13,6 +13,22 @@ double millisToJulianDays(int64_t milliseconds) {
   return milliseconds / 1000.0 / 60.0 / 60.0 / 24.0;
 }
 
+// UT1 is monotonically increasing, but it does not use standard SI seconds.
+// Unix times are measured in UTC SI seconds/milliseconds, but do not account for leap seconds.
+// UTC is adjusted using leap seconds to be less than 0.9s away from UT1.
+// We don't have a good way to convert exactly between UT1 and Unix time, but we can convert to
+// within 0.9 seconds using the rules above, by accounting for leap seconds correctly.
+// TODO: maybe update this to use the IETF leap second file.
+const int LEAP_SECONDS_SINCE_2000_MILLIS = 5000;
+
+int64_t unixTimeToApproxUt1(int64_t unixTimeMillis) {
+  return unixTimeMillis + LEAP_SECONDS_SINCE_2000_MILLIS;
+}
+
+int64_t approxUt1ToUnixTime(int64_t timeUt1Millis) {
+  return timeUt1Millis - LEAP_SECONDS_SINCE_2000_MILLIS;
+}
+
 TimeMillisMicros::TimeMillisMicros()
     : millis(0), micros(0) {}
 

@@ -10,7 +10,7 @@ Vector::Vector(double x, double y, double z) {
 }
 
 Vector Vector::normalized() const {
-  double length = std::sqrt((x * x) + (y * y) + (z * z));
+  double length = getLength();
   if (length == 0) {
     return Vector(x, y, z);
   }
@@ -47,6 +47,10 @@ double Vector::getY() const {
 
 double Vector::getZ() const {
   return z;
+}
+
+double Vector::getLength() const {
+  return std::sqrt((x * x) + (y * y) + (z * z));
 }
 
 Vector Vector::operator+(Vector other) const {
