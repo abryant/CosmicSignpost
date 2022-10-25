@@ -78,14 +78,13 @@ TEST(EarthRotation, ApplySiderealRotation_AtJ2000) {
   int64_t timeUtcMillis = approxUt1ToUnixTime(JANUARY_1_2000_12PM_UTC_MILLIS);
   std::pair<double, double> deltaPsiAndDeltaEpsilon = EarthRotation::getDeltaPsiAndDeltaEpsilon(0.0);
   Vector result = EarthRotation::applySiderealRotation(Vector(1, 2, 3), deltaPsiAndDeltaEpsilon, timeUtcMillis);
-  EXPECT_NEAR(result.getX(), -1.76, 0.01);
-  EXPECT_NEAR(result.getY(), 1.38, 0.01);
+  EXPECT_NEAR(result.getX(), -1.77, 0.01);
+  EXPECT_NEAR(result.getY(), 1.36, 0.01);
   EXPECT_NEAR(result.getZ(), 3, 0.01);
 }
 
 TEST(EarthRotation, ApplySiderealRotation_WhenRotationIsZero) {
-  // The prime meridian and equinox are aligned 0.277537528 days before midnight on 1st January 2000.
-  int64_t timeUtcMillis = approxUt1ToUnixTime(JANUARY_1_2000_MIDNIGHT_UTC_MILLIS - 0.277537528 * 24*60*60*1000);
+  int64_t timeUtcMillis = approxUt1ToUnixTime(946660703000); // 1999-12-31 17:18:23
   std::pair<double, double> deltaPsiAndDeltaEpsilon = EarthRotation::getDeltaPsiAndDeltaEpsilon(0.0);
   Vector result = EarthRotation::applySiderealRotation(Vector(1, 2, 3), deltaPsiAndDeltaEpsilon, timeUtcMillis);
   EXPECT_NEAR(result.getX(), 1, 0.001);
@@ -98,8 +97,8 @@ TEST(EarthRotation, ApplySiderealRotation_12HoursAfterJ2000) {
   int64_t timeUtcMillis = approxUt1ToUnixTime(JANUARY_1_2000_12PM_UTC_MILLIS + (12 * 60 * 60 * 1000));
   std::pair<double, double> deltaPsiAndDeltaEpsilon = EarthRotation::getDeltaPsiAndDeltaEpsilon(timeJulianCenturies);
   Vector result = EarthRotation::applySiderealRotation(Vector(1, 2, 3), deltaPsiAndDeltaEpsilon, timeUtcMillis);
-  EXPECT_NEAR(result.getX(), 1.73, 0.01);
-  EXPECT_NEAR(result.getY(), -1.41, 0.01);
+  EXPECT_NEAR(result.getX(), 1.75, 0.01);
+  EXPECT_NEAR(result.getY(), -1.39, 0.01);
   EXPECT_NEAR(result.getZ(), 3, 0.001);
 }
 
@@ -108,6 +107,26 @@ TEST(EarthRotation, ApplySiderealRotation_OneCenturyAfterJ2000) {
   std::pair<double, double> deltaPsiAndDeltaEpsilon = EarthRotation::getDeltaPsiAndDeltaEpsilon(1.0);
   Vector result = EarthRotation::applySiderealRotation(Vector(2, 3, 6), deltaPsiAndDeltaEpsilon, timeUtcMillis);
   EXPECT_NEAR(result.getLength(), 7, 0.000000001);
+}
+
+TEST(EarthRotation, ApplySiderealRotation_ThreeMonthsLaterWhenRotationIsZero) {
+  int64_t timeUtcMillis = approxUt1ToUnixTime(954501693000); // 2000-03-31 11:21:33 UTC
+  double timeJulianCenturies = daysSinceJ2000(timeUtcMillis) / 36525.0;
+  std::pair<double, double> deltaPsiAndDeltaEpsilon = EarthRotation::getDeltaPsiAndDeltaEpsilon(timeJulianCenturies);
+  Vector result = EarthRotation::applySiderealRotation(Vector(1, 2, 3), deltaPsiAndDeltaEpsilon, timeUtcMillis);
+  EXPECT_NEAR(result.getX(), 1, 0.001);
+  EXPECT_NEAR(result.getY(), 2, 0.001);
+  EXPECT_NEAR(result.getZ(), 3, 0.001);
+}
+
+TEST(EarthRotation, ApplySiderealRotation_SixMonthsLaterWhenRotationIsZero) {
+  int64_t timeUtcMillis = approxUt1ToUnixTime(962428848000); // 2000-07-01 05:20:48 UTC
+  double timeJulianCenturies = daysSinceJ2000(timeUtcMillis) / 36525.0;
+  std::pair<double, double> deltaPsiAndDeltaEpsilon = EarthRotation::getDeltaPsiAndDeltaEpsilon(timeJulianCenturies);
+  Vector result = EarthRotation::applySiderealRotation(Vector(1, 2, 3), deltaPsiAndDeltaEpsilon, timeUtcMillis);
+  EXPECT_NEAR(result.getX(), 1, 0.001);
+  EXPECT_NEAR(result.getY(), 2, 0.001);
+  EXPECT_NEAR(result.getZ(), 3, 0.001);
 }
 
 #include "test_runner.inc"

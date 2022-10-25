@@ -121,8 +121,7 @@ TEST(CartesianLocation, DirectionTowardsSouthEast_FromSouthernHemisphere) {
 }
 
 TEST(CartesianLocation, EquatorialToFixed_WhenRotationAngleIsZero) {
-  // The prime meridian and equinox are aligned 0.277537528 days before midnight on 1st January 2000.
-  int64_t timeMillis = approxUt1ToUnixTime(JANUARY_1_2000_MIDNIGHT_UTC_MILLIS - 0.277537528 * 24*60*60*1000);
+  int64_t timeMillis = approxUt1ToUnixTime(946660703000); // 1999-12-31 17:18:23
   CartesianLocation fixed = CartesianLocation(Vector(1, 2, 3), ReferenceFrame::EARTH_EQUATORIAL).toFixed(timeMillis);
   EXPECT_NEAR(fixed.position.getX(), 1, 0.001);
   EXPECT_NEAR(fixed.position.getY(), 2, 0.001);
@@ -131,9 +130,7 @@ TEST(CartesianLocation, EquatorialToFixed_WhenRotationAngleIsZero) {
 }
 
 TEST(CartesianLocation, EquatorialToFixed_WhenRotationAngleIs90Degrees) {
-  // The prime meridian and equinox are aligned 0.277537528 days before midnight on 1st January 2000.
-  // This test looks at a time 1/4 of a sidereal day (which is 86164 seconds of the normal 86400) after that.
-  int64_t timeMillis = approxUt1ToUnixTime(JANUARY_1_2000_MIDNIGHT_UTC_MILLIS + (-0.277537528 + (0.25*86164/86400)) * 24*60*60*1000);
+  int64_t timeMillis = approxUt1ToUnixTime(946682185000); // 1999-12-31 23:16:25
   CartesianLocation fixed = CartesianLocation(Vector(1, 2, 3), ReferenceFrame::EARTH_EQUATORIAL).toFixed(timeMillis);
   EXPECT_NEAR(fixed.position.getX(), 2, 0.01);
   EXPECT_NEAR(fixed.position.getY(), -1, 0.01);
@@ -142,8 +139,8 @@ TEST(CartesianLocation, EquatorialToFixed_WhenRotationAngleIs90Degrees) {
 }
 
 TEST(CartesianLocation, EclipticToFixed) {
-  // The prime meridian and equinox are aligned 0.277537528 days before midnight on 1st January 2000.
-  int64_t timeMillis = approxUt1ToUnixTime(JANUARY_1_2000_MIDNIGHT_UTC_MILLIS - 0.277537528 * 24*60*60*1000);
+  // The prime meridian and equinox are aligned at this time:
+  int64_t timeMillis = approxUt1ToUnixTime(946660703000); // 1999-12-31 17:18:23
   CartesianLocation fixed = CartesianLocation(Vector(1, 2, 3), ReferenceFrame::EARTH_ECLIPTIC).toFixed(timeMillis);
   EXPECT_NEAR(fixed.position.getX(), 1, 0.001);
   EXPECT_NEAR(fixed.position.getY(), 0.64, 0.01);

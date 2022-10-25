@@ -100,14 +100,15 @@ Vector EarthRotation::applySiderealRotation(
   // approximate value for UT1, because UTC is adjusted using leap seconds to be less than 0.9s
   // away from UT1, but it's much more difficult to find it exactly. For this use-case, we can live
   // with the approximation.
-  double ut1JulianDays =
-      millisToJulianDays(unixTimeToApproxUt1(timeUtcMillis - JANUARY_1_2000_MIDNIGHT_UTC_MILLIS));
-  double tu = ut1JulianDays / 36525;
+  double julianUt1Date =
+      millisToJulianDays(unixTimeToApproxUt1(timeUtcMillis - JANUARY_1_2000_12PM_UTC_MILLIS));
+  double tu = julianUt1Date / 36525;
   double gmst0 =
           (6 + (41.0/60)
            + ((50.54841 + 8640184.812866*tu + 0.093104*tu*tu - 0.000006210*tu*tu*tu) / 3600))
        / 24;
-  double gmst = 1.002737909350795 * ut1JulianDays + gmst0;
+  double ut1SinceMidnight = millisToJulianDays(timeUtcMillis % (24*60*60*1000));
+  double gmst = 1.002737909350795 * ut1SinceMidnight + gmst0;
 
   // Find alphaE, using nutation parameters.
   double timeJulianCenturiesSinceJ2000 = daysSinceJ2000(timeUtcMillis) / 36525.0;
