@@ -84,7 +84,8 @@ TEST(EarthRotation, ApplySiderealRotation_AtJ2000) {
 }
 
 TEST(EarthRotation, ApplySiderealRotation_WhenRotationIsZero) {
-  int64_t timeUtcMillis = approxUt1ToUnixTime(946660703000); // 1999-12-31 17:18:23
+  // This should be 1999-12-31 17:21:24 UTC according to Cosmographia.
+  int64_t timeUtcMillis = approxUt1ToUnixTime(946660755000); // 1999-12-31 17:19:15
   std::pair<double, double> deltaPsiAndDeltaEpsilon = EarthRotation::getDeltaPsiAndDeltaEpsilon(0.0);
   Vector result = EarthRotation::applySiderealRotation(Vector(1, 2, 3), deltaPsiAndDeltaEpsilon, timeUtcMillis);
   EXPECT_NEAR(result.getX(), 1, 0.001);
@@ -97,8 +98,8 @@ TEST(EarthRotation, ApplySiderealRotation_12HoursAfterJ2000) {
   int64_t timeUtcMillis = approxUt1ToUnixTime(JANUARY_1_2000_12PM_UTC_MILLIS + (12 * 60 * 60 * 1000));
   std::pair<double, double> deltaPsiAndDeltaEpsilon = EarthRotation::getDeltaPsiAndDeltaEpsilon(timeJulianCenturies);
   Vector result = EarthRotation::applySiderealRotation(Vector(1, 2, 3), deltaPsiAndDeltaEpsilon, timeUtcMillis);
-  EXPECT_NEAR(result.getX(), 1.75, 0.01);
-  EXPECT_NEAR(result.getY(), -1.39, 0.01);
+  EXPECT_NEAR(result.getX(), 1.76, 0.01);
+  EXPECT_NEAR(result.getY(), -1.38, 0.01);
   EXPECT_NEAR(result.getZ(), 3, 0.001);
 }
 
@@ -110,7 +111,8 @@ TEST(EarthRotation, ApplySiderealRotation_OneCenturyAfterJ2000) {
 }
 
 TEST(EarthRotation, ApplySiderealRotation_ThreeMonthsLaterWhenRotationIsZero) {
-  int64_t timeUtcMillis = approxUt1ToUnixTime(954501693000); // 2000-03-31 11:21:33 UTC
+  // This should be 2000-03-31 11:23:37 UTC according to Cosmographia.
+  int64_t timeUtcMillis = approxUt1ToUnixTime(954501923000); // 2000-03-31 11:25:23 UTC
   double timeJulianCenturies = daysSinceJ2000(timeUtcMillis) / 36525.0;
   std::pair<double, double> deltaPsiAndDeltaEpsilon = EarthRotation::getDeltaPsiAndDeltaEpsilon(timeJulianCenturies);
   Vector result = EarthRotation::applySiderealRotation(Vector(1, 2, 3), deltaPsiAndDeltaEpsilon, timeUtcMillis);
@@ -120,7 +122,8 @@ TEST(EarthRotation, ApplySiderealRotation_ThreeMonthsLaterWhenRotationIsZero) {
 }
 
 TEST(EarthRotation, ApplySiderealRotation_SixMonthsLaterWhenRotationIsZero) {
-  int64_t timeUtcMillis = approxUt1ToUnixTime(962428848000); // 2000-07-01 05:20:48 UTC
+  // This should be 2000-07-01 05:21:54 UTC according to Cosmographia.
+  int64_t timeUtcMillis = approxUt1ToUnixTime(962429019000); // 2000-07-01 05:23:39 UTC
   double timeJulianCenturies = daysSinceJ2000(timeUtcMillis) / 36525.0;
   std::pair<double, double> deltaPsiAndDeltaEpsilon = EarthRotation::getDeltaPsiAndDeltaEpsilon(timeJulianCenturies);
   Vector result = EarthRotation::applySiderealRotation(Vector(1, 2, 3), deltaPsiAndDeltaEpsilon, timeUtcMillis);

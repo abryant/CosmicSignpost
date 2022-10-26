@@ -101,7 +101,7 @@ Vector EarthRotation::applySiderealRotation(
   // away from UT1, but it's much more difficult to find it exactly. For this use-case, we can live
   // with the approximation.
   double julianUt1Date =
-      millisToJulianDays(unixTimeToApproxUt1(timeUtcMillis - JANUARY_1_2000_12PM_UTC_MILLIS));
+      std::floor(millisToJulianDays(unixTimeToApproxUt1(timeUtcMillis - JANUARY_1_2000_12PM_UTC_MILLIS)));
   double tu = julianUt1Date / 36525;
   double gmst0 =
           (6 + (41.0/60)
