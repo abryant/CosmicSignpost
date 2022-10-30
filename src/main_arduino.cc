@@ -90,6 +90,9 @@ void setup() {
   wifiManager.autoConnect("Space Pointer", WIFI_MANAGER_PASSWORD.c_str());
   ota::setUp(1420, OTA_PASSWORD);
 
+  // Set the timezone to UTC, as some time parsing functions depend on that.
+  setenv("TZ", "", 1);
+  // Get the current time from an NTP server.
   configTime(0, 0, "pool.ntp.org");
   waitForTime();
 

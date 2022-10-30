@@ -16,6 +16,9 @@ void setup() {
   wifiManager.autoConnect("Space Pointer", WIFI_MANAGER_PASSWORD.c_str());
   ota::setUp(1420, OTA_PASSWORD);
 
+  // Set the timezone to UTC, as some time parsing functions depend on that.
+  setenv("TZ", "", 1);
+
   // Give 2 seconds for the test runner to connect to the board.
   delay(2000);
 
@@ -30,6 +33,9 @@ void loop() {
 #else
 
 int main(int argc, char **argv) {
+  // Set the timezone to UTC, as some time parsing functions depend on that.
+  setenv("TZ", "", 1);
+
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

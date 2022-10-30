@@ -1,7 +1,10 @@
 #include "time_utils.h"
 
+#include <cmath>
 #include <cstdint>
 #include <cstddef>
+#include <ctime>
+#include <sstream>
 
 #include <sys/time.h>
 
@@ -27,6 +30,30 @@ int64_t unixTimeToApproxUt1(int64_t unixTimeMillis) {
 
 int64_t approxUt1ToUnixTime(int64_t timeUt1Millis) {
   return timeUt1Millis - LEAP_SECONDS_SINCE_2000_MILLIS;
+}
+
+int64_t parseDateTimeToUnixMillis(std::string dateTimeString) {
+  std::tm dateTime {};
+  if (dateTimeString.find_last_of('-') >= 7) {
+    // populates: tm_year, tm_mon, tm_mday, tm_hour, tm_min
+    strptime(dateTimeString.c_str(), "%Y-%m-%dT%H:%M:", &dateTime);
+  } else {
+    // populates: tm_year, tm_yday, tm_mon, tm_mday, tm_hour, tm_min
+    strptime(dateTimeString.c_str(), "%Y-%jT%H:%M:", &dateTime);
+  }
+  int32_t secondsStartPos = dateTimeString.find_last_of(':') + 1;
+  std::stringstream ss(dateTimeString);
+  ss.seekg(secondsStartPos);
+  // Read the fractional seconds.
+  double seconds = 0;
+  ss >> seconds;
+  dateTime.tm_sec = std::floor(seconds);
+  seconds -= dateTime.tm_sec;
+
+  int64_t timeSeconds = (int64_t) std::mktime(&dateTime);
+  int64_t timeMillis = timeSeconds * 1000;
+  timeMillis += seconds * 1000;
+  return timeMillis;
 }
 
 TimeMillisMicros::TimeMillisMicros()

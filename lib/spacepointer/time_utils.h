@@ -2,6 +2,7 @@
 #define SPACEPOINTER_LIB_SPACEPOINTER_TIME_UTILS_H_
 
 #include <cstdint>
+#include <string>
 
 // January 1, 2000, 11:58:55.816 UTC
 const int64_t J2000_UTC_MILLIS = 946727935816LL;
@@ -18,6 +19,11 @@ double millisToJulianDays(int64_t milliseconds);
 
 int64_t unixTimeToApproxUt1(int64_t unixTimeMillis);
 int64_t approxUt1ToUnixTime(int64_t timeUt1Millis);
+
+// Converts certain ISO date+time strings with optional fractional components to UTC milliseconds
+// since 1970-01-01.
+// This depends on the TZ environment variable being set to UTC, because it uses std::mktime().
+int64_t parseDateTimeToUnixMillis(std::string dateTimeString);
 
 class TimeMillisMicros {
   public:
