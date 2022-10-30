@@ -15,7 +15,7 @@ TEST(Tracker, MoonAtJ2000) {
 
 TEST(Tracker, MoonIn2020) {
   Tracker tracker(Location(0, 0, 0), Direction(0, 0), TRACKABLE_OBJECTS.at("Moon"));
-  Direction direction = tracker.getDirectionAt(1577880000000); // 2020-01-01 12:00:00 UTC
+  Direction direction = tracker.getDirectionAt(1577880000000LL); // 2020-01-01 12:00:00 UTC
   EXPECT_NEAR(direction.getAzimuth(), 98.104074, 0.1);
   EXPECT_NEAR(direction.getAltitude(), 14.836674, 1.1);
 }

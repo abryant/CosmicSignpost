@@ -7,7 +7,7 @@
 #include "vector.h"
 
 
-Vector EarthRotation::earthEquatorialToEarthFixed(Vector v, long timeUtcMillis) {
+Vector EarthRotation::earthEquatorialToEarthFixed(Vector v, int64_t timeUtcMillis) {
   double timeJulianCenturiesSinceJ2000 = daysSinceJ2000(timeUtcMillis) / 36525.0;
   std::pair<double, double> deltaPsiAndDeltaEpsilon =
       getDeltaPsiAndDeltaEpsilon(timeJulianCenturiesSinceJ2000);
@@ -93,7 +93,7 @@ Vector EarthRotation::applyNutation(
 Vector EarthRotation::applySiderealRotation(
     Vector v,
     std::pair<double, double> deltaPsiAndDeltaEpsilon,
-    long timeUtcMillis) {
+    int64_t timeUtcMillis) {
   // Account for the earth's rotation using Greenwich Mean Sidereal Time.
   // See https://gssc.esa.int/navipedia/index.php/CEP_to_ITRF
   // Greenwich Mean Sidereal Time is defined in terms of UT1 and not UTC. It's easy to find an

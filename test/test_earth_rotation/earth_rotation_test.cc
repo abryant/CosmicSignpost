@@ -104,7 +104,7 @@ TEST(EarthRotation, ApplySiderealRotation_12HoursAfterJ2000) {
 }
 
 TEST(EarthRotation, ApplySiderealRotation_OneCenturyAfterJ2000) {
-  int64_t timeUtcMillis = approxUt1ToUnixTime(JANUARY_1_2000_12PM_UTC_MILLIS + (36525L * 24 * 60 * 60 * 1000));
+  int64_t timeUtcMillis = approxUt1ToUnixTime(JANUARY_1_2000_12PM_UTC_MILLIS + (36525LL * 24 * 60 * 60 * 1000));
   std::pair<double, double> deltaPsiAndDeltaEpsilon = EarthRotation::getDeltaPsiAndDeltaEpsilon(1.0);
   Vector result = EarthRotation::applySiderealRotation(Vector(2, 3, 6), deltaPsiAndDeltaEpsilon, timeUtcMillis);
   EXPECT_NEAR(result.getLength(), 7, 0.000000001);

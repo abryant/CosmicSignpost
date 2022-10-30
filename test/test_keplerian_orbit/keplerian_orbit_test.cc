@@ -11,7 +11,7 @@ TEST(KeplerianOrbit, MoonIcrfAtJ2000) {
   // Target Body: Moon [Luna]
   // Coordinate Center: Geocentric [code: 500]
   // Time Specification: Start=2000-01-01 TDB, Stop=2000-01-02, Step=6 (hours)
-  double semiMajorAxisMetres = 381'874'524.8499886;
+  double semiMajorAxisMetres = 381874524.8499886;
   double eccentricity = 0.06314721685094304;
   double inclinationRadians = degreesToRadians(5.240273000309245);
   double longitudeOfAscendingNodeRadians = degreesToRadians(123.9580554371928);
@@ -29,9 +29,9 @@ TEST(KeplerianOrbit, MoonIcrfAtJ2000) {
           meanAnomalyRadians);
   // Vector from JPL Horizons:
   // https://ssd.jpl.nasa.gov/horizons/app.html
-  EXPECT_NEAR(moonFromEarth.position.getX(), -291'608'384.1877129, 0.00001);
-  EXPECT_NEAR(moonFromEarth.position.getY(), -274'979'741.6731504, 0.00001);
-  EXPECT_NEAR(moonFromEarth.position.getZ(), 36'271'196.62699287, 0.00001);
+  EXPECT_NEAR(moonFromEarth.position.getX(), -291608384.1877129, 0.00001);
+  EXPECT_NEAR(moonFromEarth.position.getY(), -274979741.6731504, 0.00001);
+  EXPECT_NEAR(moonFromEarth.position.getZ(), 36271196.62699287, 0.00001);
   EXPECT_EQ(moonFromEarth.referenceFrame, ReferenceFrame::EARTH_ECLIPTIC);
 }
 

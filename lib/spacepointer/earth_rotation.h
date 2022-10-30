@@ -12,7 +12,7 @@ namespace EarthRotation {
   // Applies all conversions between the equatorial coordinate system (defined in
   // ReferenceFrame::EARTH_EQUATORIAL) and the fixed coordinate system (defined in
   // ReferenceFrame::EARTH_FIXED).
-  Vector earthEquatorialToEarthFixed(Vector v, long timeUtcMillis);
+  Vector earthEquatorialToEarthFixed(Vector v, int64_t timeUtcMillis);
 
   // Finds the parameters delta-psi and delta-epsilon, used for nutation and sidereal rotation.
   // Both values are measured in arcseconds.
@@ -28,7 +28,7 @@ namespace EarthRotation {
   Vector applySiderealRotation(
     Vector v,
     std::pair<double, double> deltaPsiAndDeltaEpsilon,
-    long timeUtcMillis);
+    int64_t timeUtcMillis);
 };
 
 #endif
