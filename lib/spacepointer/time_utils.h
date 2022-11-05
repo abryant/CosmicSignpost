@@ -13,6 +13,12 @@ const int64_t JANUARY_1_2000_12PM_UTC_MILLIS = 946728000000LL;
 // January 1, 2000, 00:00:00.000 UTC
 const int64_t JANUARY_1_2000_MIDNIGHT_UTC_MILLIS = 946684800000LL;
 
+// January 1, 1970, 00:00:00.000 UTC
+const double UNIX_EPOCH_JULIAN_DATE = 2440587.5;
+
+// January 0, 1950, 00:00:00.000 UTC = December 31, 1949, 00:00:00.000 UTC
+const double JAN_0_1950_JULIAN_DATE = 2433281.5;
+
 double daysSinceJ2000(int64_t unixTimeMillis);
 
 double millisToJulianDays(int64_t milliseconds);
