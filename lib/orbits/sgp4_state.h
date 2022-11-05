@@ -23,6 +23,22 @@ namespace SGP4 {
     HALF_DAY,
   };
 
+  class Sgp4GeodeticConstants {
+    public:
+      // Radius of earth, km
+      double radiusearthkm;
+      // Time units per minute.
+      // A time unit seems to be the length of time it takes to orbit the earth at exactly the
+      // earth's surface, divided by 2*PI (so, the time to travel one radian), because this is
+      // sometimes calculated as: 1/sqrt(radiusearthkm^3/mu)
+      // See also https://en.wikipedia.org/wiki/Standard_gravitational_parameter
+      double xke;
+      // Un-normalized zonal harmonic values
+      double j2, j3, j4;
+      // j3 divided by j2
+      double j3oj2;
+  };
+
   /**
    * The initialised SGP4 state, which can be passed along with a timestamp to fine the position
    * and velocity of the satellite.
@@ -33,7 +49,8 @@ namespace SGP4 {
    */
   class Sgp4State {
     public:
-      Sgp4State() = default;
+      Sgp4State(const Sgp4GeodeticConstants geo)
+          : geo(geo) {};
 
       OperationMode operationMode;
       bool initialising;
@@ -141,18 +158,7 @@ namespace SGP4 {
       double mm; // Averaged mean anomaly, radians
       double nm; // Averaged mean motion, radians/minute
 
-      // Radius of earth, km
-      double radiusearthkm;
-      // Time units per minute.
-      // A time unit seems to be the length of time it takes to orbit the earth at exactly the
-      // earth's surface, divided by 2*PI (so, the time to travel one radian), because this is
-      // sometimes calculated as: 1/sqrt(radiusearthkm^3/mu)
-      // See also https://en.wikipedia.org/wiki/Standard_gravitational_parameter
-      double xke;
-      // Un-normalized zonal harmonic values
-      double j2, j3, j4;
-      // j3 divided by j2
-      double j3oj2;
+      const Sgp4GeodeticConstants geo;
   };
 
   class Sgp4InitState {

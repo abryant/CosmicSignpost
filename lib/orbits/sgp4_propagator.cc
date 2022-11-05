@@ -17,12 +17,12 @@ SGP4::Sgp4State SGP4::initialiseSgp4(
     SGP4::OperationMode operationMode,
     SGP4::Sgp4OrbitalElements elements) {
   const double temp4 = 1.5e-12;
-  SGP4::Sgp4State state = {};
+  SGP4::Sgp4GeodeticConstants geoConstants = getGravitationalConstants(wgsVersion);
+  SGP4::Sgp4State state = SGP4::Sgp4State(geoConstants);
   SGP4::Sgp4InitState initState = {};
   state.epoch = elements.epoch;
   state.method = SGP4::Method::NORMAL;
   state.operationMode = operationMode;
-  getGravitationalConstants(state, wgsVersion);
 
   state.bstar = elements.bStarDragCoefficient;
   state.ecco = elements.eccentricity;
@@ -38,12 +38,12 @@ SGP4::Sgp4State SGP4::initialiseSgp4(
   initl(state, initState);
 
   if ((initState.omeosq >= 0.0) || (state.no_unkozai >= 0.0)) {
-    state.isimp = initState.rp < (220.0 / state.radiusearthkm + 1.0);
+    state.isimp = initState.rp < (220.0 / state.geo.radiusearthkm + 1.0);
     // Earth constants
-    double sfour = 78.0 / state.radiusearthkm + 1.0;
-    double qzms2ttemp = (120.0 - 78.0) / state.radiusearthkm;
+    double sfour = 78.0 / state.geo.radiusearthkm + 1.0;
+    double qzms2ttemp = (120.0 - 78.0) / state.geo.radiusearthkm;
     double qzms24 = qzms2ttemp * qzms2ttemp * qzms2ttemp * qzms2ttemp;
-    double perige = (initState.rp - 1.0) * state.radiusearthkm;
+    double perige = (initState.rp - 1.0) * state.geo.radiusearthkm;
 
     // for perigees below 156 km, s and qoms2t are altered
     if (perige < 156.0) {
@@ -51,9 +51,9 @@ SGP4::Sgp4State SGP4::initialiseSgp4(
       if (perige < 98.0) {
         sfour = 20.0;
       }
-      double qzms24temp = (120.0 - sfour) / state.radiusearthkm;
+      double qzms24temp = (120.0 - sfour) / state.geo.radiusearthkm;
       qzms24 = qzms24temp * qzms24temp * qzms24temp * qzms24temp;
-      sfour = sfour / state.radiusearthkm + 1.0;
+      sfour = sfour / state.geo.radiusearthkm + 1.0;
     }
     double pinvsq = 1.0 / initState.posq;
 
@@ -65,26 +65,26 @@ SGP4::Sgp4State SGP4::initialiseSgp4(
     double coef = qzms24 * pow(tsi, 4.0);
     double coef1 = coef / pow(psisq, 3.5);
     double cc2 = coef1 * state.no_unkozai * (initState.ao * (1.0 + 1.5 * etasq + eeta *
-      (4.0 + etasq)) + 0.375 * state.j2 * tsi / psisq * state.con41 *
+      (4.0 + etasq)) + 0.375 * state.geo.j2 * tsi / psisq * state.con41 *
       (8.0 + 3.0 * etasq * (8.0 + etasq)));
     state.cc1 = state.bstar * cc2;
     double cc3 = 0.0;
     if (state.ecco > 1.0e-4) {
-      cc3 = -2.0 * coef * tsi * state.j3oj2 * state.no_unkozai * initState.sinio / state.ecco;
+      cc3 = -2.0 * coef * tsi * state.geo.j3oj2 * state.no_unkozai * initState.sinio / state.ecco;
     }
     state.x1mth2 = 1.0 - initState.cosio2;
     state.cc4 = 2.0 * state.no_unkozai * coef1 * initState.ao * initState.omeosq *
       (state.eta * (2.0 + 0.5 * etasq) + state.ecco *
-      (0.5 + 2.0 * etasq) - state.j2 * tsi / (initState.ao * psisq) *
+      (0.5 + 2.0 * etasq) - state.geo.j2 * tsi / (initState.ao * psisq) *
       (-3.0 * state.con41 * (1.0 - 2.0 * eeta + etasq *
       (1.5 - 0.5 * eeta)) + 0.75 * state.x1mth2 *
       (2.0 * etasq - eeta * (1.0 + etasq)) * cos(2.0 * state.argpo)));
     state.cc5 = 2.0 * coef1 * initState.ao * initState.omeosq * (1.0 + 2.75 *
       (etasq + eeta) + eeta * etasq);
     double cosio4 = initState.cosio2 * initState.cosio2;
-    double temp1 = 1.5 * state.j2 * pinvsq * state.no_unkozai;
-    double temp2 = 0.5 * temp1 * state.j2 * pinvsq;
-    double temp3 = -0.46875 * state.j4 * pinvsq * pinvsq * state.no_unkozai;
+    double temp1 = 1.5 * state.geo.j2 * pinvsq * state.no_unkozai;
+    double temp2 = 0.5 * temp1 * state.geo.j2 * pinvsq;
+    double temp3 = -0.46875 * state.geo.j4 * pinvsq * pinvsq * state.no_unkozai;
     state.mdot = state.no_unkozai + 0.5 * temp1 * initState.rteosq * state.con41 + 0.0625 *
       temp2 * initState.rteosq * (13.0 - 78.0 * initState.cosio2 + 137.0 * cosio4);
     state.argpdot = -0.5 * temp1 * initState.con42 + 0.0625 * temp2 *
@@ -102,11 +102,11 @@ SGP4::Sgp4State SGP4::initialiseSgp4(
     state.nodecf = 3.5 * initState.omeosq * xhdot1 * state.cc1;
     state.t2cof = 1.5 * state.cc1;
     if (fabs(initState.cosio + 1.0) > 1.5e-12) {
-      state.xlcof = -0.25 * state.j3oj2 * initState.sinio * (3.0 + 5.0 * initState.cosio) / (1.0 + initState.cosio);
+      state.xlcof = -0.25 * state.geo.j3oj2 * initState.sinio * (3.0 + 5.0 * initState.cosio) / (1.0 + initState.cosio);
     } else {
-      state.xlcof = -0.25 * state.j3oj2 * initState.sinio * (3.0 + 5.0 * initState.cosio) / temp4;
+      state.xlcof = -0.25 * state.geo.j3oj2 * initState.sinio * (3.0 + 5.0 * initState.cosio) / temp4;
     }
-    state.aycof = -0.5 * state.j3oj2 * initState.sinio;
+    state.aycof = -0.5 * state.geo.j3oj2 * initState.sinio;
     double delmotemp = 1.0 + state.eta * cos(state.mo);
     state.delmo = delmotemp * delmotemp * delmotemp;
     state.sinmao = sin(state.mo);
@@ -170,14 +170,14 @@ void SGP4::initl(SGP4::Sgp4State &state, SGP4::Sgp4InitState &initState) {
   initState.cosio2 = initState.cosio * initState.cosio;
 
   // Un-kozai the mean motion.
-  double ak = pow(state.xke / state.no_kozai, (2.0 / 3.0));
-  double d1 = 0.75 * state.j2 * (3.0 * initState.cosio2 - 1.0) / (initState.rteosq * initState.omeosq);
+  double ak = pow(state.geo.xke / state.no_kozai, (2.0 / 3.0));
+  double d1 = 0.75 * state.geo.j2 * (3.0 * initState.cosio2 - 1.0) / (initState.rteosq * initState.omeosq);
   double del = d1 / (ak * ak);
   double adel = ak * (1.0 - del * del - del * (1.0 / 3.0 + 134.0 * del * del / 81.0));
   del = d1 / (adel * adel);
   state.no_unkozai = state.no_kozai / (1.0 + del);
 
-  initState.ao = pow(state.xke / (state.no_unkozai), (2.0 / 3.0));
+  initState.ao = pow(state.geo.xke / (state.no_unkozai), (2.0 / 3.0));
   initState.sinio = sin(state.inclo);
   double po = initState.ao * initState.omeosq;
   initState.con42 = 1.0 - 5.0 * initState.cosio2;
@@ -618,7 +618,7 @@ void SGP4::dsinit(SGP4::Sgp4State &state, SGP4::Sgp4InitState &initState) {
 
   // Initialize the resonance terms
   if (state.irez != Resonance::NONE) {
-    double aonv = pow(initState.nm / state.xke, (2.0 / 3.0));
+    double aonv = pow(initState.nm / state.geo.xke, (2.0 / 3.0));
 
     // Geopotential resonance for 12 hour orbits
     if (state.irez == Resonance::HALF_DAY) {
@@ -733,7 +733,7 @@ SGP4::Sgp4Result SGP4::runSgp4(SGP4::Sgp4State &state, double timeSinceEpochMinu
 
   // Set mathematical constants
   const double temp4 = 1.5e-12;
-  double vkmpersec = state.radiusearthkm * state.xke / 60.0;
+  double vkmpersec = state.geo.radiusearthkm * state.geo.xke / 60.0;
 
   state.t = timeSinceEpochMinutes;
 
@@ -801,8 +801,8 @@ SGP4::Sgp4Result SGP4::runSgp4(SGP4::Sgp4State &state, double timeSinceEpochMinu
       code: SGP4::ResultCode::NEGATIVE_MEAN_MOTION
     };
   }
-  double am = pow((state.xke / nm), (2.0 / 3.0)) * tempa * tempa;
-  nm = state.xke / pow(am, 1.5);
+  double am = pow((state.geo.xke / nm), (2.0 / 3.0)) * tempa * tempa;
+  nm = state.geo.xke / pow(am, 1.5);
   em = em - tempe;
 
   if ((em >= 1.0) || (em < -0.001)) {
@@ -875,11 +875,11 @@ SGP4::Sgp4Result SGP4::runSgp4(SGP4::Sgp4State &state, double timeSinceEpochMinu
   if (state.method == SGP4::Method::DEEP_SPACE) {
     sinip = sin(xincp);
     cosip = cos(xincp);
-    state.aycof = -0.5 * state.j3oj2 * sinip;
+    state.aycof = -0.5 * state.geo.j3oj2 * sinip;
     if (fabs(cosip + 1.0) > 1.5e-12) {
-      state.xlcof = -0.25 * state.j3oj2 * sinip * (3.0 + 5.0 * cosip) / (1.0 + cosip);
+      state.xlcof = -0.25 * state.geo.j3oj2 * sinip * (3.0 + 5.0 * cosip) / (1.0 + cosip);
     } else {
-      state.xlcof = -0.25 * state.j3oj2 * sinip * (3.0 + 5.0 * cosip) / temp4;
+      state.xlcof = -0.25 * state.geo.j3oj2 * sinip * (3.0 + 5.0 * cosip) / temp4;
     }
   }
   double axnl = ep * cos(argpp);
@@ -926,7 +926,7 @@ SGP4::Sgp4Result SGP4::runSgp4(SGP4::Sgp4State &state, double timeSinceEpochMinu
   double sin2u = (cosu + cosu) * sinu;
   double cos2u = 1.0 - 2.0 * sinu * sinu;
   temp = 1.0 / pl;
-  double temp1 = 0.5 * state.j2 * temp;
+  double temp1 = 0.5 * state.geo.j2 * temp;
   double temp2 = temp1 * temp;
 
   // Update for short period periodics
@@ -941,8 +941,8 @@ SGP4::Sgp4Result SGP4::runSgp4(SGP4::Sgp4State &state, double timeSinceEpochMinu
   su = su - 0.25 * temp2 * state.x7thm1 * sin2u;
   double xnode = nodep + 1.5 * temp2 * cosip * sin2u;
   double xinc = xincp + 1.5 * temp2 * cosip * sinip * cos2u;
-  double mvt = rdotl - nm * temp1 * state.x1mth2 * sin2u / state.xke;
-  double rvdot = rvdotl + nm * temp1 * (state.x1mth2 * cos2u + 1.5 * state.con41) / state.xke;
+  double mvt = rdotl - nm * temp1 * state.x1mth2 * sin2u / state.geo.xke;
+  double rvdot = rvdotl + nm * temp1 * (state.x1mth2 * cos2u + 1.5 * state.con41) / state.geo.xke;
 
   // Orientation vectors
   double sinsu = sin(su);
@@ -969,9 +969,9 @@ SGP4::Sgp4Result SGP4::runSgp4(SGP4::Sgp4State &state, double timeSinceEpochMinu
   // Position and velocity (in km and km/sec)
   return SGP4::Sgp4Result {
     code: SGP4::ResultCode::SUCCESS,
-    x: (mrt * ux)* state.radiusearthkm,
-    y: (mrt * uy)* state.radiusearthkm,
-    z: (mrt * uz)* state.radiusearthkm,
+    x: (mrt * ux)* state.geo.radiusearthkm,
+    y: (mrt * uy)* state.geo.radiusearthkm,
+    z: (mrt * uz)* state.geo.radiusearthkm,
     vx: (mvt * ux + rvdot * vx) * vkmpersec,
     vy: (mvt * uy + rvdot * vy) * vkmpersec,
     vz: (mvt * uz + rvdot * vz) * vkmpersec,
@@ -990,26 +990,28 @@ double SGP4::greenwichSiderealTime(double julianDateUt1) {
   return temp;
 }
 
-void SGP4::getGravitationalConstants(SGP4::Sgp4State &state, SGP4::WgsVersion wgsVersion) {
+SGP4::Sgp4GeodeticConstants SGP4::getGravitationalConstants(SGP4::WgsVersion wgsVersion) {
   double mu;
+  Sgp4GeodeticConstants result;
   switch (wgsVersion) {
     case SGP4::WgsVersion::WGS_72:
       mu = 398600.8;
-      state.radiusearthkm = 6378.135;
-      state.j2 = 0.001082616;
-      state.j3 = -0.00000253881;
-      state.j4 = -0.00000165597;
+      result.radiusearthkm = 6378.135;
+      result.j2 = 0.001082616;
+      result.j3 = -0.00000253881;
+      result.j4 = -0.00000165597;
       break;
     case SGP4::WgsVersion::WGS_84:
       mu = 398600.5;
-      state.radiusearthkm = 6378.137;
-      state.j2 = 0.00108262998905;
-      state.j3 = -0.00000253215306;
-      state.j4 = -0.00000161098761;
+      result.radiusearthkm = 6378.137;
+      result.j2 = 0.00108262998905;
+      result.j3 = -0.00000253215306;
+      result.j4 = -0.00000161098761;
       break;
   }
-  state.j3oj2 = state.j3 / state.j2;
-  state.xke = 60.0 / std::sqrt(state.radiusearthkm * state.radiusearthkm * state.radiusearthkm / mu);
+  result.j3oj2 = result.j3 / result.j2;
+  result.xke = 60.0 / std::sqrt(result.radiusearthkm * result.radiusearthkm * result.radiusearthkm / mu);
+  return result;
 }
 
 double SGP4::findTimeSinceEpochMinutes(

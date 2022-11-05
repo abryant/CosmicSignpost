@@ -29,7 +29,7 @@ namespace SGP4 {
       double vx, vy, vz;
   };
 
-  void getGravitationalConstants(Sgp4State &state, WgsVersion wgsVersion);
+  Sgp4GeodeticConstants getGravitationalConstants(WgsVersion wgsVersion);
 
   Sgp4State initialiseSgp4(
     WgsVersion wgsVersion,
