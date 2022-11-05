@@ -35,7 +35,7 @@ namespace SGP4 {
     public:
       Sgp4State() = default;
 
-      OperationMode operationmode;
+      OperationMode operationMode;
       bool initialising;
       Method method;
 
@@ -86,8 +86,6 @@ namespace SGP4 {
       double dnodt;
       // Change in argument of perigee over time.
       double domdt;
-      // These five seem to only ever be set to zero. TODO: delete them after confirming.
-      double peo, pgho, pho, pinco, plo;
 
       // Solar terms.
       double se2, se3;
@@ -116,11 +114,6 @@ namespace SGP4 {
       double xni;
 
 
-      double a;
-
-      // TODO: parsed from TLE but never used, remove?
-      double nddot, ndot;
-
       // SGP4 type drag coefficient, kg/m2er
 	    double bstar;
 
@@ -148,17 +141,13 @@ namespace SGP4 {
       double mm; // Averaged mean anomaly, radians
       double nm; // Averaged mean motion, radians/minute
 
-      // Minutes in one time unit.
-      // A time unit seems to be the length of time it takes to orbit the earth at exactly the
-      // earth's surface, divided by 2*PI (so, the time to travel one radian), because this is
-      // sometimes calculated as: sqrt(radiusearthkm^3/mus)
-      // See also https://en.wikipedia.org/wiki/Standard_gravitational_parameter
-      double tumin;
-      // mu, the earth's gravitational parameter, km^3/s^2
-      double mus;
       // Radius of earth, km
       double radiusearthkm;
-      // Reciprocal of tumin
+      // Time units per minute.
+      // A time unit seems to be the length of time it takes to orbit the earth at exactly the
+      // earth's surface, divided by 2*PI (so, the time to travel one radian), because this is
+      // sometimes calculated as: 1/sqrt(radiusearthkm^3/mu)
+      // See also https://en.wikipedia.org/wiki/Standard_gravitational_parameter
       double xke;
       // Un-normalized zonal harmonic values
       double j2, j3, j4;
@@ -168,7 +157,7 @@ namespace SGP4 {
 
   class Sgp4InitState {
     public:
-      double ao, ainv;
+      double ao;
       double con42;
       double cosio, sinio, cosio2;
       double eccsq, omeosq, posq;
@@ -176,49 +165,21 @@ namespace SGP4 {
       double rteosq;
       double cnodm, snodm;
       double cosim, sinim;
-      double cosomm, sinomm;
-      double cc1sq;
-      double cc2, cc3;
-      double coef, coef1;
-      double cosio4;
-      double day;
-      double dndt;
       double em, emsq;
-      double eeta, etasq;
-      double gam;
-      double argpm;
-      double nodem;
       double inclm;
-      double mm;
       double nm;
-      double perige;
-      double pinvsq;
-      double psisq;
-      double qzms24;
-      double rtemsq;
       double s1, s2, s3, s4, s5, s6, s7;
-      double sfour;
       double ss1, ss2, ss3, ss4, ss5, ss6, ss7;
       double sz1, sz2, sz3;
       double sz11, sz12, sz13;
       double sz21, sz22, sz23;
       double sz31, sz32, sz33;
-      double tc;
-      double temp, temp1, temp2, temp3;
-      double tsi;
       double xpidot;
-      double xhdot1;
       double z1, z2, z3;
       double z11, z12, z13;
       double z21, z22, z23;
       double z31, z32, z33;
-      double qzms2t;
       double ss;
-      double x2o3;
-      double r[3];
-      double v[3];
-      double delmotemp;
-      double qzms2ttemp, qzms24temp;
   };
 
   class Sgp4DpperOutputs {

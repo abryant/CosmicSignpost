@@ -21,12 +21,10 @@ SGP4::Sgp4State SGP4::initialiseSgp4(
   SGP4::Sgp4InitState initState = {};
   state.epoch = elements.epoch;
   state.method = SGP4::Method::NORMAL;
-  state.operationmode = operationMode;
+  state.operationMode = operationMode;
   getGravitationalConstants(state, wgsVersion);
 
   state.bstar = elements.bStarDragCoefficient;
-  state.ndot = elements.meanMotionDot;
-  state.nddot = elements.meanMotionDdot;
   state.ecco = elements.eccentricity;
   state.argpo = elements.argumentOfPeriapsisRadians;
   state.inclo = elements.inclinationRadians;
@@ -34,91 +32,83 @@ SGP4::Sgp4State SGP4::initialiseSgp4(
   state.no_kozai = elements.meanMotion;
   state.nodeo = elements.rightAscensionOfAscendingNodeRadians;
 
-  // Earth constants
-  initState.ss = 78.0 / state.radiusearthkm + 1.0;
-  initState.qzms2ttemp = (120.0 - 78.0) / state.radiusearthkm;
-  initState.qzms2t =
-      initState.qzms2ttemp * initState.qzms2ttemp * initState.qzms2ttemp * initState.qzms2ttemp;
-  initState.x2o3 = 2.0 / 3.0;
-
   state.initialising = true;
   state.t = 0.0;
 
   initl(state, initState);
 
-  state.a = pow(state.no_unkozai * state.tumin, (-2.0 / 3.0));
-
   if ((initState.omeosq >= 0.0) || (state.no_unkozai >= 0.0)) {
-    state.isimp = false;
-    if (initState.rp < (220.0 / state.radiusearthkm + 1.0))
-      state.isimp = true;
-    initState.sfour = initState.ss;
-    initState.qzms24 = initState.qzms2t;
-    initState.perige = (initState.rp - 1.0) * state.radiusearthkm;
+    state.isimp = initState.rp < (220.0 / state.radiusearthkm + 1.0);
+    // Earth constants
+    double sfour = 78.0 / state.radiusearthkm + 1.0;
+    double qzms2ttemp = (120.0 - 78.0) / state.radiusearthkm;
+    double qzms24 = qzms2ttemp * qzms2ttemp * qzms2ttemp * qzms2ttemp;
+    double perige = (initState.rp - 1.0) * state.radiusearthkm;
 
     // for perigees below 156 km, s and qoms2t are altered
-    if (initState.perige < 156.0) {
-      initState.sfour = initState.perige - 78.0;
-      if (initState.perige < 98.0) {
-        initState.sfour = 20.0;
+    if (perige < 156.0) {
+      sfour = perige - 78.0;
+      if (perige < 98.0) {
+        sfour = 20.0;
       }
-      initState.qzms24temp = (120.0 - initState.sfour) / state.radiusearthkm;
-      initState.qzms24 = initState.qzms24temp * initState.qzms24temp * initState.qzms24temp * initState.qzms24temp;
-      initState.sfour = initState.sfour / state.radiusearthkm + 1.0;
+      double qzms24temp = (120.0 - sfour) / state.radiusearthkm;
+      qzms24 = qzms24temp * qzms24temp * qzms24temp * qzms24temp;
+      sfour = sfour / state.radiusearthkm + 1.0;
     }
-    initState.pinvsq = 1.0 / initState.posq;
+    double pinvsq = 1.0 / initState.posq;
 
-    initState.tsi = 1.0 / (initState.ao - initState.sfour);
-    state.eta = initState.ao * state.ecco * initState.tsi;
-    initState.etasq = state.eta * state.eta;
-    initState.eeta = state.ecco * state.eta;
-    initState.psisq = fabs(1.0 - initState.etasq);
-    initState.coef = initState.qzms24 * pow(initState.tsi, 4.0);
-    initState.coef1 = initState.coef / pow(initState.psisq, 3.5);
-    initState.cc2 = initState.coef1 * state.no_unkozai * (initState.ao * (1.0 + 1.5 * initState.etasq + initState.eeta *
-      (4.0 + initState.etasq)) + 0.375 * state.j2 * initState.tsi / initState.psisq * state.con41 *
-      (8.0 + 3.0 * initState.etasq * (8.0 + initState.etasq)));
-    state.cc1 = state.bstar * initState.cc2;
-    initState.cc3 = 0.0;
+    double tsi = 1.0 / (initState.ao - sfour);
+    state.eta = initState.ao * state.ecco * tsi;
+    double etasq = state.eta * state.eta;
+    double eeta = state.ecco * state.eta;
+    double psisq = fabs(1.0 - etasq);
+    double coef = qzms24 * pow(tsi, 4.0);
+    double coef1 = coef / pow(psisq, 3.5);
+    double cc2 = coef1 * state.no_unkozai * (initState.ao * (1.0 + 1.5 * etasq + eeta *
+      (4.0 + etasq)) + 0.375 * state.j2 * tsi / psisq * state.con41 *
+      (8.0 + 3.0 * etasq * (8.0 + etasq)));
+    state.cc1 = state.bstar * cc2;
+    double cc3 = 0.0;
     if (state.ecco > 1.0e-4) {
-      initState.cc3 = -2.0 * initState.coef * initState.tsi * state.j3oj2 * state.no_unkozai * initState.sinio / state.ecco;
+      cc3 = -2.0 * coef * tsi * state.j3oj2 * state.no_unkozai * initState.sinio / state.ecco;
     }
     state.x1mth2 = 1.0 - initState.cosio2;
-    state.cc4 = 2.0 * state.no_unkozai * initState.coef1 * initState.ao * initState.omeosq *
-      (state.eta * (2.0 + 0.5 * initState.etasq) + state.ecco *
-      (0.5 + 2.0 * initState.etasq) - state.j2 * initState.tsi / (initState.ao * initState.psisq) *
-      (-3.0 * state.con41 * (1.0 - 2.0 * initState.eeta + initState.etasq *
-      (1.5 - 0.5 * initState.eeta)) + 0.75 * state.x1mth2 *
-      (2.0 * initState.etasq - initState.eeta * (1.0 + initState.etasq)) * cos(2.0 * state.argpo)));
-    state.cc5 = 2.0 * initState.coef1 * initState.ao * initState.omeosq * (1.0 + 2.75 *
-      (initState.etasq + initState.eeta) + initState.eeta * initState.etasq);
-    initState.cosio4 = initState.cosio2 * initState.cosio2;
-    initState.temp1 = 1.5 * state.j2 * initState.pinvsq * state.no_unkozai;
-    initState.temp2 = 0.5 * initState.temp1 * state.j2 * initState.pinvsq;
-    initState.temp3 = -0.46875 * state.j4 * initState.pinvsq * initState.pinvsq * state.no_unkozai;
-    state.mdot = state.no_unkozai + 0.5 * initState.temp1 * initState.rteosq * state.con41 + 0.0625 *
-      initState.temp2 * initState.rteosq * (13.0 - 78.0 * initState.cosio2 + 137.0 * initState.cosio4);
-    state.argpdot = -0.5 * initState.temp1 * initState.con42 + 0.0625 * initState.temp2 *
-      (7.0 - 114.0 * initState.cosio2 + 395.0 * initState.cosio4) +
-      initState.temp3 * (3.0 - 36.0 * initState.cosio2 + 49.0 * initState.cosio4);
-    initState.xhdot1 = -initState.temp1 * initState.cosio;
-    state.nodedot = initState.xhdot1 + (0.5 * initState.temp2 * (4.0 - 19.0 * initState.cosio2) +
-      2.0 * initState.temp3 * (3.0 - 7.0 * initState.cosio2)) * initState.cosio;
+    state.cc4 = 2.0 * state.no_unkozai * coef1 * initState.ao * initState.omeosq *
+      (state.eta * (2.0 + 0.5 * etasq) + state.ecco *
+      (0.5 + 2.0 * etasq) - state.j2 * tsi / (initState.ao * psisq) *
+      (-3.0 * state.con41 * (1.0 - 2.0 * eeta + etasq *
+      (1.5 - 0.5 * eeta)) + 0.75 * state.x1mth2 *
+      (2.0 * etasq - eeta * (1.0 + etasq)) * cos(2.0 * state.argpo)));
+    state.cc5 = 2.0 * coef1 * initState.ao * initState.omeosq * (1.0 + 2.75 *
+      (etasq + eeta) + eeta * etasq);
+    double cosio4 = initState.cosio2 * initState.cosio2;
+    double temp1 = 1.5 * state.j2 * pinvsq * state.no_unkozai;
+    double temp2 = 0.5 * temp1 * state.j2 * pinvsq;
+    double temp3 = -0.46875 * state.j4 * pinvsq * pinvsq * state.no_unkozai;
+    state.mdot = state.no_unkozai + 0.5 * temp1 * initState.rteosq * state.con41 + 0.0625 *
+      temp2 * initState.rteosq * (13.0 - 78.0 * initState.cosio2 + 137.0 * cosio4);
+    state.argpdot = -0.5 * temp1 * initState.con42 + 0.0625 * temp2 *
+      (7.0 - 114.0 * initState.cosio2 + 395.0 * cosio4) +
+      temp3 * (3.0 - 36.0 * initState.cosio2 + 49.0 * cosio4);
+    double xhdot1 = -temp1 * initState.cosio;
+    state.nodedot = xhdot1 + (0.5 * temp2 * (4.0 - 19.0 * initState.cosio2) +
+      2.0 * temp3 * (3.0 - 7.0 * initState.cosio2)) * initState.cosio;
     initState.xpidot = state.argpdot + state.nodedot;
-    state.omgcof = state.bstar * initState.cc3 * cos(state.argpo);
+    state.omgcof = state.bstar * cc3 * cos(state.argpo);
     state.xmcof = 0.0;
     if (state.ecco > 1.0e-4) {
-      state.xmcof = -initState.x2o3 * initState.coef * state.bstar / initState.eeta;
+      state.xmcof = -(2.0 / 3.0) * coef * state.bstar / eeta;
     }
-    state.nodecf = 3.5 * initState.omeosq * initState.xhdot1 * state.cc1;
+    state.nodecf = 3.5 * initState.omeosq * xhdot1 * state.cc1;
     state.t2cof = 1.5 * state.cc1;
-    if (fabs(initState.cosio + 1.0) > 1.5e-12)
+    if (fabs(initState.cosio + 1.0) > 1.5e-12) {
       state.xlcof = -0.25 * state.j3oj2 * initState.sinio * (3.0 + 5.0 * initState.cosio) / (1.0 + initState.cosio);
-    else
+    } else {
       state.xlcof = -0.25 * state.j3oj2 * initState.sinio * (3.0 + 5.0 * initState.cosio) / temp4;
+    }
     state.aycof = -0.5 * state.j3oj2 * initState.sinio;
-    initState.delmotemp = 1.0 + state.eta * cos(state.mo);
-    state.delmo = initState.delmotemp * initState.delmotemp * initState.delmotemp;
+    double delmotemp = 1.0 + state.eta * cos(state.mo);
+    state.delmo = delmotemp * delmotemp * delmotemp;
     state.sinmao = sin(state.mo);
     state.x7thm1 = 7.0 * initState.cosio2 - 1.0;
 
@@ -126,7 +116,6 @@ SGP4::Sgp4State SGP4::initialiseSgp4(
     if ((2 * M_PI / state.no_unkozai) >= 225.0) {
       state.method = SGP4::Method::DEEP_SPACE;
       state.isimp = true;
-      initState.tc = 0.0;
       initState.inclm = state.inclo;
 
       dscom(state, initState);
@@ -145,28 +134,24 @@ SGP4::Sgp4State SGP4::initialiseSgp4(
       state.argpo = outputs.argpp;
       state.mo = outputs.mp;
 
-      initState.argpm = 0.0;
-      initState.nodem = 0.0;
-      initState.mm = 0.0;
-
       dsinit(state, initState);
     }
 
     // Set variables if not deep space
     if (!state.isimp) {
-      initState.cc1sq = state.cc1 * state.cc1;
-      state.d2 = 4.0 * initState.ao * initState.tsi * initState.cc1sq;
-      initState.temp = state.d2 * initState.tsi * state.cc1 / 3.0;
-      state.d3 = (17.0 * initState.ao + initState.sfour) * initState.temp;
-      state.d4 = 0.5 * initState.temp * initState.ao * initState.tsi * (221.0 * initState.ao + 31.0 * initState.sfour) *
+      double cc1sq = state.cc1 * state.cc1;
+      state.d2 = 4.0 * initState.ao * tsi * cc1sq;
+      double temp = state.d2 * tsi * state.cc1 / 3.0;
+      state.d3 = (17.0 * initState.ao + sfour) * temp;
+      state.d4 = 0.5 * temp * initState.ao * tsi * (221.0 * initState.ao + 31.0 * sfour) *
         state.cc1;
-      state.t3cof = state.d2 + 2.0 * initState.cc1sq;
+      state.t3cof = state.d2 + 2.0 * cc1sq;
       state.t4cof = 0.25 * (3.0 * state.d3 + state.cc1 *
-        (12.0 * state.d2 + 10.0 * initState.cc1sq));
+        (12.0 * state.d2 + 10.0 * cc1sq));
       state.t5cof = 0.2 * (3.0 * state.d4 +
         12.0 * state.cc1 * state.d3 +
         6.0 * state.d2 * state.d2 +
-        15.0 * initState.cc1sq * (2.0 * state.d2 + initState.cc1sq));
+        15.0 * cc1sq * (2.0 * state.d2 + cc1sq));
     }
   }
 
@@ -185,23 +170,20 @@ void SGP4::initl(SGP4::Sgp4State &state, SGP4::Sgp4InitState &initState) {
   initState.cosio2 = initState.cosio * initState.cosio;
 
   // Un-kozai the mean motion.
-  double ak = pow(state.xke / state.no_kozai, initState.x2o3);
+  double ak = pow(state.xke / state.no_kozai, (2.0 / 3.0));
   double d1 = 0.75 * state.j2 * (3.0 * initState.cosio2 - 1.0) / (initState.rteosq * initState.omeosq);
   double del = d1 / (ak * ak);
   double adel = ak * (1.0 - del * del - del * (1.0 / 3.0 + 134.0 * del * del / 81.0));
   del = d1 / (adel * adel);
   state.no_unkozai = state.no_kozai / (1.0 + del);
 
-  initState.ao = pow(state.xke / (state.no_unkozai), initState.x2o3);
+  initState.ao = pow(state.xke / (state.no_unkozai), (2.0 / 3.0));
   initState.sinio = sin(state.inclo);
   double po = initState.ao * initState.omeosq;
   initState.con42 = 1.0 - 5.0 * initState.cosio2;
   state.con41 = -initState.con42 - initState.cosio2 - initState.cosio2;
-  initState.ainv = 1.0 / initState.ao;
   initState.posq = po * po;
   initState.rp = initState.ao * (1.0 - state.ecco);
-  // TODO: is this redundant?
-  state.method = SGP4::Method::NORMAL;
 
   // count integer number of days from 0 jan 1970
   double ts70 = state.epoch - 7305.0;
@@ -222,7 +204,6 @@ void SGP4::initl(SGP4::Sgp4State &state, SGP4::Sgp4InitState &initState) {
 void SGP4::dscom(SGP4::Sgp4State &state, SGP4::Sgp4InitState &initState) {
   double ep = state.ecco;
   double argpp = state.argpo;
-  //double tc = initState.tc;
   double inclp = state.inclo;
   double nodep = state.nodeo;
   double np = state.no_unkozai;
@@ -238,35 +219,30 @@ void SGP4::dscom(SGP4::Sgp4State &state, SGP4::Sgp4InitState &initState) {
 
   initState.nm = np;
   initState.em = ep;
-  initState.snodm = sin(nodep);
-  initState.cnodm = cos(nodep);
-  initState.sinomm = sin(argpp);
-  initState.cosomm = cos(argpp);
+  double snodm = sin(nodep);
+  double cnodm = cos(nodep);
+  double sinomm = sin(argpp);
+  double cosomm = cos(argpp);
   initState.sinim = sin(inclp);
   initState.cosim = cos(inclp);
   initState.emsq = initState.em * initState.em;
   double betasq = 1.0 - initState.emsq;
-  initState.rtemsq = sqrt(betasq);
+  double rtemsq = sqrt(betasq);
 
   // Initialize lunar solar terms
-  state.peo = 0.0;
-  state.pinco = 0.0;
-  state.plo = 0.0;
-  state.pgho = 0.0;
-  state.pho = 0.0;
-  initState.day = state.epoch + 18261.5 + initState.tc / 1440.0;
-  double xnodce = fmod(4.5236020 - 9.2422029e-4 * initState.day, 2 * M_PI);
+  double day = state.epoch + 18261.5;
+  double xnodce = fmod(4.5236020 - 9.2422029e-4 * day, 2 * M_PI);
   double stem = sin(xnodce);
   double ctem = cos(xnodce);
   double zcosil = 0.91375164 - 0.03568096 * ctem;
   double zsinil = sqrt(1.0 - zcosil * zcosil);
   double zsinhl = 0.089683511 * stem / zsinil;
   double zcoshl = sqrt(1.0 - zsinhl * zsinhl);
-  initState.gam = 5.8351514 + 0.0019443680 * initState.day;
+  double gam = 5.8351514 + 0.0019443680 * day;
   double zx = 0.39785416 * stem / zsinil;
   double zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
   zx = atan2(zx, zy);
-  zx = initState.gam + zx - xnodce;
+  zx = gam + zx - xnodce;
   double zcosgl = cos(zx);
   double zsingl = sin(zx);
 
@@ -275,8 +251,8 @@ void SGP4::dscom(SGP4::Sgp4State &state, SGP4::Sgp4InitState &initState) {
   double zsing = zsings;
   double zcosi = zcosis;
   double zsini = zsinis;
-  double zcosh = initState.cnodm;
-  double zsinh = initState.snodm;
+  double zcosh = cnodm;
+  double zsinh = snodm;
   double cc = c1ss;
   double xnoi = 1.0 / initState.nm;
 
@@ -294,14 +270,14 @@ void SGP4::dscom(SGP4::Sgp4State &state, SGP4::Sgp4InitState &initState) {
     a5 = -initState.sinim * a7 + initState.cosim * a8;
     a6 = -initState.sinim * a9 + initState.cosim * a10;
 
-    x1 = a1 * initState.cosomm + a2 * initState.sinomm;
-    x2 = a3 * initState.cosomm + a4 * initState.sinomm;
-    x3 = -a1 * initState.sinomm + a2 * initState.cosomm;
-    x4 = -a3 * initState.sinomm + a4 * initState.cosomm;
-    x5 = a5 * initState.sinomm;
-    x6 = a6 * initState.sinomm;
-    x7 = a5 * initState.cosomm;
-    x8 = a6 * initState.cosomm;
+    x1 = a1 * cosomm + a2 * sinomm;
+    x2 = a3 * cosomm + a4 * sinomm;
+    x3 = -a1 * sinomm + a2 * cosomm;
+    x4 = -a3 * sinomm + a4 * cosomm;
+    x5 = a5 * sinomm;
+    x6 = a6 * sinomm;
+    x7 = a5 * cosomm;
+    x8 = a6 * cosomm;
 
     initState.z31 = 12.0 * x1 * x1 - 3.0 * x3 * x3;
     initState.z32 = 24.0 * x1 * x2 - 6.0 * x3 * x4;
@@ -321,8 +297,8 @@ void SGP4::dscom(SGP4::Sgp4State &state, SGP4::Sgp4InitState &initState) {
     initState.z2 = initState.z2 + initState.z2 + betasq * initState.z32;
     initState.z3 = initState.z3 + initState.z3 + betasq * initState.z33;
     initState.s3 = cc * xnoi;
-    initState.s2 = -0.5 * initState.s3 / initState.rtemsq;
-    initState.s4 = initState.s3 * initState.rtemsq;
+    initState.s2 = -0.5 * initState.s3 / rtemsq;
+    initState.s4 = initState.s3 * rtemsq;
     initState.s1 = -15.0 * initState.em * initState.s4;
     initState.s5 = x1 * x3 + x2 * x4;
     initState.s6 = x2 * x3 + x1 * x4;
@@ -353,14 +329,14 @@ void SGP4::dscom(SGP4::Sgp4State &state, SGP4::Sgp4InitState &initState) {
       zsing = zsingl;
       zcosi = zcosil;
       zsini = zsinil;
-      zcosh = zcoshl * initState.cnodm + zsinhl * initState.snodm;
-      zsinh = initState.snodm * zcoshl - initState.cnodm * zsinhl;
+      zcosh = zcoshl * cnodm + zsinhl * snodm;
+      zsinh = snodm * zcoshl - cnodm * zsinhl;
       cc = c1l;
     }
   }
 
-  state.zmol = fmod(4.7199672 + 0.22997150  * initState.day - initState.gam, 2 * M_PI);
-  state.zmos = fmod(6.2565837 + 0.017201977 * initState.day, 2 * M_PI);
+  state.zmol = fmod(4.7199672 + 0.22997150  * day - gam, 2 * M_PI);
+  state.zmos = fmod(6.2565837 + 0.017201977 * day, 2 * M_PI);
 
   // Solar terms
   state.se2 = 2.0 * initState.ss1 * initState.ss6;
@@ -400,10 +376,6 @@ void SGP4::dpper(const SGP4::Sgp4State &state, SGP4::Sgp4DpperOutputs &outputs) 
 
   // Calculate time varying periodics
   double zm = state.zmos + zns * state.t;
-  // be sure that the initial call has time set to zero
-  if (state.initialising) {
-    zm = state.zmos;
-  }
   double zf = zm + 2.0 * zes * sin(zm);
   double sinzf = sin(zf);
   double f2 = 0.5 * sinzf * sinzf - 0.25;
@@ -413,10 +385,8 @@ void SGP4::dpper(const SGP4::Sgp4State &state, SGP4::Sgp4DpperOutputs &outputs) 
   double sls = state.sl2 * f2 + state.sl3 * f3 + state.sl4 * sinzf;
   double sghs = state.sgh2 * f2 + state.sgh3 * f3 + state.sgh4 * sinzf;
   double shs = state.sh2 * f2 + state.sh3 * f3;
+
   zm = state.zmol + znl * state.t;
-  if (state.initialising) {
-    zm = state.zmol;
-  }
   zf = zm + 2.0 * zel * sin(zm);
   sinzf = sin(zf);
   f2 = 0.5 * sinzf * sinzf - 0.25;
@@ -433,11 +403,6 @@ void SGP4::dpper(const SGP4::Sgp4State &state, SGP4::Sgp4DpperOutputs &outputs) 
   double ph = shs + shll;
 
   if (!state.initialising) {
-    pe = pe - state.peo;
-    pinc = pinc - state.pinco;
-    pl = pl - state.plo;
-    pgh = pgh - state.pgho;
-    ph = ph - state.pho;
     outputs.inclp = outputs.inclp + pinc;
     outputs.ep = outputs.ep + pe;
     double sinip = sin(outputs.inclp);
@@ -469,7 +434,7 @@ void SGP4::dpper(const SGP4::Sgp4State &state, SGP4::Sgp4DpperOutputs &outputs) 
       alfdp = alfdp + dalf;
       betdp = betdp + dbet;
       outputs.nodep = fmod(outputs.nodep, 2 * M_PI);
-      if ((outputs.nodep < 0.0) && (state.operationmode == SGP4::OperationMode::AFSPC)) {
+      if ((outputs.nodep < 0.0) && (state.operationMode == SGP4::OperationMode::AFSPC)) {
         outputs.nodep = outputs.nodep + 2 * M_PI;
       }
       double xls = outputs.mp + outputs.argpp + cosip * outputs.nodep;
@@ -477,7 +442,7 @@ void SGP4::dpper(const SGP4::Sgp4State &state, SGP4::Sgp4DpperOutputs &outputs) 
       xls = xls + dls;
       double xnoh = outputs.nodep;
       outputs.nodep = atan2(alfdp, betdp);
-      if ((outputs.nodep < 0.0) && (state.operationmode == SGP4::OperationMode::AFSPC)) {
+      if ((outputs.nodep < 0.0) && (state.operationMode == SGP4::OperationMode::AFSPC)) {
         outputs.nodep = outputs.nodep + 2 * M_PI;
       }
       if (fabs(xnoh - outputs.nodep) > M_PI) {
@@ -533,15 +498,13 @@ void SGP4::dspace(const SGP4::Sgp4State &state, SGP4::Sgp4DspaceOutputs &outputs
       delt = stepn;
     }
 
-    int iretn = 381;
-    //int iret = 0;
     double xndt;
     double xldot;
     double xnddt;
-    while (iretn == 381) {
+    while (true) {
       // Dot terms calculated
-      // Near - synchronous resonance terms
-      if (state.irez != SGP4::Resonance::HALF_DAY) {
+      if (state.irez == SGP4::Resonance::ONE_DAY) {
+        // Near-synchronous resonance terms
         xndt = state.del1 * sin(outputs.xli - fasx2) + state.del2 * sin(2.0 * (outputs.xli - fasx4)) +
           state.del3 * sin(3.0 * (outputs.xli - fasx6));
         xldot = outputs.xni + state.xfact;
@@ -550,7 +513,7 @@ void SGP4::dspace(const SGP4::Sgp4State &state, SGP4::Sgp4DspaceOutputs &outputs
           3.0 * state.del3 * cos(3.0 * (outputs.xli - fasx6));
         xnddt = xnddt * xldot;
       } else {
-        // Near - half-day resonance terms
+        // Near-half-day resonance terms
         double xomi = state.argpo + state.argpdot * outputs.atime;
         double x2omi = xomi + xomi;
         double x2li = outputs.xli + outputs.xli;
@@ -570,28 +533,23 @@ void SGP4::dspace(const SGP4::Sgp4State &state, SGP4::Sgp4DspaceOutputs &outputs
       }
 
       // Integrator
-      if (fabs(state.t - outputs.atime) >= stepp) {
-        //iret = 0;
-        iretn = 381;
-      } else {
+      if (fabs(state.t - outputs.atime) < stepp) {
         ft = state.t - outputs.atime;
-        iretn = 0;
+        break;
       }
 
-      if (iretn == 381) {
-        outputs.xli = outputs.xli + xldot * delt + xndt * step2;
-        outputs.xni = outputs.xni + xndt * delt + xnddt * step2;
-        outputs.atime = outputs.atime + delt;
-      }
+      outputs.xli = outputs.xli + xldot * delt + xndt * step2;
+      outputs.xni = outputs.xni + xndt * delt + xnddt * step2;
+      outputs.atime = outputs.atime + delt;
     }
 
     outputs.nm = outputs.xni + xndt * ft + xnddt * ft * ft * 0.5;
     double xl = outputs.xli + xldot * ft + xndt * ft * ft * 0.5;
-    if (state.irez != SGP4::Resonance::ONE_DAY) {
-      outputs.mm = xl - 2.0 * outputs.nodem + 2.0 * theta;
+    if (state.irez == SGP4::Resonance::ONE_DAY) {
+      outputs.mm = xl - outputs.nodem - outputs.argpm + theta;
       outputs.dndt = outputs.nm - state.no_unkozai;
     } else {
-      outputs.mm = xl - outputs.nodem - outputs.argpm + theta;
+      outputs.mm = xl - 2.0 * outputs.nodem + 2.0 * theta;
       outputs.dndt = outputs.nm - state.no_unkozai;
     }
     outputs.nm = state.no_unkozai + outputs.dndt;
@@ -654,17 +612,13 @@ void SGP4::dsinit(SGP4::Sgp4State &state, SGP4::Sgp4InitState &initState) {
   }
 
   // Calculate deep space resonance effects
-  initState.dndt = 0.0;
-  double theta = fmod(state.gsto + initState.tc * rptim, 2 * M_PI);
+  double theta = fmod(state.gsto, 2 * M_PI);
   initState.em = initState.em + state.dedt * state.t;
   initState.inclm = initState.inclm + state.didt * state.t;
-  initState.argpm = initState.argpm + state.domdt * state.t;
-  initState.nodem = initState.nodem + state.dnodt * state.t;
-  initState.mm = initState.mm + state.dmdt * state.t;
 
   // Initialize the resonance terms
   if (state.irez != Resonance::NONE) {
-    double aonv = pow(initState.nm / state.xke, initState.x2o3);
+    double aonv = pow(initState.nm / state.xke, (2.0 / 3.0));
 
     // Geopotential resonance for 12 hour orbits
     if (state.irez == Resonance::HALF_DAY) {
@@ -771,7 +725,7 @@ void SGP4::dsinit(SGP4::Sgp4State &state, SGP4::Sgp4InitState &initState) {
     state.xli = state.xlamo;
     state.xni = no;
     state.atime = 0.0;
-    initState.nm = no + initState.dndt;
+    initState.nm = no;
   }
 }
 
@@ -779,7 +733,6 @@ SGP4::Sgp4Result SGP4::runSgp4(SGP4::Sgp4State &state, double timeSinceEpochMinu
 
   // Set mathematical constants
   const double temp4 = 1.5e-12;
-  double x2o3 = 2.0 / 3.0;
   double vkmpersec = state.radiusearthkm * state.xke / 60.0;
 
   state.t = timeSinceEpochMinutes;
@@ -798,7 +751,6 @@ SGP4::Sgp4Result SGP4::runSgp4(SGP4::Sgp4State &state, double timeSinceEpochMinu
 
   if (!state.isimp) {
     double delomg = state.omgcof * state.t;
-    // sgp4fix use mutliply for speed instead of pow
     double delmtemp = 1.0 + state.eta * cos(xmdf);
     double delm = state.xmcof *
       (delmtemp * delmtemp * delmtemp -
@@ -820,7 +772,6 @@ SGP4::Sgp4Result SGP4::runSgp4(SGP4::Sgp4State &state, double timeSinceEpochMinu
   double em = state.ecco;
   double inclm = state.inclo;
   if (state.method == SGP4::Method::DEEP_SPACE) {
-    //double tc = state.t;
     Sgp4DspaceOutputs dspaceOutputs {
       atime: state.atime,
       em: em,
@@ -850,7 +801,7 @@ SGP4::Sgp4Result SGP4::runSgp4(SGP4::Sgp4State &state, double timeSinceEpochMinu
       code: SGP4::ResultCode::NEGATIVE_MEAN_MOTION
     };
   }
-  double am = pow((state.xke / nm), x2o3) * tempa * tempa;
+  double am = pow((state.xke / nm), (2.0 / 3.0)) * tempa * tempa;
   nm = state.xke / pow(am, 1.5);
   em = em - tempe;
 
@@ -925,7 +876,6 @@ SGP4::Sgp4Result SGP4::runSgp4(SGP4::Sgp4State &state, double timeSinceEpochMinu
     sinip = sin(xincp);
     cosip = cos(xincp);
     state.aycof = -0.5 * state.j3oj2 * sinip;
-    // sgp4fix for divide by zero for xincp = 180 deg
     if (fabs(cosip + 1.0) > 1.5e-12) {
       state.xlcof = -0.25 * state.j3oj2 * sinip * (3.0 + 5.0 * cosip) / (1.0 + cosip);
     } else {
@@ -948,8 +898,9 @@ SGP4::Sgp4Result SGP4::runSgp4(SGP4::Sgp4State &state, double timeSinceEpochMinu
     coseo1 = cos(eo1);
     tem5 = 1.0 - coseo1 * axnl - sineo1 * aynl;
     tem5 = (u - aynl * coseo1 + axnl * sineo1 - eo1) / tem5;
-    if (fabs(tem5) >= 0.95)
+    if (fabs(tem5) >= 0.95) {
       tem5 = tem5 > 0.0 ? 0.95 : -0.95;
+    }
     eo1 = eo1 + tem5;
     ktr = ktr + 1;
   }
@@ -957,8 +908,8 @@ SGP4::Sgp4Result SGP4::runSgp4(SGP4::Sgp4State &state, double timeSinceEpochMinu
   // Short period preliminary quantities
   double ecose = axnl * coseo1 + aynl * sineo1;
   double esine = axnl * sineo1 - aynl * coseo1;
-  double el2 = axnl*axnl + aynl*aynl;
-  double pl = am*(1.0 - el2);
+  double el2 = axnl * axnl + aynl * aynl;
+  double pl = am * (1.0 - el2);
   if (pl < 0.0) {
       return SGP4::Sgp4Result {
         code: SGP4::ResultCode::BAD_SEMILATUS_RECTUM
@@ -991,8 +942,7 @@ SGP4::Sgp4Result SGP4::runSgp4(SGP4::Sgp4State &state, double timeSinceEpochMinu
   double xnode = nodep + 1.5 * temp2 * cosip * sin2u;
   double xinc = xincp + 1.5 * temp2 * cosip * sinip * cos2u;
   double mvt = rdotl - nm * temp1 * state.x1mth2 * sin2u / state.xke;
-  double rvdot = rvdotl + nm * temp1 * (state.x1mth2 * cos2u +
-    1.5 * state.con41) / state.xke;
+  double rvdot = rvdotl + nm * temp1 * (state.x1mth2 * cos2u + 1.5 * state.con41) / state.xke;
 
   // Orientation vectors
   double sinsu = sin(su);
@@ -1041,16 +991,17 @@ double SGP4::greenwichSiderealTime(double julianDateUt1) {
 }
 
 void SGP4::getGravitationalConstants(SGP4::Sgp4State &state, SGP4::WgsVersion wgsVersion) {
+  double mu;
   switch (wgsVersion) {
     case SGP4::WgsVersion::WGS_72:
-      state.mus = 398600.8;
+      mu = 398600.8;
       state.radiusearthkm = 6378.135;
       state.j2 = 0.001082616;
       state.j3 = -0.00000253881;
       state.j4 = -0.00000165597;
       break;
     case SGP4::WgsVersion::WGS_84:
-      state.mus = 398600.5;
+      mu = 398600.5;
       state.radiusearthkm = 6378.137;
       state.j2 = 0.00108262998905;
       state.j3 = -0.00000253215306;
@@ -1058,8 +1009,7 @@ void SGP4::getGravitationalConstants(SGP4::Sgp4State &state, SGP4::WgsVersion wg
       break;
   }
   state.j3oj2 = state.j3 / state.j2;
-  state.xke = 60.0 / std::sqrt(state.radiusearthkm * state.radiusearthkm * state.radiusearthkm / state.mus);
-  state.tumin = 1.0 / state.xke;
+  state.xke = 60.0 / std::sqrt(state.radiusearthkm * state.radiusearthkm * state.radiusearthkm / mu);
 }
 
 double SGP4::findTimeSinceEpochMinutes(
