@@ -1,6 +1,7 @@
 #ifndef SPACEPOINTER_LIB_SPACEPOINTER_OMM_MESSAGE_H_
 #define SPACEPOINTER_LIB_SPACEPOINTER_OMM_MESSAGE_H_
 
+#include <optional>
 #include <string>
 
 /**
@@ -9,6 +10,13 @@
  */
 class OmmMessage {
   public:
+    static std::optional<OmmMessage> fromJson(std::string json);
+
+    // Whether we have the following fields populated:
+    // epoch, meanMotion, eccentricity, inclination, rightAscensionOfAscendingNode,
+    // argumentOfPericenter, meanAnomaly, bStarDragCoefficient
+    bool hasSgp4Elements;
+
     std::string objectName;
     std::string objectId;
     std::string centerName;
@@ -42,12 +50,6 @@ class OmmMessage {
     double bStarDragCoefficient;
     double meanMotionDot; // first time derivative of mean motion, rev/day^2
     double meanMotionDdot; // second time derivative of mean motion, rev/day^3
-
-    // See covariance matrix documentation in OMM message.
-    // Indices are zero-based instead of 1-based.
-    // Note that only points [x][y] where y <= x are set to non-zero values.
-    double covarianceMatrix[6][6];
-    std::string covarianceReferenceFrame;
 };
 
 #endif
