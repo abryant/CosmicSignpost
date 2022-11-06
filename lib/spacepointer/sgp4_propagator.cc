@@ -893,7 +893,7 @@ SGP4::Sgp4Result SGP4::runSgp4(SGP4::Sgp4State &state, double timeSinceEpochMinu
   double sineo1, coseo1;
   double tem5 = 9999.9;
   int ktr = 1;
-  while ((fabs(tem5) >= 1.0e-12) && (ktr <= 10)) {
+  do {
     sineo1 = sin(eo1);
     coseo1 = cos(eo1);
     tem5 = 1.0 - coseo1 * axnl - sineo1 * aynl;
@@ -903,7 +903,7 @@ SGP4::Sgp4Result SGP4::runSgp4(SGP4::Sgp4State &state, double timeSinceEpochMinu
     }
     eo1 = eo1 + tem5;
     ktr = ktr + 1;
-  }
+  } while ((fabs(tem5) >= 1.0e-12) && (ktr <= 10));
 
   // Short period preliminary quantities
   double ecose = axnl * coseo1 + aynl * sineo1;
