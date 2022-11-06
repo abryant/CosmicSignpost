@@ -8,7 +8,7 @@
 #include "sgp4_propagator.h"
 
 const std::string CELESTRAK_URL_CATALOG_NUMBER =
-    "https://celestrak.org/NORAD/elements/gp.php?FORMAT=JSON-PRETTY&CATNR=";
+    "https://celestrak.org/NORAD/elements/gp.php?FORMAT=JSON&CATNR=";
 
 SatelliteOrbit::SatelliteOrbit(std::string catalogNumber)
     : catalogNumber(catalogNumber),
