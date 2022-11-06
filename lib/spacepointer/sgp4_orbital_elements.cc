@@ -8,7 +8,6 @@
 #include "angle_utils.h"
 #include "time_utils.h"
 
-const double SECONDS_PER_DAY = 24 * 60 * 60; // 86400
 const double MINUTES_PER_DAY = 24 * 60; // 1440
 
 SGP4::Sgp4OrbitalElements::Sgp4OrbitalElements(OmmMessage omm) {
@@ -19,8 +18,6 @@ SGP4::Sgp4OrbitalElements::Sgp4OrbitalElements(OmmMessage omm) {
   epoch = julianDaysSince0thJanuary1950;
 
   meanMotion = omm.meanMotion / (MINUTES_PER_DAY / (2 * M_PI));
-  meanMotionDot = omm.meanMotionDot / (MINUTES_PER_DAY * MINUTES_PER_DAY / (2 * M_PI));
-  meanMotionDdot = omm.meanMotionDdot / (MINUTES_PER_DAY * MINUTES_PER_DAY * MINUTES_PER_DAY / (2 * M_PI));
   inclinationRadians = degreesToRadians(omm.inclination);
   rightAscensionOfAscendingNodeRadians = degreesToRadians(omm.rightAscensionOfAscendingNode);
   argumentOfPeriapsisRadians = degreesToRadians(omm.argumentOfPericenter);
