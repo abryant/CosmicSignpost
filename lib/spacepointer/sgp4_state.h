@@ -158,7 +158,7 @@ namespace SGP4 {
       double mm; // Averaged mean anomaly, radians
       double nm; // Averaged mean motion, radians/minute
 
-      const Sgp4GeodeticConstants geo;
+      Sgp4GeodeticConstants geo;
   };
 
   class Sgp4InitState {
