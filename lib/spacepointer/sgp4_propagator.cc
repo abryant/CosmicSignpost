@@ -994,6 +994,7 @@ SGP4::Sgp4GeodeticConstants SGP4::getGravitationalConstants(SGP4::WgsVersion wgs
   double mu;
   Sgp4GeodeticConstants result;
   switch (wgsVersion) {
+    default:
     case SGP4::WgsVersion::WGS_72:
       mu = 398600.8;
       result.radiusearthkm = 6378.135;
