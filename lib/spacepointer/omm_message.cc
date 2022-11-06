@@ -1,10 +1,12 @@
 #include "omm_message.h"
 
+#include <string>
+
 #include <ArduinoJson.h>
 
 std::optional<OmmMessage> OmmMessage::fromJson(std::string json) {
 
-  ArduinoJson::StaticJsonDocument<768> doc;
+  ArduinoJson::StaticJsonDocument<1024> doc;
   ArduinoJson::DeserializationError error = ArduinoJson::deserializeJson(doc, json);
   if (error) {
     return std::nullopt;
