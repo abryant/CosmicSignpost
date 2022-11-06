@@ -1,5 +1,14 @@
 #include "trackable_objects.h"
 
+std::map<std::string, SatelliteOrbit> TRACKABLE_SATELLITES = {
+  {"ISS", SatelliteOrbit("25544")},
+  {"SXM-8", SatelliteOrbit("48838")},
+};
+
+std::function<CartesianLocation(int64_t)> getSatellite(std::string name) {
+  return [name](int64_t timeMillis) { return TRACKABLE_SATELLITES.at(name).toCartesian(timeMillis); };
+}
+
 const std::map<std::string, std::function<CartesianLocation(int64_t)>> TRACKABLE_OBJECTS = {
   {"Brasilia", [](int64_t timeMillis) { return Location(-15.805268, -47.914144, 1110).getCartesian(); }},
   {"Cape Town", [](int64_t timeMillis) { return Location(-33.904166, 18.401101, 7).getCartesian(); }},
@@ -25,4 +34,14 @@ const std::map<std::string, std::function<CartesianLocation(int64_t)>> TRACKABLE
   {"Saturn", [](int64_t timeMillis) { return PlanetaryOrbit::SATURN.toCartesian(timeMillis); }},
   {"Uranus", [](int64_t timeMillis) { return PlanetaryOrbit::URANUS.toCartesian(timeMillis); }},
   {"Neptune", [](int64_t timeMillis) { return PlanetaryOrbit::NEPTUNE.toCartesian(timeMillis); }},
+  {"ISS", getSatellite("ISS")},
+  {"SXM-8", getSatellite("SXM-8")},
 };
+
+bool initSatellites(std::function<std::optional<std::string>(std::string)> urlFetchFunction) {
+  bool success = true;
+  for (auto it = TRACKABLE_SATELLITES.begin(); it != TRACKABLE_SATELLITES.end(); it++) {
+    success &= it->second.fetchElements(urlFetchFunction);
+  }
+  return success;
+}
