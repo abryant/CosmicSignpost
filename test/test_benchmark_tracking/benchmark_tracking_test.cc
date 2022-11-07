@@ -20,7 +20,7 @@ std::optional<std::string> fetchUrl(std::string url) {
 }
 
 TEST(BenchmarkTracking, MarsForOneSecond) {
-  Tracker tracker = Tracker(Location(51.500804, -0.124340, 10), Direction(0, 0), TRACKABLE_OBJECTS.at("Mars"));
+  Tracker tracker = Tracker(Location(51.500804, -0.124340, 10), Direction(0, 0), TRACKABLE_PLANETS.at("Mars"));
   const int ITERATIONS = 1000;
   Direction benchmarkData;
   int64_t start = millis();
@@ -34,7 +34,7 @@ TEST(BenchmarkTracking, MarsForOneSecond) {
 
 TEST(BenchmarkTracking, IssForOneSecond) {
   initSatellites(fetchUrl);
-  Tracker tracker = Tracker(Location(51.500804, -0.124340, 10), Direction(0, 0), TRACKABLE_OBJECTS.at("ISS"));
+  Tracker tracker = Tracker(Location(51.500804, -0.124340, 10), Direction(0, 0), TRACKABLE_LOW_EARTH_ORBIT_SATELLITES.at("ISS"));
   const int ITERATIONS = 1000;
   Direction benchmarkData;
   int64_t start = millis();
@@ -48,7 +48,7 @@ TEST(BenchmarkTracking, IssForOneSecond) {
 
 TEST(BenchmarkTracking, Sxm8ForOneSecond) {
   initSatellites(fetchUrl);
-  Tracker tracker = Tracker(Location(51.500804, -0.124340, 10), Direction(0, 0), TRACKABLE_OBJECTS.at("SXM-8"));
+  Tracker tracker = Tracker(Location(51.500804, -0.124340, 10), Direction(0, 0), TRACKABLE_GEOSTATIONARY_SATELLITES.at("Sirius XM-8"));
   const int ITERATIONS = 1000;
   Direction benchmarkData;
   int64_t start = millis();

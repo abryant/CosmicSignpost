@@ -59,7 +59,7 @@ std::optional<std::string> fetchSxm8OmmMessage(std::string ignoredUrl) {
 TEST(Tracker, IssOn6thNovember2022) {
   bool initSuccess = initSatellites(fetchIssOmmMessage);
   EXPECT_EQ(initSuccess, true);
-  Tracker tracker(Location(0, 0, 0), Direction(0, 0), TRACKABLE_OBJECTS.at("ISS"));
+  Tracker tracker(Location(0, 0, 0), Direction(0, 0), TRACKABLE_LOW_EARTH_ORBIT_SATELLITES.at("ISS"));
   Direction direction = tracker.getDirectionAt(1667757600000LL);
   // Observer data from JPL Horizons (ISS):
   EXPECT_NEAR(direction.getAzimuth(), 38.953368, 0.05);
@@ -69,7 +69,7 @@ TEST(Tracker, IssOn6thNovember2022) {
 TEST(Tracker, Sxm8On6thNovember2022) {
   bool initSuccess = initSatellites(fetchSxm8OmmMessage);
   EXPECT_EQ(initSuccess, true);
-  Tracker tracker(Location(0, 0, 0), Direction(0, 0), TRACKABLE_OBJECTS.at("SXM-8"));
+  Tracker tracker(Location(0, 0, 0), Direction(0, 0), TRACKABLE_GEOSTATIONARY_SATELLITES.at("Sirius XM-8"));
   Direction direction = tracker.getDirectionAt(1667757600000LL);
   // Observer data from JPL Horizons (using the following custom TLE for SXM-8):
   // 1 48838U 21049A   22307.96273323 -.00000212  00000+0  00000+0 0  9990
@@ -79,14 +79,14 @@ TEST(Tracker, Sxm8On6thNovember2022) {
 }
 
 TEST(Tracker, MoonAtJ2000) {
-  Tracker tracker(Location(0, 0, 0), Direction(0, 0), TRACKABLE_OBJECTS.at("Moon"));
+  Tracker tracker(Location(0, 0, 0), Direction(0, 0), TRACKABLE_OTHER.at("Moon"));
   Direction direction = tracker.getDirectionAt(J2000_UTC_MILLIS);
   EXPECT_NEAR(direction.getAzimuth(), 257.174602 - 360.0, 0.2);
   EXPECT_NEAR(direction.getAltitude(), 30.823721, 1);
 }
 
 TEST(Tracker, MoonIn2020) {
-  Tracker tracker(Location(0, 0, 0), Direction(0, 0), TRACKABLE_OBJECTS.at("Moon"));
+  Tracker tracker(Location(0, 0, 0), Direction(0, 0), TRACKABLE_OTHER.at("Moon"));
   Direction direction = tracker.getDirectionAt(1577880000000LL); // 2020-01-01 12:00:00 UTC
   EXPECT_NEAR(direction.getAzimuth(), 98.104074, 0.1);
   EXPECT_NEAR(direction.getAltitude(), 14.836674, 1.1);
