@@ -29,6 +29,8 @@ bool initSatellites(std::function<std::optional<std::string>(std::string)> urlFe
   return success;
 }
 
+// To fit on the LCD menu, all names must be at most 12 characters long.
+
 const std::map<std::string, tracking_function> TRACKABLE_LOW_EARTH_ORBIT_SATELLITES = {
   {"ISS", getSatellite("ISS")},
   {"Tiangong", getSatellite("Tiangong")},
@@ -69,7 +71,7 @@ const std::map<std::string, tracking_function> TRACKABLE_CITIES = {
   {"London", [](int64_t timeMillis) { return Location(51.500804, -0.124340, 10).getCartesian(); }},
   {"New York", [](int64_t timeMillis) { return Location(40.777447, -73.969175, 25).getCartesian(); }},
   {"Rome", [](int64_t timeMillis) { return Location(41.890082, 12.492372, 20).getCartesian(); }},
-  {"San Francisco", [](int64_t timeMillis) { return Location(37.802362, -122.405843, 90).getCartesian(); }},
+  {"SanFrancisco", [](int64_t timeMillis) { return Location(37.802362, -122.405843, 90).getCartesian(); }},
   {"Sydney", [](int64_t timeMillis) { return Location(-33.857165, 151.215157, 10).getCartesian(); }},
   {"Vilnius", [](int64_t timeMillis) { return Location(54.686888, 25.291395, 95).getCartesian(); }},
 };
@@ -77,7 +79,7 @@ const std::map<std::string, tracking_function> TRACKABLE_CITIES = {
 const std::map<std::string, tracking_function> TRACKABLE_OTHER = {
   {"Sun", [](int64_t timeMillis) { return CartesianLocation(Vector(0, 0, 0), ReferenceFrame::SUN_ECLIPTIC); }},
   {"Moon", [](int64_t timeMillis) { return MoonOrbit::positionAt(timeMillis); }},
-  {"EM Barycentre", [](int64_t timeMillis) { return PlanetaryOrbit::EARTH_MOON_BARYCENTRE.toCartesian(timeMillis); }},
+  {"EMBarycentre", [](int64_t timeMillis) { return PlanetaryOrbit::EARTH_MOON_BARYCENTRE.toCartesian(timeMillis); }},
   {"North Pole", [](int64_t timeMillis) { return Location(90.0, 0.0, 0).getCartesian(); }},
   {"South Pole", [](int64_t timeMillis) { return Location(90.0, 0.0, 0).getCartesian(); }},
   {"GPS 0,0", [](int64_t timeMillis) { return Location(0.0, 0.0, 0).getCartesian(); }},
