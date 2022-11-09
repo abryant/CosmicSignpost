@@ -16,9 +16,10 @@
 #include "brightness_menu_entry.h"
 #include "info_menu_entry.h"
 #include "number_menu_entry.h"
+#include "tracking_menu.h"
 
-std::shared_ptr<Menu> buildSpacePointerMenu(std::function<void(int32_t)> updateAngle) {
-  std::vector<std::shared_ptr<MenuEntry>> mainEntries = {
+std::shared_ptr<Menu> buildViewMenu() {
+  std::vector<std::shared_ptr<MenuEntry>> viewEntries = {
     std::make_shared<InfoMenuEntry>("Wireless IP", []() {
       return std::string(WiFi.localIP().toString().c_str());
     }),
@@ -29,23 +30,15 @@ std::shared_ptr<Menu> buildSpacePointerMenu(std::function<void(int32_t)> updateA
       timeStr << std::put_time(utcTime, "%Y-%m-%d\n%H:%M:%S");
       return timeStr.str();
     }),
-    std::make_shared<ActionMenuEntry>("Action", []() {
-      Serial.println("Action pressed");
-    }),
-    std::make_shared<BooleanMenuEntry>("Boolean", [](bool b) {
-      Serial.print("Boolean changed to: ");
-      Serial.println(b);
-    }, false),
-    std::make_shared<NumberMenuEntry>("Latitude", "Lt: ~##.######N", [](std::string value) {
-      Serial.print("Latitude: ");
-      Serial.println(value.c_str());
-    }),
-    std::make_shared<NumberMenuEntry>("Angle", "Angle: ~###d", [updateAngle](std::string text) {
-      std::string numericValue = text.substr(7, 4);
-      int angleInt = std::stoi(numericValue);
-      updateAngle(angleInt);
-    }),
+  };
+  return std::make_shared<Menu>("View", viewEntries);
+}
+
+std::shared_ptr<Menu> buildSpacePointerMenu(tracking_selector_function chooseTrackedObject) {
+  std::vector<std::shared_ptr<MenuEntry>> mainEntries = {
+    buildTrackingMenu(chooseTrackedObject),
     std::make_shared<BrightnessMenuEntry>(),
+    buildViewMenu(),
   };
   return std::make_shared<Menu>("Main menu", mainEntries);
 }

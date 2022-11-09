@@ -4,7 +4,8 @@
 #include <memory>
 
 #include "menu.h"
+#include "tracking_menu.h"
 
-std::shared_ptr<Menu> buildSpacePointerMenu(std::function<void(int32_t)> updateAngle);
+std::shared_ptr<Menu> buildSpacePointerMenu(tracking_selector_function chooseTrackedObject);
 
 #endif

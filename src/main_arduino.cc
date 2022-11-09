@@ -115,8 +115,8 @@ void setup() {
       /* core= */ 0);
 
   currentDirection = Direction(90, 0);
-  menu = buildSpacePointerMenu([](int32_t newAngle) {
-    currentDirection = Direction(newAngle, 0);
+  menu = buildSpacePointerMenu([](tracking_function trackingFunction) {
+    tracker.setTrackingFunction(trackingFunction);
   });
   lastAddedTime = TimeMillisMicros::now();
 }

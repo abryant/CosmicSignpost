@@ -7,6 +7,7 @@
 #include "cartesian_location.h"
 #include "direction.h"
 #include "location.h"
+#include "trackable_objects.h"
 
 // Tracks an object's position from the current position.
 // This accounts for movement, by finding angular velocities.
@@ -18,16 +19,16 @@ class Tracker {
     Direction currentDirection;
 
     // Tracked location.
-    std::function<CartesianLocation(int64_t)> trackedObject;
+    tracking_function trackingFunction;
 
   public:
     Tracker(
       Location currentLocation,
       Direction currentDirection,
-      std::function<CartesianLocation(int64_t)> trackedObject);
+      tracking_function trackingFunction);
     void setCurrentLocation(Location currentLocation);
     void setCurrentDirection(Direction direction);
-    void setTrackedObject(std::function<CartesianLocation(int64_t)> trackedObject);
+    void setTrackingFunction(tracking_function trackingFunction);
 
     Direction getDirectionAt(int64_t timeMillis);
 };
