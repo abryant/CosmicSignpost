@@ -3,6 +3,7 @@
 #include <memory>
 #include <Arduino.h>
 #include <Wire.h>
+#include <HTTPClient.h>
 
 #include <AccelStepper.h>
 #include <WiFiManager.h>
@@ -48,9 +49,7 @@ std::shared_ptr<Menu> menu;
 Tracker tracker(
   Location(51.500804, -0.124340, 10),
   Direction(0, 0),
-  [](int32_t timeMillis) {
-    return CartesianLocation(Vector(6378000, 0, 0), ReferenceFrame::EARTH_FIXED);
-  });
+  TRACKABLE_LOW_EARTH_ORBIT_SATELLITES.at("ISS"));
 
 TaskHandle_t motorControlTaskHandle;
 Direction currentDirection;
@@ -77,6 +76,15 @@ void waitForTime() {
   }
 }
 
+// Required for fetching satellite information from Celestrak.
+std::optional<std::string> fetchUrl(std::string url) {
+  HTTPClient http;
+  http.begin(url.c_str());
+  http.GET();
+  std::string payload = std::string(http.getString().c_str());
+  return std::optional(payload);
+}
+
 void setup() {
   Serial.begin(115200);
   Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
@@ -95,6 +103,15 @@ void setup() {
   // Get the current time from an NTP server.
   configTime(0, 0, "pool.ntp.org");
   waitForTime();
+
+  bool initialized = initSatellites(fetchUrl);
+  if (!initialized) {
+    Serial.println("Failed to get satellite data, restarting...");
+    delay(10000);
+    Serial.println("Restarting now.");
+    ESP.restart();
+    return;
+  }
 
   directionQueue = std::make_shared<DirectionQueue>();
 
