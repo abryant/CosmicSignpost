@@ -18,6 +18,7 @@ class MenuEntry {
     std::string getName();
     virtual void onActivate(Menu *parent);
     void deactivate();
+    bool hasParent();
     virtual void onSelect() = 0;
     virtual void onBack() = 0;
     virtual void onRotateClockwise() = 0;

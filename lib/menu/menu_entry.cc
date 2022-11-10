@@ -20,3 +20,7 @@ void MenuEntry::deactivate() {
   parent->deactivateChild();
   parent = NULL;
 }
+
+bool MenuEntry::hasParent() {
+  return parent != NULL;
+}
