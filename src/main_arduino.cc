@@ -78,6 +78,7 @@ void waitForTime() {
 
 // Required for fetching satellite information from Celestrak.
 std::optional<std::string> fetchUrl(std::string url) {
+  Serial.println(("Fetching " + url).c_str());
   HTTPClient http;
   http.begin(url.c_str());
   http.GET();
@@ -104,6 +105,7 @@ void setup() {
   configTime(0, 0, "pool.ntp.org");
   waitForTime();
 
+  Serial.println("Initializing satellites...");
   bool initialized = initSatellites(fetchUrl);
   if (!initialized) {
     Serial.println("Failed to get satellite data, restarting...");
@@ -112,6 +114,7 @@ void setup() {
     ESP.restart();
     return;
   }
+  Serial.println("Done.");
 
   directionQueue = std::make_shared<DirectionQueue>();
 

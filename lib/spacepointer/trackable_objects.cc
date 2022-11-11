@@ -22,11 +22,13 @@ tracking_function getSatellite(std::string name) {
 }
 
 bool initSatellites(std::function<std::optional<std::string>(std::string)> urlFetchFunction) {
-  bool success = true;
   for (auto it = TRACKABLE_SATELLITES.begin(); it != TRACKABLE_SATELLITES.end(); it++) {
-    success &= it->second.fetchElements(urlFetchFunction);
+    bool success = it->second.fetchElements(urlFetchFunction);
+    if (!success) {
+      return false;
+    }
   }
-  return success;
+  return true;
 }
 
 // To fit on the LCD menu, all names must be at most 12 characters long.
