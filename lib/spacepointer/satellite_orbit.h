@@ -8,6 +8,7 @@
 
 #include "cartesian_location.h"
 #include "omm_message.h"
+#include "sgp4_orbital_elements.h"
 #include "sgp4_state.h"
 
 class SatelliteOrbit {
@@ -18,8 +19,13 @@ class SatelliteOrbit {
 
   private:
     std::string catalogNumber;
-    std::optional<OmmMessage> ommMessage;
-    std::optional<SGP4::Sgp4State> sgp4PropagatorState;
+    std::optional<SGP4::Sgp4OrbitalElements> sgp4OrbitalElements;
+
+    // The ESP32 doesn't have enough memory to store an Sgp4State for every satellite it knows
+    // about, so we only store the one we're currently tracking, identified by catalog number.
+    // This is not thread-safe, as the SatelliteOrbit functions should only be used by one thread.
+    static std::string currentCatalogNumber;
+    static std::optional<SGP4::Sgp4State> currentSgp4State;
 };
 
 #endif

@@ -10,33 +10,43 @@
 const std::string CELESTRAK_URL_CATALOG_NUMBER =
     "https://celestrak.org/NORAD/elements/gp.php?FORMAT=JSON&CATNR=";
 
+// The current orbit starts off empty.
+std::string SatelliteOrbit::currentCatalogNumber = "";
+std::optional<SGP4::Sgp4State> SatelliteOrbit::currentSgp4State = std::nullopt;
+
 SatelliteOrbit::SatelliteOrbit(std::string catalogNumber)
     : catalogNumber(catalogNumber),
-      ommMessage(std::nullopt),
-      sgp4PropagatorState(std::nullopt) {
+      sgp4OrbitalElements(std::nullopt) {
 }
 
-bool SatelliteOrbit::fetchElements(std::function<std::optional<std::string>(std::string)> urlFetchFunction) {
+bool SatelliteOrbit::fetchElements(
+    std::function<std::optional<std::string>(std::string)> urlFetchFunction) {
   std::string url = CELESTRAK_URL_CATALOG_NUMBER + catalogNumber;
   std::optional<std::string> json = urlFetchFunction(url);
   if (!json.has_value()) {
     return false;
   }
-  ommMessage = OmmMessage::fromJson(json.value());
+  std::optional<OmmMessage> ommMessage = OmmMessage::fromJson(json.value());
   if (!ommMessage.has_value() || !ommMessage.value().hasSgp4Elements) {
     return false;
   }
-  SGP4::Sgp4OrbitalElements elements = SGP4::Sgp4OrbitalElements(ommMessage.value());
-  sgp4PropagatorState = SGP4::initialiseSgp4(SGP4::WgsVersion::WGS_72, SGP4::OperationMode::AFSPC, elements);
+  sgp4OrbitalElements = SGP4::Sgp4OrbitalElements(ommMessage.value());
   return true;
 }
 
 CartesianLocation SatelliteOrbit::toCartesian(int64_t timeMillis) {
-  if (!sgp4PropagatorState.has_value()) {
-    return CartesianLocation::fixed(Vector(0, 0, 0));
+  if (currentCatalogNumber != catalogNumber) {
+    currentCatalogNumber = catalogNumber;
+    if (!sgp4OrbitalElements.has_value()) {
+      return CartesianLocation::fixed(Vector(0, 0, 0));
+    }
+    currentSgp4State =
+        SGP4::initialiseSgp4(
+            SGP4::WgsVersion::WGS_72, SGP4::OperationMode::AFSPC, sgp4OrbitalElements.value());
   }
-  double timeSinceEpochMinutes = SGP4::findTimeSinceEpochMinutes(sgp4PropagatorState.value(), timeMillis);
-  SGP4::Sgp4Result result = SGP4::runSgp4(sgp4PropagatorState.value(), timeSinceEpochMinutes);
+  double timeSinceEpochMinutes =
+      SGP4::findTimeSinceEpochMinutes(currentSgp4State.value(), timeMillis);
+  SGP4::Sgp4Result result = SGP4::runSgp4(currentSgp4State.value(), timeSinceEpochMinutes);
   if (result.code != SGP4::ResultCode::SUCCESS) {
     return CartesianLocation::fixed(Vector(0, 0, 0));
   }
