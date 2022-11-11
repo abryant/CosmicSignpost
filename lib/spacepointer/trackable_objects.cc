@@ -3,7 +3,7 @@
 std::map<std::string, SatelliteOrbit> TRACKABLE_SATELLITES = {
   // Space stations
   {"ISS", SatelliteOrbit("25544")},
-  {"Tiangong", SatelliteOrbit("48275")},
+  {"Tiangong", SatelliteOrbit("48274")},
   // Low orbits
   {"Worldview 3", SatelliteOrbit("40115")},
   {"CartoSat 3", SatelliteOrbit("44804")},
