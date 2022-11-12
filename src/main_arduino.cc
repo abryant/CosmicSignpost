@@ -94,6 +94,9 @@ void setup() {
   InputDevices::initSelectButton(ENCODER_BUTTON_PIN);
   InputDevices::initBackButton(BUTTON_PIN);
   OutputDevices::initLcd(LCD_ADDRESS);
+  OutputDevices::displayAndSetSplashScreen("Space Pointer");
+  delay(500);
+  OutputDevices::display("Connecting to\nWIFI...");
 
   wifiManager.setHostname("spacepointer");
   wifiManager.autoConnect("Space Pointer", WIFI_MANAGER_PASSWORD.c_str());
@@ -104,6 +107,8 @@ void setup() {
   // Get the current time from an NTP server.
   configTime(0, 0, "pool.ntp.org");
   waitForTime();
+
+  OutputDevices::display("Downloading\norbit data...");
 
   Serial.println("Initializing satellites...");
   bool initialized = TrackableObjects::initSatellites(fetchUrl);

@@ -16,6 +16,7 @@ void OutputDevices::initLcd(uint8_t lcdAddress) {
   OutputDevices::lastString = "";
 
   settings = {};
+  disableSystemMessages();
   setTwoLines();
   disableCursor();
   setBacklightColour(255, 0, 0);
@@ -53,6 +54,14 @@ void OutputDevices::display(std::string str) {
   }
 }
 
+void OutputDevices::disableSystemMessages() {
+  std::vector<uint8_t> twoLinesSettings = {
+    0x7C, // Setting mode
+    0x2F, // Disable system messages
+  };
+  settings.insert(settings.end(), twoLinesSettings.begin(), twoLinesSettings.end());
+}
+
 void OutputDevices::setTwoLines() {
   std::vector<uint8_t> twoLinesSettings = {
     0x7C, // Setting mode
@@ -77,6 +86,15 @@ void OutputDevices::disableCursor() {
     0x08 | 0x04, // Display control: Display on, Cursor off
   };
   settings.insert(settings.end(), cursorSettings.begin(), cursorSettings.end());
+}
+
+void OutputDevices::displayAndSetSplashScreen(std::string str) {
+  std::vector<uint8_t> cursorSettings = {
+    0x7C, // Setting mode
+    0x0A, // Save current display as splash screen
+  };
+  settings.insert(settings.end(), cursorSettings.begin(), cursorSettings.end());
+  display(str);
 }
 
 void OutputDevices::setBacklightColour(uint8_t red, uint8_t green, uint8_t blue) {
