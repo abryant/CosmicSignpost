@@ -49,7 +49,7 @@ std::shared_ptr<Menu> menu;
 Tracker tracker(
   Location(51.500804, -0.124340, 10),
   Direction(0, 0),
-  TRACKABLE_LOW_EARTH_ORBIT_SATELLITES.at("ISS"));
+  TrackableObjects::getTrackingFunction("ISS"));
 
 TaskHandle_t motorControlTaskHandle;
 Direction currentDirection;
@@ -106,7 +106,7 @@ void setup() {
   waitForTime();
 
   Serial.println("Initializing satellites...");
-  bool initialized = initSatellites(fetchUrl);
+  bool initialized = TrackableObjects::initSatellites(fetchUrl);
   if (!initialized) {
     Serial.println("Failed to get satellite data, restarting...");
     delay(10000);
@@ -135,7 +135,7 @@ void setup() {
       /* core= */ 0);
 
   currentDirection = Direction(90, 0);
-  menu = buildSpacePointerMenu([](tracking_function trackingFunction) {
+  menu = buildSpacePointerMenu([](TrackableObjects::tracking_function trackingFunction) {
     tracker.setTrackingFunction(trackingFunction);
   });
   lastAddedTime = TimeMillisMicros::now();

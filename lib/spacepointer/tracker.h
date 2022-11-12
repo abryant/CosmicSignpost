@@ -19,16 +19,16 @@ class Tracker {
     Direction currentDirection;
 
     // Tracked location.
-    tracking_function trackingFunction;
+    TrackableObjects::tracking_function trackingFunction;
 
   public:
     Tracker(
       Location currentLocation,
       Direction currentDirection,
-      tracking_function trackingFunction);
+      TrackableObjects::tracking_function trackingFunction);
     void setCurrentLocation(Location currentLocation);
     void setCurrentDirection(Direction direction);
-    void setTrackingFunction(tracking_function trackingFunction);
+    void setTrackingFunction(TrackableObjects::tracking_function trackingFunction);
 
     Direction getDirectionAt(int64_t timeMillis);
 };

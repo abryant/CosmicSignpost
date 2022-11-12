@@ -12,17 +12,20 @@
 #include "planetary_orbit.h"
 #include "satellite_orbit.h"
 
-extern std::map<std::string, SatelliteOrbit> TRACKABLE_SATELLITES;
+namespace TrackableObjects {
 
-typedef std::function<CartesianLocation(int64_t)> tracking_function;
+  typedef std::function<CartesianLocation(int64_t)> tracking_function;
 
-extern const std::map<std::string, tracking_function> TRACKABLE_LOW_EARTH_ORBIT_SATELLITES;
-extern const std::map<std::string, tracking_function> TRACKABLE_GEOSTATIONARY_SATELLITES;
-extern const std::map<std::string, tracking_function> TRACKABLE_PLANETS;
-extern const std::map<std::string, tracking_function> TRACKABLE_STARS;
-extern const std::map<std::string, tracking_function> TRACKABLE_CITIES;
-extern const std::map<std::string, tracking_function> TRACKABLE_OTHER;
+  extern const std::vector<std::string> LOW_EARTH_ORBIT_SATELLITES;
+  extern const std::vector<std::string> GEOSTATIONARY_SATELLITES;
+  extern const std::vector<std::string> PLANETS;
+  extern const std::vector<std::string> STARS;
+  extern const std::vector<std::string> CITIES;
+  extern const std::vector<std::string> OTHER;
 
-bool initSatellites(std::function<std::optional<std::string>(std::string)> urlFetchFunction);
+  bool initSatellites(std::function<std::optional<std::string>(std::string)> urlFetchFunction);
+
+  tracking_function getTrackingFunction(std::string name);
+};
 
 #endif

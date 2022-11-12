@@ -5,7 +5,7 @@
 Tracker::Tracker(
     Location currentLocation,
     Direction currentDirection,
-    tracking_function trackingFunction)
+    TrackableObjects::tracking_function trackingFunction)
     : currentLocation(currentLocation),
       currentDirection(currentDirection),
       trackingFunction(trackingFunction) {}
@@ -18,7 +18,7 @@ void Tracker::setCurrentDirection(Direction direction) {
   this->currentDirection = direction;
 }
 
-void Tracker::setTrackingFunction(tracking_function trackingFunction) {
+void Tracker::setTrackingFunction(TrackableObjects::tracking_function trackingFunction) {
   this->trackingFunction = trackingFunction;
 }
 

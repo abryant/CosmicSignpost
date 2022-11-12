@@ -1,5 +1,7 @@
 #include "trackable_objects.h"
 
+// To fit on the LCD menu, all names must be at most 12 characters long.
+
 std::map<std::string, SatelliteOrbit> TRACKABLE_SATELLITES = {
   // Space stations
   {"ISS", SatelliteOrbit("25544")},
@@ -17,40 +19,8 @@ std::map<std::string, SatelliteOrbit> TRACKABLE_SATELLITES = {
   {"Intelsat 18", SatelliteOrbit("37834")}, // Longitude: 180
 };
 
-tracking_function getSatellite(std::string name) {
-  return [name](int64_t timeMillis) { return TRACKABLE_SATELLITES.at(name).toCartesian(timeMillis); };
-}
-
-bool initSatellites(std::function<std::optional<std::string>(std::string)> urlFetchFunction) {
-  for (auto it = TRACKABLE_SATELLITES.begin(); it != TRACKABLE_SATELLITES.end(); it++) {
-    bool success = it->second.fetchElements(urlFetchFunction);
-    if (!success) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// To fit on the LCD menu, all names must be at most 12 characters long.
-
-const std::map<std::string, tracking_function> TRACKABLE_LOW_EARTH_ORBIT_SATELLITES = {
-  {"ISS", getSatellite("ISS")},
-  {"Tiangong", getSatellite("Tiangong")},
-  {"Worldview 3", getSatellite("Worldview 3")},
-  {"CartoSat 3", getSatellite("CartoSat 3")},
-  {"KMSL", getSatellite("KMSL")},
-};
-
-const std::map<std::string, tracking_function> TRACKABLE_GEOSTATIONARY_SATELLITES = {
-  {"Sirius XM-8", getSatellite("Sirius XM-8")},
-  {"SES-17", getSatellite("SES-17")},
-  {"Skynet 5A", getSatellite("Skynet 5A")},
-  {"INMARSAT6 F1", getSatellite("INMARSAT6 F1")},
-  {"Koreasat 7", getSatellite("Koreasat 7")},
-  {"Intelsat 18", getSatellite("Intelsat 18")},
-};
-
-const std::map<std::string, tracking_function> TRACKABLE_PLANETS = {
+std::map<std::string, TrackableObjects::tracking_function> TRACKABLE_OBJECTS = {
+  // Planets
   {"Mercury", [](int64_t timeMillis) { return PlanetaryOrbit::MERCURY.toCartesian(timeMillis); }},
   {"Venus", [](int64_t timeMillis) { return PlanetaryOrbit::VENUS.toCartesian(timeMillis); }},
   {"Earth", [](int64_t timeMillis) { return CartesianLocation::fixed(Vector(0, 0, 0)); }},
@@ -59,14 +29,10 @@ const std::map<std::string, tracking_function> TRACKABLE_PLANETS = {
   {"Saturn", [](int64_t timeMillis) { return PlanetaryOrbit::SATURN.toCartesian(timeMillis); }},
   {"Uranus", [](int64_t timeMillis) { return PlanetaryOrbit::URANUS.toCartesian(timeMillis); }},
   {"Neptune", [](int64_t timeMillis) { return PlanetaryOrbit::NEPTUNE.toCartesian(timeMillis); }},
-};
-
-const std::map<std::string, tracking_function> TRACKABLE_STARS = {
+  // Stars
   {"Polaris", [](int64_t timeMillis) { return EquatorialLocation(37.9500, 89.2642).farCartesian(); }},
   {"Ursa Major", [](int64_t timeMillis) { return EquatorialLocation(160.05, 55.38).farCartesian(); }},
-};
-
-const std::map<std::string, tracking_function> TRACKABLE_CITIES = {
+  // Cities
   {"Brasilia", [](int64_t timeMillis) { return Location(-15.805268, -47.914144, 1110).getCartesian(); }},
   {"Cape Town", [](int64_t timeMillis) { return Location(-33.904166, 18.401101, 7).getCartesian(); }},
   {"Kyoto", [](int64_t timeMillis) { return Location(34.979871, 135.748719, 20).getCartesian(); }},
@@ -76,13 +42,86 @@ const std::map<std::string, tracking_function> TRACKABLE_CITIES = {
   {"SanFrancisco", [](int64_t timeMillis) { return Location(37.802362, -122.405843, 90).getCartesian(); }},
   {"Sydney", [](int64_t timeMillis) { return Location(-33.857165, 151.215157, 10).getCartesian(); }},
   {"Vilnius", [](int64_t timeMillis) { return Location(54.686888, 25.291395, 95).getCartesian(); }},
-};
-
-const std::map<std::string, tracking_function> TRACKABLE_OTHER = {
+  // Other
   {"Sun", [](int64_t timeMillis) { return CartesianLocation(Vector(0, 0, 0), ReferenceFrame::SUN_ECLIPTIC); }},
   {"Moon", [](int64_t timeMillis) { return MoonOrbit::positionAt(timeMillis); }},
   {"EMBarycentre", [](int64_t timeMillis) { return PlanetaryOrbit::EARTH_MOON_BARYCENTRE.toCartesian(timeMillis); }},
   {"North Pole", [](int64_t timeMillis) { return Location(90.0, 0.0, 0).getCartesian(); }},
   {"South Pole", [](int64_t timeMillis) { return Location(90.0, 0.0, 0).getCartesian(); }},
   {"GPS 0,0", [](int64_t timeMillis) { return Location(0.0, 0.0, 0).getCartesian(); }},
+};
+
+TrackableObjects::tracking_function getSatellite(std::string name) {
+  return [name](int64_t timeMillis) { return TRACKABLE_SATELLITES.at(name).toCartesian(timeMillis); };
+}
+
+TrackableObjects::tracking_function TrackableObjects::getTrackingFunction(std::string name) {
+  if (TRACKABLE_SATELLITES.count(name) != 0) {
+    return getSatellite(name);
+  }
+  return TRACKABLE_OBJECTS.at(name);
+}
+
+bool TrackableObjects::initSatellites(std::function<std::optional<std::string>(std::string)> urlFetchFunction) {
+  for (auto it = TRACKABLE_SATELLITES.begin(); it != TRACKABLE_SATELLITES.end(); it++) {
+    bool success = it->second.fetchElements(urlFetchFunction);
+    if (!success) {
+      return false;
+    }
+  }
+  return true;
+}
+
+const std::vector<std::string> TrackableObjects::LOW_EARTH_ORBIT_SATELLITES = {
+  "ISS",
+  "Tiangong",
+  "Worldview 3",
+  "CartoSat 3",
+  "KMSL",
+};
+
+const std::vector<std::string> TrackableObjects::GEOSTATIONARY_SATELLITES = {
+  "Sirius XM-8",
+  "SES-17",
+  "Skynet 5A",
+  "INMARSAT6 F1",
+  "Koreasat 7",
+  "Intelsat 18",
+};
+
+const std::vector<std::string> TrackableObjects::PLANETS = {
+  "Mercury",
+  "Venus",
+  "Earth",
+  "Mars",
+  "Jupiter",
+  "Saturn",
+  "Uranus",
+  "Neptune",
+};
+
+const std::vector<std::string> TrackableObjects::STARS = {
+  "Polaris",
+  "Ursa Major"
+};
+
+const std::vector<std::string> TrackableObjects::CITIES = {
+  "Brasilia",
+  "Cape Town",
+  "Kyoto",
+  "London",
+  "New York",
+  "Rome",
+  "SanFrancisco",
+  "Sydney",
+  "Vilnius",
+};
+
+const std::vector<std::string> TrackableObjects::OTHER = {
+  "Sun",
+  "Moon",
+  "EMBarycentre",
+  "North Pole",
+  "South Pole",
+  "GPS 0,0",
 };

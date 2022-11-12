@@ -8,29 +8,29 @@
 
 std::shared_ptr<Menu> buildTrackableObjectsMenu(
     std::string menuName,
-    std::map<std::string, tracking_function> trackableObjects,
-    std::function<void(tracking_function)> chooseTrackedObject) {
+    std::vector<std::string> trackableObjectNames,
+    std::function<void(TrackableObjects::tracking_function)> chooseTrackedObject) {
   std::vector<std::shared_ptr<MenuEntry>> menuEntries = {};
-  for (std::map<std::string, tracking_function>::iterator it = trackableObjects.begin(); it != trackableObjects.end(); ++it) {
-    tracking_function trackingFunction = it->second;
-    menuEntries.push_back(std::make_shared<ActionMenuEntry>(it->first, [chooseTrackedObject, trackingFunction]() {
+  for (std::string &name : trackableObjectNames) {
+    TrackableObjects::tracking_function trackingFunction = TrackableObjects::getTrackingFunction(name);
+    menuEntries.push_back(std::make_shared<ActionMenuEntry>(name, [chooseTrackedObject, trackingFunction]() {
       chooseTrackedObject(trackingFunction);
     }));
   }
   return std::make_shared<Menu>(menuName, menuEntries);
 }
 
-std::shared_ptr<Menu> buildTrackingMenu(std::function<void(tracking_function)> chooseTrackedObject) {
+std::shared_ptr<Menu> buildTrackingMenu(std::function<void(TrackableObjects::tracking_function)> chooseTrackedObject) {
   std::vector<std::shared_ptr<MenuEntry>> satelliteEntries = {
-    buildTrackableObjectsMenu("LEO Sats", TRACKABLE_LOW_EARTH_ORBIT_SATELLITES, chooseTrackedObject),
-    buildTrackableObjectsMenu("GEO Sats", TRACKABLE_GEOSTATIONARY_SATELLITES, chooseTrackedObject),
+    buildTrackableObjectsMenu("LEO Sats", TrackableObjects::LOW_EARTH_ORBIT_SATELLITES, chooseTrackedObject),
+    buildTrackableObjectsMenu("GEO Sats", TrackableObjects::GEOSTATIONARY_SATELLITES, chooseTrackedObject),
   };
   std::vector<std::shared_ptr<MenuEntry>> categoryEntries = {
     std::make_shared<Menu>("Satellites", satelliteEntries),
-    buildTrackableObjectsMenu("Planets", TRACKABLE_PLANETS, chooseTrackedObject),
-    buildTrackableObjectsMenu("Stars", TRACKABLE_STARS, chooseTrackedObject),
-    buildTrackableObjectsMenu("Cities", TRACKABLE_CITIES, chooseTrackedObject),
-    buildTrackableObjectsMenu("Other", TRACKABLE_OTHER, chooseTrackedObject),
+    buildTrackableObjectsMenu("Planets", TrackableObjects::PLANETS, chooseTrackedObject),
+    buildTrackableObjectsMenu("Stars", TrackableObjects::STARS, chooseTrackedObject),
+    buildTrackableObjectsMenu("Cities", TrackableObjects::CITIES, chooseTrackedObject),
+    buildTrackableObjectsMenu("Other", TrackableObjects::OTHER, chooseTrackedObject),
   };
   return std::make_shared<Menu>("Tracking", categoryEntries);
 }
