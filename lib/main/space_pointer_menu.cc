@@ -40,5 +40,5 @@ std::shared_ptr<Menu> buildSpacePointerMenu(Tracker &tracker) {
     std::make_shared<BrightnessMenuEntry>(),
     buildViewMenu(),
   };
-  return std::make_shared<Menu>("Main menu", mainEntries);
+  return std::make_shared<Menu>("Space Pointer", mainEntries);
 }
