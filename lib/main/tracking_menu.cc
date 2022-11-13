@@ -33,6 +33,7 @@ std::string formatDistance(double distanceMetres) {
 
 std::shared_ptr<Menu> buildTrackableObjectsMenu(
     std::string menuName,
+    std::string menuTitle,
     std::vector<std::string> trackableObjectNames,
     Tracker &tracker) {
   std::vector<std::shared_ptr<MenuEntry>> menuEntries = {};
@@ -49,13 +50,20 @@ std::shared_ptr<Menu> buildTrackableObjectsMenu(
               return name + "\nDistance: " + formatDistance(tracker.getDistanceAt(now.millis));
             }));
   }
-  return std::make_shared<Menu>(menuName, menuEntries);
+  return std::make_shared<Menu>(menuName, menuTitle, menuEntries);
+}
+
+std::shared_ptr<Menu> buildTrackableObjectsMenu(
+    std::string menuName,
+    std::vector<std::string> trackableObjectNames,
+    Tracker &tracker) {
+  return buildTrackableObjectsMenu(menuName, menuName, trackableObjectNames, tracker);
 }
 
 std::shared_ptr<Menu> buildTrackingMenu(Tracker &tracker) {
   std::vector<std::shared_ptr<MenuEntry>> satelliteEntries = {
-    buildTrackableObjectsMenu("LEO Sats", TrackableObjects::LOW_EARTH_ORBIT_SATELLITES, tracker),
-    buildTrackableObjectsMenu("GEO Sats", TrackableObjects::GEOSTATIONARY_SATELLITES, tracker),
+    buildTrackableObjectsMenu("LEO Sats", "Low earth orbit", TrackableObjects::LOW_EARTH_ORBIT_SATELLITES, tracker),
+    buildTrackableObjectsMenu("GEO Sats", "Geosynchronous", TrackableObjects::GEOSYNCHRONOUS_SATELLITES, tracker),
   };
   std::vector<std::shared_ptr<MenuEntry>> categoryEntries = {
     std::make_shared<Menu>("Satellites", satelliteEntries),

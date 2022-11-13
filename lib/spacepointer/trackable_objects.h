@@ -17,7 +17,7 @@ namespace TrackableObjects {
   typedef std::function<CartesianLocation(int64_t)> tracking_function;
 
   extern const std::vector<std::string> LOW_EARTH_ORBIT_SATELLITES;
-  extern const std::vector<std::string> GEOSTATIONARY_SATELLITES;
+  extern const std::vector<std::string> GEOSYNCHRONOUS_SATELLITES;
   extern const std::vector<std::string> PLANETS;
   extern const std::vector<std::string> STARS;
   extern const std::vector<std::string> CITIES;

@@ -80,7 +80,7 @@ const std::vector<std::string> TrackableObjects::LOW_EARTH_ORBIT_SATELLITES = {
   "KMSL",
 };
 
-const std::vector<std::string> TrackableObjects::GEOSTATIONARY_SATELLITES = {
+const std::vector<std::string> TrackableObjects::GEOSYNCHRONOUS_SATELLITES = {
   "Sirius XM-8",
   "SES-17",
   "Skynet 5A",
