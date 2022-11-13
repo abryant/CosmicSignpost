@@ -38,6 +38,8 @@ void OutputDevices::display(std::string str) {
     0x2D  // Clear and home
   };
   data.insert(data.end(), line1.begin(), line1.end());
+  sendToLcd(data);
+  data.clear();
   if (line2.length() > 0) {
     std::vector<uint8_t> changeLine {
       254, // Special mode
