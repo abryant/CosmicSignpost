@@ -47,7 +47,7 @@ std::map<std::string, TrackableObjects::tracking_function> TRACKABLE_OBJECTS = {
   {"Moon", [](int64_t timeMillis) { return MoonOrbit::positionAt(timeMillis); }},
   {"EMBarycentre", [](int64_t timeMillis) { return PlanetaryOrbit::EARTH_MOON_BARYCENTRE.toCartesian(timeMillis); }},
   {"North Pole", [](int64_t timeMillis) { return Location(90.0, 0.0, 0).getCartesian(); }},
-  {"South Pole", [](int64_t timeMillis) { return Location(90.0, 0.0, 0).getCartesian(); }},
+  {"South Pole", [](int64_t timeMillis) { return Location(-90.0, 0.0, 0).getCartesian(); }},
   {"GPS 0,0", [](int64_t timeMillis) { return Location(0.0, 0.0, 0).getCartesian(); }},
 };
 
