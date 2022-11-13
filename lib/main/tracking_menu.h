@@ -4,10 +4,8 @@
 #include <memory>
 
 #include "menu.h"
-#include "trackable_objects.h"
+#include "tracker.h"
 
-typedef std::function<void(TrackableObjects::tracking_function)> tracking_selector_function;
-
-std::shared_ptr<Menu> buildTrackingMenu(tracking_selector_function chooseTrackedObject);
+std::shared_ptr<Menu> buildTrackingMenu(Tracker &tracker);
 
 #endif

@@ -4,23 +4,24 @@
 #include <functional>
 #include <string>
 
-#include "menu_entry.h"
+#include "info_menu_entry.h"
 
 /**
- * Rotary encoder menu entry logic for actions. Calls a function when activated.
+ * Rotary encoder menu entry logic for actions.
+ *
+ * Calls a function when activated, in addition to showing info like an InfoMenuEntry.
  */
-class ActionMenuEntry : public MenuEntry {
+class ActionMenuEntry : public InfoMenuEntry {
   private:
     std::function<void()> activatedFunction;
 
   public:
-    ActionMenuEntry(std::string name, std::function<void()> activatedFunction);
+    ActionMenuEntry(
+        std::string name,
+        std::function<void()> activatedFunction,
+        std::function<std::string()> infoFunction,
+        int64_t updateIntervalMicros = 0);
     virtual void onActivate(Menu *parent);
-    virtual void onSelect();
-    virtual void onBack();
-    virtual void onRotateClockwise();
-    virtual void onRotateAnticlockwise();
-    virtual std::string getDisplayedText();
 };
 
 #endif

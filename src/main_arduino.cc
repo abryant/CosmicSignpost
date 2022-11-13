@@ -140,9 +140,7 @@ void setup() {
       /* core= */ 0);
 
   currentDirection = Direction(90, 0);
-  menu = buildSpacePointerMenu([](TrackableObjects::tracking_function trackingFunction) {
-    tracker.setTrackingFunction(trackingFunction);
-  });
+  menu = buildSpacePointerMenu(tracker);
   lastAddedTime = TimeMillisMicros::now();
 }
 

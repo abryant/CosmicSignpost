@@ -1,29 +1,15 @@
 #include "action_menu_entry.h"
 
-ActionMenuEntry::ActionMenuEntry(std::string name, std::function<void()> activatedFunction)
-  : MenuEntry(name), activatedFunction(activatedFunction) {
+ActionMenuEntry::ActionMenuEntry(
+    std::string name,
+    std::function<void()> activatedFunction,
+    std::function<std::string()> infoFunction,
+    int64_t updateIntervalMicros)
+  : InfoMenuEntry(name, infoFunction, updateIntervalMicros),
+    activatedFunction(activatedFunction) {
 }
 
 void ActionMenuEntry::onActivate(Menu *parent) {
-  MenuEntry::onActivate(parent);
+  InfoMenuEntry::onActivate(parent);
   activatedFunction();
-  deactivate();
-}
-
-// This menu entry deactivates itself as soon as it's activated, so it won't get any events or
-// display its own text.
-void ActionMenuEntry::onSelect() {
-}
-
-void ActionMenuEntry::onBack() {
-}
-
-void ActionMenuEntry::onRotateClockwise() {
-}
-
-void ActionMenuEntry::onRotateAnticlockwise() {
-}
-
-std::string ActionMenuEntry::getDisplayedText() {
-  return "";
 }

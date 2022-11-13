@@ -4,8 +4,8 @@
 #include <memory>
 
 #include "menu.h"
-#include "tracking_menu.h"
+#include "tracker.h"
 
-std::shared_ptr<Menu> buildSpacePointerMenu(tracking_selector_function chooseTrackedObject);
+std::shared_ptr<Menu> buildSpacePointerMenu(Tracker &tracker);
 
 #endif

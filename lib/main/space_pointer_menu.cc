@@ -34,9 +34,9 @@ std::shared_ptr<Menu> buildViewMenu() {
   return std::make_shared<Menu>("View", viewEntries);
 }
 
-std::shared_ptr<Menu> buildSpacePointerMenu(tracking_selector_function chooseTrackedObject) {
+std::shared_ptr<Menu> buildSpacePointerMenu(Tracker &tracker) {
   std::vector<std::shared_ptr<MenuEntry>> mainEntries = {
-    buildTrackingMenu(chooseTrackedObject),
+    buildTrackingMenu(tracker),
     std::make_shared<BrightnessMenuEntry>(),
     buildViewMenu(),
   };
