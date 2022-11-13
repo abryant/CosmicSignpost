@@ -12,7 +12,11 @@ const uint32_t DISPLAY_LENGTH = 16;
 const uint32_t MAX_ENTRY_LENGTH = DISPLAY_LENGTH - 4;
 
 Menu::Menu(std::string name, std::vector<std::shared_ptr<MenuEntry>> entries)
+    : Menu(name, name, entries) {}
+
+Menu::Menu(std::string name, std::string title, std::vector<std::shared_ptr<MenuEntry>> entries)
     : MenuEntry(name),
+      title(title),
       entries(entries),
       currentPosition(0),
       isCurrentActive(false),
@@ -22,6 +26,7 @@ Menu::Menu(std::string name, std::vector<std::shared_ptr<MenuEntry>> entries)
 
 void Menu::updateDisplayedText() {
   std::ostringstream display;
+  display << title << "\n";
   display << (currentPosition == 0 ? "  " : "< ");
   std::string name = entries[currentPosition]->getName();
   name = name.substr(0, MAX_ENTRY_LENGTH);

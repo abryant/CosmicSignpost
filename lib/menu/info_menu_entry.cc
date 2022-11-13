@@ -1,5 +1,7 @@
 #include "info_menu_entry.h"
 
+#include <sstream>
+
 #include "Arduino.h"
 
 InfoMenuEntry::InfoMenuEntry(
@@ -33,5 +35,12 @@ std::string InfoMenuEntry::getDisplayedText() {
     lastInfo = infoFunction();
     lastUpdateMicros = time;
   }
-  return lastInfo;
+  // For two-line info entries, don't show the title.
+  if (lastInfo[lastInfo.find('\n')] == '\n') {
+    return lastInfo;
+  }
+  std::ostringstream display;
+  display << getName() << "\n";
+  display << lastInfo;
+  return display.str();
 }

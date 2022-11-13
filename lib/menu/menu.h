@@ -12,6 +12,7 @@
 
 class Menu : public MenuEntry {
   private:
+    std::string title;
     std::vector<std::shared_ptr<MenuEntry>> entries;
     uint32_t currentPosition;
     bool isCurrentActive;
@@ -20,6 +21,7 @@ class Menu : public MenuEntry {
 
   public:
     Menu(std::string name, std::vector<std::shared_ptr<MenuEntry>> entries);
+    Menu(std::string name, std::string title, std::vector<std::shared_ptr<MenuEntry>> entries);
     void deactivateChild();
     virtual void onSelect();
     virtual void onBack();

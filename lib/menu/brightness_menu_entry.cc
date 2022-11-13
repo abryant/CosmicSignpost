@@ -38,6 +38,7 @@ void BrightnessMenuEntry::onRotateAnticlockwise() {
 
 std::string BrightnessMenuEntry::getDisplayedText() {
   std::ostringstream ss;
-  ss << "Brightness: " << (int) brightnessPercent;
+  ss << "Brightness\n";
+  ss << (int) brightnessPercent << "%";
   return ss.str();
 }

@@ -1,5 +1,7 @@
 #include "number_menu_entry.h"
 
+#include <sstream>
+
 #include "output_devices.h"
 
 NumberMenuEntry::NumberMenuEntry(std::string name, std::string numberFormatString, std::function<void(std::string)> submitFunction)
@@ -91,5 +93,8 @@ void NumberMenuEntry::onRotateAnticlockwise() {
 }
 
 std::string NumberMenuEntry::getDisplayedText() {
-  return formattedString;
+  std::ostringstream ss;
+  ss << getName() << "\n";
+  ss << formattedString;
+  return ss.str();
 }
