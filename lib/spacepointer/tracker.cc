@@ -27,3 +27,9 @@ Direction Tracker::getDirectionAt(int64_t timeMillis) {
   CartesianLocation to = trackingFunction(timeMillis).toFixed(timeMillis);
   return from.directionTowards(to, currentLocation.getNormal());
 }
+
+double Tracker::getDistanceAt(int64_t timeMillis) {
+  CartesianLocation from = currentLocation.getCartesian().toFixed(timeMillis);
+  CartesianLocation to = trackingFunction(timeMillis).toFixed(timeMillis);
+  return (to.position - from.position).getLength();
+}

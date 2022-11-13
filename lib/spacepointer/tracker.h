@@ -31,6 +31,7 @@ class Tracker {
     void setTrackingFunction(TrackableObjects::tracking_function trackingFunction);
 
     Direction getDirectionAt(int64_t timeMillis);
+    double getDistanceAt(int64_t timeMillis);
 };
 
 #endif
