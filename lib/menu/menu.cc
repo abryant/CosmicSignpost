@@ -59,11 +59,10 @@ void Menu::onBack() {
     updateDisplayedText();
     return;
   }
+  currentPosition = 0;
+  updateDisplayedText();
   if (hasParent()) {
     deactivate();
-  } else {
-    currentPosition = 0;
-    updateDisplayedText();
   }
 }
 
