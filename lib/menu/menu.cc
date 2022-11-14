@@ -1,7 +1,6 @@
 #include "menu.h"
 
 #include <functional>
-#include <iomanip>
 #include <stdint.h>
 #include <sstream>
 #include <string>
@@ -24,13 +23,21 @@ Menu::Menu(std::string name, std::string title, std::vector<std::shared_ptr<Menu
   updateDisplayedText();
 }
 
+std::string centreText(std::string text, int32_t totalLength) {
+  int32_t currentLength = text.length();
+  int32_t prefixLength = (totalLength - currentLength) / 2;
+  return std::string(prefixLength, ' ')
+      + text
+      + std::string(totalLength - prefixLength - currentLength, ' ');
+}
+
 void Menu::updateDisplayedText() {
   std::ostringstream display;
-  display << title << "\n";
+  display << centreText(title, DISPLAY_LENGTH) << "\n";
   display << (currentPosition == 0 ? "  " : "< ");
   std::string name = entries[currentPosition]->getName();
   name = name.substr(0, MAX_ENTRY_LENGTH);
-  display << std::left << std::setw(MAX_ENTRY_LENGTH) << name;
+  display << centreText(name, MAX_ENTRY_LENGTH);
   display << (currentPosition == entries.size() - 1 ? "  " : " >");
   displayedText = display.str();
 }
