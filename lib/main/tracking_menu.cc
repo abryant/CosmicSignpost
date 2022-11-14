@@ -31,6 +31,22 @@ std::string formatDistance(double distanceMetres) {
   return "###m";
 }
 
+static std::function<std::string()> currentInfoFunction = []() {
+  return "";
+};
+
+std::function<std::string()> buildInfoFunction(std::string name, Tracker &tracker) {
+  return [&tracker, name]() {
+    TimeMillisMicros now = TimeMillisMicros::now();
+    return name + "\nDistance: " + formatDistance(tracker.getDistanceAt(now.millis));
+  };
+}
+
+void setTrackedObject(std::string name, Tracker &tracker) {
+  currentInfoFunction = buildInfoFunction(name, tracker);
+  tracker.setTrackingFunction(TrackableObjects::getTrackingFunction(name));
+}
+
 std::shared_ptr<Menu> buildTrackableObjectsMenu(
     std::string menuName,
     std::string menuTitle,
@@ -38,17 +54,14 @@ std::shared_ptr<Menu> buildTrackableObjectsMenu(
     Tracker &tracker) {
   std::vector<std::shared_ptr<MenuEntry>> menuEntries = {};
   for (std::string &name : trackableObjectNames) {
-    TrackableObjects::tracking_function trackingFunction = TrackableObjects::getTrackingFunction(name);
+    std::function<std::string()> infoFunction = buildInfoFunction(name, tracker);
     menuEntries.push_back(
         std::make_shared<ActionMenuEntry>(
             name,
-            [&tracker, trackingFunction]() {
-              tracker.setTrackingFunction(trackingFunction);
+            [&tracker, name]() {
+              setTrackedObject(name, tracker);
             },
-            [&tracker, name, trackingFunction]() {
-              TimeMillisMicros now = TimeMillisMicros::now();
-              return name + "\nDistance: " + formatDistance(tracker.getDistanceAt(now.millis));
-            }));
+            infoFunction));
   }
   return std::make_shared<Menu>(menuName, menuTitle, menuEntries);
 }
@@ -66,11 +79,16 @@ std::shared_ptr<Menu> buildTrackingMenu(Tracker &tracker) {
     buildTrackableObjectsMenu("GEO Sats", "Geosynchronous", TrackableObjects::GEOSYNCHRONOUS_SATELLITES, tracker),
   };
   std::vector<std::shared_ptr<MenuEntry>> categoryEntries = {
+    std::make_shared<InfoMenuEntry>("Current", []() {
+      return currentInfoFunction();
+    }),
     std::make_shared<Menu>("Satellites", satelliteEntries),
     buildTrackableObjectsMenu("Planets", TrackableObjects::PLANETS, tracker),
     buildTrackableObjectsMenu("Stars", TrackableObjects::STARS, tracker),
     buildTrackableObjectsMenu("Cities", TrackableObjects::CITIES, tracker),
     buildTrackableObjectsMenu("Other", TrackableObjects::OTHER, tracker),
   };
+  // Default to tracking the ISS.
+  setTrackedObject("ISS", tracker);
   return std::make_shared<Menu>("Tracking", categoryEntries);
 }
