@@ -29,13 +29,19 @@ void NumberMenuEntry::updatedFormattedString() {
   std::string formatted = numberFormatString;
   int32_t cursorPos = 0;
   for (int32_t i = 0; i < digitsByPosition.size(); ++i) {
-    std::pair<int32_t, char> indexAndDigit = digitsByPosition[i];
+    std::pair<uint32_t, char> indexAndDigit = digitsByPosition[i];
     formatted[indexAndDigit.first] = indexAndDigit.second;
     if (i == currentDigitIndex) {
       cursorPos = indexAndDigit.first;
     }
   }
-  OutputDevices::setCursor(0, cursorPos);
+  size_t startOfSecondLinePos = numberFormatString.find('\n') + 1;
+  int32_t cursorLine = 0;
+  if (cursorPos >= startOfSecondLinePos) {
+    cursorLine = 1;
+    cursorPos -= startOfSecondLinePos;
+  }
+  OutputDevices::setCursor(cursorLine, cursorPos);
   formattedString = formatted;
 }
 
@@ -94,7 +100,10 @@ void NumberMenuEntry::onRotateAnticlockwise() {
 
 std::string NumberMenuEntry::getDisplayedText() {
   std::ostringstream ss;
-  ss << getName() << "\n";
+  // For single-line entries, show a title.
+  if (formattedString.find('\n') == std::string::npos) {
+    ss << getName() << "\n";
+  }
   ss << formattedString;
   return ss.str();
 }
