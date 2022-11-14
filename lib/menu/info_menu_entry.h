@@ -16,6 +16,7 @@ class InfoMenuEntry : public MenuEntry {
     int64_t updateIntervalMicros;
     std::string lastInfo;
     int64_t lastUpdateMicros;
+    size_t scrollPosition;
 
   public:
     InfoMenuEntry(
@@ -27,6 +28,7 @@ class InfoMenuEntry : public MenuEntry {
     virtual void onRotateClockwise();
     virtual void onRotateAnticlockwise();
     virtual std::string getDisplayedText();
+    std::string getScrolledText(std::string text);
 };
 
 #endif
