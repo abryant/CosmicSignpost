@@ -44,8 +44,8 @@ std::function<std::string()> buildInfoFunction(std::string name, Tracker &tracke
     ss << name;
     ss << "\nDistance: " << formatDistance(tracker.getDistanceAt(now.millis));
     Direction dir = tracker.getDirectionAt(now.millis);
-    ss << "\nAzi: " << dir.getAzimuth();
-    ss << "\nAlt: " << dir.getAltitude();
+    ss << "\nAzi: " << std::fixed << std::setprecision(5) << std::right << std::setw(10) << dir.getAzimuth();
+    ss << "\nAlt: " << std::fixed << std::setprecision(5) << std::right << std::setw(10) << dir.getAltitude();
     return ss.str();
   };
 }
