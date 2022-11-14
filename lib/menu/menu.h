@@ -15,14 +15,15 @@ class Menu : public MenuEntry {
     std::string title;
     std::vector<std::shared_ptr<MenuEntry>> entries;
     uint32_t currentPosition;
-    bool isCurrentActive;
+    // The active menu entry does not have to be a menu entry in entries, it could be a follow-on.
+    std::shared_ptr<MenuEntry> activeMenuEntry;
     std::string displayedText;
     void updateDisplayedText();
 
   public:
     Menu(std::string name, std::vector<std::shared_ptr<MenuEntry>> entries);
     Menu(std::string name, std::string title, std::vector<std::shared_ptr<MenuEntry>> entries);
-    void deactivateChild();
+    void deactivateChild(bool goToFollowOn);
     virtual void onSelect();
     virtual void onBack();
     virtual void onRotateClockwise();

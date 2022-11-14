@@ -43,7 +43,7 @@ void NumberMenuEntry::onSelect() {
   if (currentDigitIndex == digitsByPosition.size() - 1) {
     submitFunction(formattedString);
     OutputDevices::disableCursor();
-    deactivate();
+    deactivate(/* goToFollowOn= */ true);
     return;
   }
   currentDigitIndex++;
@@ -53,7 +53,7 @@ void NumberMenuEntry::onSelect() {
 void NumberMenuEntry::onBack() {
   if (currentDigitIndex == 0) {
     OutputDevices::disableCursor();
-    deactivate();
+    deactivate(/* goToFollowOn= */ false);
     return;
   }
   currentDigitIndex--;

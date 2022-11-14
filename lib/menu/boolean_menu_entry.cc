@@ -14,7 +14,7 @@ void BooleanMenuEntry::onActivate(Menu *parent) {
   state = !state;
   updateMenuEntryName();
   updateFunction(state);
-  deactivate();
+  deactivate(/* goToFollowOn= */ true);
 }
 
 // This menu entry deactivates itself as soon as it's activated, so it won't get any events or

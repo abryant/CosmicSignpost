@@ -18,7 +18,7 @@ Menu::Menu(std::string name, std::string title, std::vector<std::shared_ptr<Menu
       title(title),
       entries(entries),
       currentPosition(0),
-      isCurrentActive(false),
+      activeMenuEntry(NULL),
       displayedText("") {
   updateDisplayedText();
 }
@@ -42,33 +42,43 @@ void Menu::updateDisplayedText() {
   displayedText = display.str();
 }
 
-void Menu::deactivateChild() {
-  isCurrentActive = false;
+void Menu::deactivateChild(bool goToFollowOn) {
+  if (goToFollowOn) {
+    activeMenuEntry = activeMenuEntry->getFollowOnMenuEntry();
+    if (activeMenuEntry != NULL) {
+      activeMenuEntry->onActivate(this);
+      updateDisplayedText();
+    }
+  } else {
+    activeMenuEntry = NULL;
+  }
 }
 
 std::string Menu::getDisplayedText() {
-  if (isCurrentActive) {
-    return entries[currentPosition]->getDisplayedText();
+  if (activeMenuEntry != NULL) {
+    return activeMenuEntry->getDisplayedText();
   }
   return displayedText;
 }
 
 void Menu::onBack() {
-  if (isCurrentActive) {
-    entries[currentPosition]->onBack();
+  if (activeMenuEntry != NULL) {
+    activeMenuEntry->onBack();
     updateDisplayedText();
     return;
   }
   currentPosition = 0;
   updateDisplayedText();
   if (hasParent()) {
-    deactivate();
+    // The back button generally doesn't produce the follow-on, so there isn't an obvious use-case
+    // for a follow-on for a menu.
+    deactivate(/* goToFollowOn= */ false);
   }
 }
 
 void Menu::onRotateClockwise() {
-  if (isCurrentActive) {
-    entries[currentPosition]->onRotateClockwise();
+  if (activeMenuEntry != NULL) {
+    activeMenuEntry->onRotateClockwise();
     updateDisplayedText();
     return;
   }
@@ -79,8 +89,8 @@ void Menu::onRotateClockwise() {
 }
 
 void Menu::onRotateAnticlockwise() {
-  if (isCurrentActive) {
-    entries[currentPosition]->onRotateAnticlockwise();
+  if (activeMenuEntry != NULL) {
+    activeMenuEntry->onRotateAnticlockwise();
     updateDisplayedText();
     return;
   }
@@ -91,12 +101,12 @@ void Menu::onRotateAnticlockwise() {
 }
 
 void Menu::onSelect() {
-  if (isCurrentActive) {
-    entries[currentPosition]->onSelect();
+  if (activeMenuEntry != NULL) {
+    activeMenuEntry->onSelect();
     updateDisplayedText();
     return;
   }
-  isCurrentActive = true;
-  entries[currentPosition]->onActivate(this);
+  activeMenuEntry = entries[currentPosition];
+  activeMenuEntry->onActivate(this);
   updateDisplayedText();
 }

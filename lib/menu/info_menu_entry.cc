@@ -19,11 +19,11 @@ InfoMenuEntry::InfoMenuEntry(
 }
 
 void InfoMenuEntry::onSelect() {
-  deactivate();
+  deactivate(/* goToFollowOn= */ true);
 }
 
 void InfoMenuEntry::onBack() {
-  deactivate();
+  deactivate(/* goToFollowOn= */ false);
 }
 
 void InfoMenuEntry::onRotateClockwise() {

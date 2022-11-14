@@ -19,11 +19,11 @@ void BrightnessMenuEntry::setBrightness() {
 }
 
 void BrightnessMenuEntry::onSelect() {
-  deactivate();
+  deactivate(/* goToFollowOn= */ true);
 }
 
 void BrightnessMenuEntry::onBack() {
-  deactivate();
+  deactivate(/* goToFollowOn= */ false);
 }
 
 void BrightnessMenuEntry::onRotateClockwise() {
