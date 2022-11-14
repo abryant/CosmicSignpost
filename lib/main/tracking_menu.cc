@@ -6,6 +6,7 @@
 #include "menu.h"
 #include "menu_entry.h"
 #include "action_menu_entry.h"
+#include "number_menu_entry.h"
 #include "time_utils.h"
 
 #include "trackable_objects.h"
@@ -82,20 +83,57 @@ std::shared_ptr<Menu> buildTrackableObjectsMenu(
   return buildTrackableObjectsMenu(menuName, menuName, trackableObjectNames, tracker);
 }
 
+std::shared_ptr<MenuEntry> buildManualGpsMenuEntry(Tracker &tracker, std::shared_ptr<MenuEntry> currentInfoEntry) {
+  static std::string lastEnteredGpsLocation = "";
+  std::shared_ptr<MenuEntry> manualGpsMenuEntry =
+      std::make_shared<NumberMenuEntry>(
+          "GPS",
+          "Lat: ~##.#####N\nLng:~###.#####E",
+          [](std::string location) {
+            lastEnteredGpsLocation = location;
+          });
+  std::shared_ptr<MenuEntry> altitudeMenuEntry =
+      std::make_shared<NumberMenuEntry>(
+          "Altitude",
+          "Alt: ~#####m",
+          [&tracker](std::string altitudeStr) {
+            double latitude = std::stod(lastEnteredGpsLocation.substr(5, 9));
+            double longitude = std::stod(lastEnteredGpsLocation.substr(20, 10));
+            double altitude = std::stod(altitudeStr.substr(5, 6));
+            CartesianLocation cartesian = Location(latitude, longitude, altitude).getCartesian();
+            std::string info = "Manual Coords\n" + lastEnteredGpsLocation + "\n" + altitudeStr;
+            tracker.setTrackingFunction([cartesian](int64_t timeMillis) { return cartesian; });
+            currentInfoFunction = buildInfoFunction(info, tracker);
+          });
+  manualGpsMenuEntry->setFollowOnMenuEntry(altitudeMenuEntry);
+  altitudeMenuEntry->setFollowOnMenuEntry(currentInfoEntry);
+  return manualGpsMenuEntry;
+}
+
 std::shared_ptr<Menu> buildTrackingMenu(Tracker &tracker) {
+  std::shared_ptr<MenuEntry> currentInfoEntry =
+      std::make_shared<InfoMenuEntry>(
+        "Current",
+        []() {
+          return currentInfoFunction();
+        },
+        INFO_UPDATE_INTERVAL_MICROS);
+
   std::vector<std::shared_ptr<MenuEntry>> satelliteEntries = {
     buildTrackableObjectsMenu("LEO Sats", "Low earth orbit", TrackableObjects::LOW_EARTH_ORBIT_SATELLITES, tracker),
     buildTrackableObjectsMenu("GEO Sats", "Geosynchronous", TrackableObjects::GEOSYNCHRONOUS_SATELLITES, tracker),
   };
+  std::vector<std::shared_ptr<MenuEntry>> manualEntries = {
+    buildManualGpsMenuEntry(tracker, currentInfoEntry),
+  };
   std::vector<std::shared_ptr<MenuEntry>> categoryEntries = {
-    std::make_shared<InfoMenuEntry>("Current", []() {
-      return currentInfoFunction();
-    }, INFO_UPDATE_INTERVAL_MICROS),
+    currentInfoEntry,
     std::make_shared<Menu>("Satellites", satelliteEntries),
     buildTrackableObjectsMenu("Planets", TrackableObjects::PLANETS, tracker),
     buildTrackableObjectsMenu("Stars", TrackableObjects::STARS, tracker),
     buildTrackableObjectsMenu("Cities", TrackableObjects::CITIES, tracker),
     buildTrackableObjectsMenu("Other", TrackableObjects::OTHER, tracker),
+    std::make_shared<Menu>("Manual", manualEntries),
   };
   // Default to tracking the ISS.
   setTrackedObject("ISS", tracker);
