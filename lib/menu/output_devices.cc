@@ -17,11 +17,22 @@ void OutputDevices::initLcd(uint8_t lcdAddress) {
 
   settings = {};
   disableSystemMessages();
+  createUpDownArrows();
+  sendToLcd(settings);
+  settings = {};
   setTwoLines();
   disableCursor();
   setBacklightColour(255, 0, 0);
   sendToLcd(settings);
   settings = {};
+}
+
+void replaceAll(std::string &str, std::string from, std::string to) {
+  for (size_t startPos = str.find(from, 0);
+       startPos != std::string::npos;
+       startPos = str.find(from, startPos + to.length())) {
+    str.replace(startPos, from.length(), to);
+  }
 }
 
 void OutputDevices::display(std::string str) {
@@ -33,6 +44,11 @@ void OutputDevices::display(std::string str) {
   std::string line2;
   std::getline(input, line1);
   std::getline(input, line2);
+  replaceAll(line1, "↑", "\x7C\x23");
+  replaceAll(line1, "↓", "\x7C\x24");
+  replaceAll(line2, "↑", "\x7C\x23");
+  replaceAll(line2, "↓", "\x7C\x24");
+
   std::vector<uint8_t> data {
     0x7C, // Setting mode
     0x2D  // Clear and home
@@ -40,6 +56,7 @@ void OutputDevices::display(std::string str) {
   data.insert(data.end(), line1.begin(), line1.end());
   sendToLcd(data);
   data.clear();
+
   if (line2.length() > 0) {
     std::vector<uint8_t> changeLine {
       254, // Special mode
@@ -47,8 +64,8 @@ void OutputDevices::display(std::string str) {
     };
     data.insert(data.end(), changeLine.begin(), changeLine.end());
     data.insert(data.end(), line2.begin(), line2.end());
+    sendToLcd(data);
   }
-  sendToLcd(data);
   lastString = str;
   if (settings.size() > 0) {
     sendToLcd(settings);
@@ -62,6 +79,18 @@ void OutputDevices::disableSystemMessages() {
     0x2F, // Disable system messages
   };
   settings.insert(settings.end(), twoLinesSettings.begin(), twoLinesSettings.end());
+}
+
+void OutputDevices::createUpDownArrows() {
+  std::vector<uint8_t> upDownArrows = {
+    0x7C, // Setting mode
+    0x1B, // Write first custom char, accessible as 0x7C,0x23
+    0x04, 0x0E, 0x15, 0x04, 0x04, 0x04, 0x04, 0x04, // Bitmap for up arrow
+    0x7C, // Setting mode
+    0x1C, // Write second custom char, accessible as 0x7C,0x24
+    0x04, 0x04, 0x04, 0x04, 0x04, 0x15, 0x0E, 0x04, // Bitmap for down arrow
+  };
+  settings.insert(settings.end(), upDownArrows.begin(), upDownArrows.end());
 }
 
 void OutputDevices::setTwoLines() {

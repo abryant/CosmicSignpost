@@ -14,6 +14,7 @@ namespace OutputDevices {
   void display(std::string text);
 
   void disableSystemMessages();
+  void createUpDownArrows();
   void setTwoLines();
   void setCursor(uint8_t row, uint8_t column);
   void disableCursor();
