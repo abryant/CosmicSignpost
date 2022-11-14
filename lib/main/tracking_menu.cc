@@ -12,6 +12,8 @@
 
 std::vector<std::string> DISTANCE_SUFFIXES = {"m", "km", "Mm", "Gm", "Tm", "Pm", "Em", "Zm", "Ym"};
 
+const int64_t INFO_UPDATE_INTERVAL_MICROS = 200000; // 0.2 seconds
+
 std::string formatDistance(double distanceMetres) {
   std::ostringstream ss;
   for (std::string suffix : DISTANCE_SUFFIXES) {
@@ -38,7 +40,13 @@ static std::function<std::string()> currentInfoFunction = []() {
 std::function<std::string()> buildInfoFunction(std::string name, Tracker &tracker) {
   return [&tracker, name]() {
     TimeMillisMicros now = TimeMillisMicros::now();
-    return name + "\nDistance: " + formatDistance(tracker.getDistanceAt(now.millis));
+    std::ostringstream ss;
+    ss << name;
+    ss << "\nDistance: " << formatDistance(tracker.getDistanceAt(now.millis));
+    Direction dir = tracker.getDirectionAt(now.millis);
+    ss << "\nAzi: " << dir.getAzimuth();
+    ss << "\nAlt: " << dir.getAltitude();
+    return ss.str();
   };
 }
 
@@ -61,7 +69,8 @@ std::shared_ptr<Menu> buildTrackableObjectsMenu(
             [&tracker, name]() {
               setTrackedObject(name, tracker);
             },
-            infoFunction));
+            infoFunction,
+            INFO_UPDATE_INTERVAL_MICROS));
   }
   return std::make_shared<Menu>(menuName, menuTitle, menuEntries);
 }
@@ -81,7 +90,7 @@ std::shared_ptr<Menu> buildTrackingMenu(Tracker &tracker) {
   std::vector<std::shared_ptr<MenuEntry>> categoryEntries = {
     std::make_shared<InfoMenuEntry>("Current", []() {
       return currentInfoFunction();
-    }),
+    }, INFO_UPDATE_INTERVAL_MICROS),
     std::make_shared<Menu>("Satellites", satelliteEntries),
     buildTrackableObjectsMenu("Planets", TrackableObjects::PLANETS, tracker),
     buildTrackableObjectsMenu("Stars", TrackableObjects::STARS, tracker),
