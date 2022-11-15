@@ -15,15 +15,19 @@ void OutputDevices::initLcd(uint8_t lcdAddress) {
   OutputDevices::lcdAddress = lcdAddress;
   OutputDevices::lastString = "";
 
+  // Send the setup code in batches, because we can't send more than 31 bytes at a time.
   settings = {};
   disableSystemMessages();
   createUpDownArrows();
   sendToLcd(settings);
+
   settings = {};
+  createDegreesSymbol();
   setTwoLines();
   disableCursor();
   setBacklightColour(255, 0, 0);
   sendToLcd(settings);
+
   settings = {};
 }
 
@@ -46,8 +50,10 @@ void OutputDevices::display(std::string str) {
   std::getline(input, line2);
   replaceAll(line1, "↑", "\x7C\x23");
   replaceAll(line1, "↓", "\x7C\x24");
+  replaceAll(line1, "°", "\x7C\x25");
   replaceAll(line2, "↑", "\x7C\x23");
   replaceAll(line2, "↓", "\x7C\x24");
+  replaceAll(line2, "°", "\x7C\x25");
 
   std::vector<uint8_t> data {
     0x7C, // Setting mode
@@ -91,6 +97,15 @@ void OutputDevices::createUpDownArrows() {
     0x04, 0x04, 0x04, 0x04, 0x04, 0x15, 0x0E, 0x04, // Bitmap for down arrow
   };
   settings.insert(settings.end(), upDownArrows.begin(), upDownArrows.end());
+}
+
+void OutputDevices::createDegreesSymbol() {
+  std::vector<uint8_t> degreesSymbol = {
+    0x7C, // Setting mode
+    0x1D, // Write first custom char, accessible as 0x7C,0x25
+    0x0C, 0x12, 0x12, 0x0C, 0x00, 0x00, 0x00, 0x00, // Bitmap for degrees symbol
+  };
+  settings.insert(settings.end(), degreesSymbol.begin(), degreesSymbol.end());
 }
 
 void OutputDevices::setTwoLines() {

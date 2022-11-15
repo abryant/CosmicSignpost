@@ -15,6 +15,7 @@ namespace OutputDevices {
 
   void disableSystemMessages();
   void createUpDownArrows();
+  void createDegreesSymbol();
   void setTwoLines();
   void setCursor(uint8_t row, uint8_t column);
   void disableCursor();
