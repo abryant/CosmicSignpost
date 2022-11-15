@@ -110,6 +110,31 @@ std::shared_ptr<MenuEntry> buildManualGpsMenuEntry(Tracker &tracker, std::shared
   return manualGpsMenuEntry;
 }
 
+std::shared_ptr<MenuEntry> buildManualRaDeclMenuEntry(Tracker &tracker, std::shared_ptr<MenuEntry> currentInfoEntry) {
+  std::shared_ptr<MenuEntry> manualRaDeclMenuEntry =
+      std::make_shared<NumberMenuEntry>(
+          "RA and Dec",
+          "RA:  ##h##m##s\nDec:~##d##'##\"",
+          [&tracker](std::string raDeclStr) {
+            int32_t raHour = std::stoi(raDeclStr.substr(5, 2));
+            int32_t raMinute = std::stoi(raDeclStr.substr(8, 2));
+            int32_t raSecond = std::stoi(raDeclStr.substr(11, 2));
+            int32_t decDegrees = std::stoi(raDeclStr.substr(19, 3));
+            int32_t decArcminute = std::stoi(raDeclStr.substr(23, 2));
+            int32_t decArcsecond = std::stoi(raDeclStr.substr(26, 2));
+            CartesianLocation cartesian =
+                EquatorialLocation(
+                    raHour, raMinute, raSecond,
+                    decDegrees, decArcminute, decArcsecond)
+                .farCartesian();
+            std::string info = "Manual RA & Dec\n" + raDeclStr;
+            tracker.setTrackingFunction([cartesian](int64_t timeMillis) { return cartesian; });
+            currentInfoFunction = buildInfoFunction(info, tracker);
+          });
+  manualRaDeclMenuEntry->setFollowOnMenuEntry(currentInfoEntry);
+  return manualRaDeclMenuEntry;
+}
+
 std::shared_ptr<Menu> buildTrackingMenu(Tracker &tracker) {
   std::shared_ptr<MenuEntry> currentInfoEntry =
       std::make_shared<InfoMenuEntry>(
@@ -125,6 +150,7 @@ std::shared_ptr<Menu> buildTrackingMenu(Tracker &tracker) {
   };
   std::vector<std::shared_ptr<MenuEntry>> manualEntries = {
     buildManualGpsMenuEntry(tracker, currentInfoEntry),
+    buildManualRaDeclMenuEntry(tracker, currentInfoEntry),
   };
   std::vector<std::shared_ptr<MenuEntry>> categoryEntries = {
     currentInfoEntry,
