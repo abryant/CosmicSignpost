@@ -13,7 +13,7 @@
 
 std::vector<std::string> DISTANCE_SUFFIXES = {"m", "km", "Mm", "Gm", "Tm", "Pm", "Em", "Zm", "Ym"};
 
-const int64_t INFO_UPDATE_INTERVAL_MICROS = 200000; // 0.2 seconds
+const int64_t INFO_UPDATE_INTERVAL_MICROS = 500000; // 0.5 seconds
 
 std::string formatDistance(double distanceMetres) {
   std::ostringstream ss;
