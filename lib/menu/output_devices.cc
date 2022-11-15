@@ -152,6 +152,18 @@ void OutputDevices::setBacklightColour(uint8_t red, uint8_t green, uint8_t blue)
   settings.insert(settings.end(), colourSettings.begin(), colourSettings.end());
 }
 
+int32_t OutputDevices::countChars(std::string str) {
+  int32_t count = 0;
+  for (char c : str) {
+    // The first byte of a unicode character starts with either 0 or 11.
+    // All other bytes start with 10.
+    if (!(c & 0x80) || (c & 0x40)) {
+      count++;
+    }
+  }
+  return count;
+}
+
 void OutputDevices::sendToLcd(std::vector<uint8_t> data) {
   Wire.beginTransmission(OutputDevices::lcdAddress);
   Wire.write(&data[0], data.size());

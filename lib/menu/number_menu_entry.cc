@@ -27,19 +27,26 @@ void NumberMenuEntry::onActivate(Menu *parent) {
 
 void NumberMenuEntry::updatedFormattedString() {
   std::string formatted = numberFormatString;
-  int32_t cursorPos = 0;
+  int32_t cursorPosBytes = 0;
   for (int32_t i = 0; i < digitsByPosition.size(); ++i) {
     std::pair<uint32_t, char> indexAndDigit = digitsByPosition[i];
     formatted[indexAndDigit.first] = indexAndDigit.second;
     if (i == currentDigitIndex) {
-      cursorPos = indexAndDigit.first;
+      cursorPosBytes = indexAndDigit.first;
     }
   }
-  size_t startOfSecondLinePos = numberFormatString.find('\n') + 1;
-  int32_t cursorLine = 0;
-  if (cursorPos >= startOfSecondLinePos) {
+  size_t startOfSecondLinePosBytes = numberFormatString.find('\n') + 1;
+  int32_t cursorLine;
+  int32_t cursorPos;
+  if (cursorPosBytes < startOfSecondLinePosBytes) {
+    cursorLine = 0;
+    cursorPos = OutputDevices::countChars(formatted.substr(0, cursorPosBytes));
+  } else {
     cursorLine = 1;
-    cursorPos -= startOfSecondLinePos;
+    cursorPos =
+        OutputDevices::countChars(
+            formatted.substr(
+                startOfSecondLinePosBytes, cursorPosBytes - startOfSecondLinePosBytes));
   }
   OutputDevices::setCursor(cursorLine, cursorPos);
   formattedString = formatted;

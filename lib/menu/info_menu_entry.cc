@@ -6,6 +6,8 @@
 
 #include "Arduino.h"
 
+#include "output_devices.h"
+
 InfoMenuEntry::InfoMenuEntry(
   std::string name,
   std::function<std::string()> infoFunction,
@@ -66,10 +68,12 @@ std::string InfoMenuEntry::getScrolledText(std::string text) {
   scrollPosition = std::min<size_t>(scrollPosition, lines.size() - 2);
 
   std::ostringstream display;
-  display << std::left << std::setw(15) << lines[scrollPosition];
+  display << lines[scrollPosition];
+  display << std::string(15 - OutputDevices::countChars(lines[scrollPosition]), ' ');
   display << (scrollPosition > 0 ? "↑" : " ");
   display << "\n";
-  display << std::left << std::setw(15) << lines[scrollPosition + 1];
+  display << lines[scrollPosition + 1];
+  display << std::string(15 - OutputDevices::countChars(lines[scrollPosition + 1]), ' ');
   display << (scrollPosition < lines.size() - 2 ? "↓" : " ");
   return display.str();
 }
