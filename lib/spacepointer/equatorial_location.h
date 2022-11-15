@@ -14,6 +14,9 @@ class EquatorialLocation {
 
   public:
     EquatorialLocation(double rightAscension, double declination);
+    EquatorialLocation(
+        int32_t raHour, int32_t raMinute, double raSecond,
+        int32_t decDegrees, int32_t decArcminute, double decArcsecond);
     // Finds the cartesian location of a far-away equatorial location.
     CartesianLocation farCartesian(double range = DEFAULT_CARTESIAN_RANGE);
 };
