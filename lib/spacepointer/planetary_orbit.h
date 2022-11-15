@@ -46,7 +46,7 @@ class PlanetaryOrbit {
         double fFrequencyMultiplierDegrees);
 
     // Finds the position of the orbiting body at the specified point in time.
-    CartesianLocation toCartesian(long timeMillis) const;
+    CartesianLocation toCartesian(int64_t timeMillis) const;
 
     static const PlanetaryOrbit MERCURY;
     static const PlanetaryOrbit VENUS;

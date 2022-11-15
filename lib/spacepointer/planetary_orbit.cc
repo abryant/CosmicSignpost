@@ -46,9 +46,9 @@ PlanetaryOrbit::PlanetaryOrbit(
   this->fFrequencyMultiplier = degreesToRadians(fFrequencyMultiplier);
 }
 
-CartesianLocation PlanetaryOrbit::toCartesian(long timeMillis) const {
+CartesianLocation PlanetaryOrbit::toCartesian(int64_t timeMillis) const {
   // Steps taken from: https://ssd.jpl.nasa.gov/planets/approx_pos.html
-  long timeSinceJ2000Millis = timeMillis - J2000_UTC_MILLIS;
+  int64_t timeSinceJ2000Millis = timeMillis - J2000_UTC_MILLIS;
   double timeSinceJ2000Centuries = timeSinceJ2000Millis / 1000.0 / 60.0 / 60.0 / 24.0 / 36525.0;
 
   double semiMajorAxis = semiMajorAxisJ2000 + (timeSinceJ2000Centuries * semiMajorAxisDelta);
