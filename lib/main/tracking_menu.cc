@@ -140,7 +140,38 @@ std::shared_ptr<MenuEntry> buildManualRaDeclMenuEntry(Tracker &tracker, std::sha
   return manualRaDeclMenuEntry;
 }
 
-std::shared_ptr<Menu> buildTrackingMenu(Tracker &tracker) {
+std::shared_ptr<MenuEntry> buildManualNoradIdEntry(
+    Tracker &tracker,
+    std::shared_ptr<MenuEntry> currentInfoEntry,
+    std::function<std::optional<std::string>(std::string)> urlFetchFunction) {
+  static SatelliteOrbit currentOrbit = SatelliteOrbit("");
+  std::shared_ptr<MenuEntry> manualNoradIdMenuEntry =
+      std::make_shared<NumberMenuEntry>(
+          "NORAD ID",
+          "ID: #####",
+          [&tracker, urlFetchFunction](std::string idStr) {
+            std::string noradId = idStr.substr(4, 5);
+            currentOrbit = SatelliteOrbit(noradId);
+            bool success = currentOrbit.fetchElements(urlFetchFunction);
+            if (success) {
+              std::string info = "NORAD ID: " + noradId;
+              tracker.setTrackingFunction([](int64_t timeMillis) {
+                return currentOrbit.toCartesian(timeMillis);
+              });
+              currentInfoFunction = buildInfoFunction(info, tracker, /* includeDistance= */ true);
+            } else {
+              std::string info = "NORAD ID: " + noradId + "\nFailed to load.";
+              tracker.setTrackingFunction([](int64_t timeMillis) {
+                return CartesianLocation::fixed(Vector(0, 0, 0));
+              });
+              currentInfoFunction = [info]() { return info; };
+            }
+          });
+  manualNoradIdMenuEntry->setFollowOnMenuEntry(currentInfoEntry);
+  return manualNoradIdMenuEntry;
+}
+
+std::shared_ptr<Menu> buildTrackingMenu(Tracker &tracker, std::function<std::optional<std::string>(std::string)> urlFetchFunction) {
   std::shared_ptr<MenuEntry> currentInfoEntry =
       std::make_shared<InfoMenuEntry>(
         "Current",
@@ -156,6 +187,7 @@ std::shared_ptr<Menu> buildTrackingMenu(Tracker &tracker) {
   std::vector<std::shared_ptr<MenuEntry>> manualEntries = {
     buildManualGpsMenuEntry(tracker, currentInfoEntry),
     buildManualRaDeclMenuEntry(tracker, currentInfoEntry),
+    buildManualNoradIdEntry(tracker, currentInfoEntry, urlFetchFunction),
   };
   std::vector<std::shared_ptr<MenuEntry>> categoryEntries = {
     currentInfoEntry,

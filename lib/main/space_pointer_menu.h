@@ -6,6 +6,6 @@
 #include "menu.h"
 #include "tracker.h"
 
-std::shared_ptr<Menu> buildSpacePointerMenu(Tracker &tracker);
+std::shared_ptr<Menu> buildSpacePointerMenu(Tracker &tracker, std::function<std::optional<std::string>(std::string)> urlFetchFunction);
 
 #endif

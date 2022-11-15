@@ -80,9 +80,9 @@ std::shared_ptr<Menu> buildConfigMenu(Tracker &tracker) {
   return std::make_shared<Menu>("Config", sensorsEntries);
 }
 
-std::shared_ptr<Menu> buildSpacePointerMenu(Tracker &tracker) {
+std::shared_ptr<Menu> buildSpacePointerMenu(Tracker &tracker, std::function<std::optional<std::string>(std::string)> urlFetchFunction) {
   std::vector<std::shared_ptr<MenuEntry>> mainEntries = {
-    buildTrackingMenu(tracker),
+    buildTrackingMenu(tracker, urlFetchFunction),
     buildConfigMenu(tracker),
     std::make_shared<BrightnessMenuEntry>(),
     buildViewMenu(tracker),

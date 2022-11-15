@@ -140,7 +140,7 @@ void setup() {
       /* core= */ 0);
 
   currentDirection = Direction(90, 0);
-  menu = buildSpacePointerMenu(tracker);
+  menu = buildSpacePointerMenu(tracker, fetchUrl);
   lastAddedTime = TimeMillisMicros::now();
 }
 
