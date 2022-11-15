@@ -8,10 +8,6 @@ NumberMenuEntry::NumberMenuEntry(std::string name, std::string numberFormatStrin
   : MenuEntry(name) {
   this->numberFormatString = numberFormatString;
   this->submitFunction = submitFunction;
-}
-
-void NumberMenuEntry::onActivate(Menu *parent) {
-  MenuEntry::onActivate(parent);
   digitsByPosition.clear();
   for (uint32_t i = 0; i < numberFormatString.length(); ++i) {
     if (numberFormatString.at(i) == DIGIT_FORMAT_CHAR) {
@@ -21,6 +17,10 @@ void NumberMenuEntry::onActivate(Menu *parent) {
       digitsByPosition.push_back(std::make_pair(i, '+'));
     }
   }
+}
+
+void NumberMenuEntry::onActivate(Menu *parent) {
+  MenuEntry::onActivate(parent);
   currentDigitIndex = 0;
   updatedFormattedString();
 }
