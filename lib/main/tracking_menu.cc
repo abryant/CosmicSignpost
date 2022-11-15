@@ -96,21 +96,21 @@ std::shared_ptr<MenuEntry> buildManualGpsMenuEntry(Tracker &tracker, std::shared
           [](std::string location) {
             lastEnteredGpsLocation = location;
           });
-  std::shared_ptr<MenuEntry> altitudeMenuEntry =
+  std::shared_ptr<MenuEntry> elevationMenuEntry =
       std::make_shared<NumberMenuEntry>(
-          "Altitude",
-          "Alt: ~#####m",
-          [&tracker](std::string altitudeStr) {
+          "Elevation",
+          "Elev: ~#####m",
+          [&tracker](std::string elevationStr) {
             double latitude = std::stod(lastEnteredGpsLocation.substr(5, 9));
             double longitude = std::stod(lastEnteredGpsLocation.substr(20, 10));
-            double altitude = std::stod(altitudeStr.substr(5, 6));
-            CartesianLocation cartesian = Location(latitude, longitude, altitude).getCartesian();
-            std::string info = "Manual Coords\n" + lastEnteredGpsLocation + "\n" + altitudeStr;
+            double elevation = std::stod(elevationStr.substr(6, 6));
+            CartesianLocation cartesian = Location(latitude, longitude, elevation).getCartesian();
+            std::string info = "Manual Coords\n" + lastEnteredGpsLocation + "\n" + elevationStr;
             tracker.setTrackingFunction([cartesian](int64_t timeMillis) { return cartesian; });
             currentInfoFunction = buildInfoFunction(info, tracker, /* includeDistance= */ true);
           });
-  manualGpsMenuEntry->setFollowOnMenuEntry(altitudeMenuEntry);
-  altitudeMenuEntry->setFollowOnMenuEntry(currentInfoEntry);
+  manualGpsMenuEntry->setFollowOnMenuEntry(elevationMenuEntry);
+  elevationMenuEntry->setFollowOnMenuEntry(currentInfoEntry);
   return manualGpsMenuEntry;
 }
 
