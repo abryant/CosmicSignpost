@@ -14,6 +14,10 @@ void Tracker::setCurrentLocation(Location currentLocation) {
   this->currentLocation = currentLocation;
 }
 
+Location Tracker::getCurrentLocation() {
+  return currentLocation;
+}
+
 void Tracker::setCurrentDirection(Direction direction) {
   this->currentDirection = direction;
 }

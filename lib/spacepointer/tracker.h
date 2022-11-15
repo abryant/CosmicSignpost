@@ -29,6 +29,7 @@ class Tracker {
     void setCurrentLocation(Location currentLocation);
     void setCurrentDirection(Direction direction);
     void setTrackingFunction(TrackableObjects::tracking_function trackingFunction);
+    Location getCurrentLocation();
 
     Direction getDirectionAt(int64_t timeMillis);
     double getDistanceAt(int64_t timeMillis);
