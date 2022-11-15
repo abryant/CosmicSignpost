@@ -118,14 +118,15 @@ std::shared_ptr<MenuEntry> buildManualRaDeclMenuEntry(Tracker &tracker, std::sha
   std::shared_ptr<MenuEntry> manualRaDeclMenuEntry =
       std::make_shared<NumberMenuEntry>(
           "RA and Dec",
-          "RA:  ##h##m##s\nDec:~##d##'##\"",
+          "RA:  ##h##m##s\nDec:~##°##'##\"",
           [&tracker](std::string raDeclStr) {
             int32_t raHour = std::stoi(raDeclStr.substr(5, 2));
             int32_t raMinute = std::stoi(raDeclStr.substr(8, 2));
             int32_t raSecond = std::stoi(raDeclStr.substr(11, 2));
             int32_t decDegrees = std::stoi(raDeclStr.substr(19, 3));
-            int32_t decArcminute = std::stoi(raDeclStr.substr(23, 2));
-            int32_t decArcsecond = std::stoi(raDeclStr.substr(26, 2));
+            // The degree symbol (°) is two bytes long.
+            int32_t decArcminute = std::stoi(raDeclStr.substr(24, 2));
+            int32_t decArcsecond = std::stoi(raDeclStr.substr(27, 2));
             CartesianLocation cartesian =
                 EquatorialLocation(
                     raHour, raMinute, raSecond,
