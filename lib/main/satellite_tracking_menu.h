@@ -17,8 +17,14 @@ namespace SatelliteTrackingMenu {
       Tracker &tracker,
       std::function<std::optional<std::string>(std::string)> urlFetchFunction);
 
+  std::shared_ptr<MenuEntry> buildManualNoradIdEntry(
+      Tracker &tracker,
+      std::shared_ptr<MenuEntry> currentInfoEntry,
+      std::function<std::optional<std::string>(std::string)> urlFetchFunction);
+
   std::shared_ptr<Menu> buildSatelliteTypesMenu(
       Tracker &tracker,
+      std::shared_ptr<MenuEntry> currentInfoEntry,
       std::function<std::optional<std::string>(std::string)> urlFetchFunction);
 }
 

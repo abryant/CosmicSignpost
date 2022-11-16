@@ -21,16 +21,12 @@ namespace TrackingMenu {
       std::vector<std::string> trackableObjectNames,
       Tracker &tracker,
       bool includeDistance = true);
-  std::shared_ptr<MenuEntry> buildManualGpsMenuEntry(
+  std::shared_ptr<MenuEntry> buildManualGpsCoordsMenuEntry(
       Tracker &tracker,
       std::shared_ptr<MenuEntry> currentInfoEntry);
-  std::shared_ptr<MenuEntry> buildManualRaDeclMenuEntry(
+  std::shared_ptr<MenuEntry> buildManualRaDeclCoordsMenuEntry(
       Tracker &tracker,
       std::shared_ptr<MenuEntry> currentInfoEntry);
-  std::shared_ptr<MenuEntry> buildManualNoradIdEntry(
-      Tracker &tracker,
-      std::shared_ptr<MenuEntry> currentInfoEntry,
-      std::function<std::optional<std::string>(std::string)> urlFetchFunction);
   std::shared_ptr<Menu> buildTrackingMenu(Tracker &tracker, std::function<std::optional<std::string>(std::string)> urlFetchFunction);
 }
 
