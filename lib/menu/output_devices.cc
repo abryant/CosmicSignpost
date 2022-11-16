@@ -5,6 +5,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+const uint32_t OutputDevices::DISPLAY_LENGTH = 16;
+
 uint8_t OutputDevices::lcdAddress;
 std::string OutputDevices::lastString;
 std::vector<uint8_t> OutputDevices::settings;

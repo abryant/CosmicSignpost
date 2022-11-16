@@ -6,6 +6,7 @@
 #include <vector>
 
 namespace OutputDevices {
+  extern const uint32_t DISPLAY_LENGTH;
   extern uint8_t lcdAddress;
   extern std::string lastString;
   extern std::vector<uint8_t> settings;

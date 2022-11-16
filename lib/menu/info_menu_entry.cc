@@ -61,7 +61,7 @@ std::string InfoMenuEntry::getScrolledText(std::string text) {
   std::string item;
   while (std::getline(input, item)) {
     // Limit scrolled lines to 15 characters, so we can show the scroll bar.
-    lines.push_back(item.substr(0, 15));
+    lines.push_back(item.substr(0, OutputDevices::DISPLAY_LENGTH - 1));
   }
   // scrollPosition is the index of the top line on the screen. It can't go higher than the second
   // last line's index (i.e. size - 2).
@@ -69,11 +69,11 @@ std::string InfoMenuEntry::getScrolledText(std::string text) {
 
   std::ostringstream display;
   display << lines[scrollPosition];
-  display << std::string(15 - OutputDevices::countChars(lines[scrollPosition]), ' ');
+  display << std::string(OutputDevices::DISPLAY_LENGTH - 1 - OutputDevices::countChars(lines[scrollPosition]), ' ');
   display << (scrollPosition > 0 ? "↑" : " ");
   display << "\n";
   display << lines[scrollPosition + 1];
-  display << std::string(15 - OutputDevices::countChars(lines[scrollPosition + 1]), ' ');
+  display << std::string(OutputDevices::DISPLAY_LENGTH - 1 - OutputDevices::countChars(lines[scrollPosition + 1]), ' ');
   display << (scrollPosition < lines.size() - 2 ? "↓" : " ");
   return display.str();
 }

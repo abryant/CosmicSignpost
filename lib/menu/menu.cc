@@ -7,8 +7,9 @@
 #include <utility>
 #include <vector>
 
-const uint32_t DISPLAY_LENGTH = 16;
-const uint32_t MAX_ENTRY_LENGTH = DISPLAY_LENGTH - 4;
+#include "output_devices.h"
+
+const uint32_t MAX_ENTRY_LENGTH = OutputDevices::DISPLAY_LENGTH - 4;
 
 Menu::Menu(std::string name, std::vector<std::shared_ptr<MenuEntry>> entries)
     : Menu(name, name, entries) {}
@@ -33,7 +34,7 @@ std::string centreText(std::string text, int32_t totalLength) {
 
 void Menu::updateDisplayedText() {
   std::ostringstream display;
-  display << centreText(title, DISPLAY_LENGTH) << "\n";
+  display << centreText(title, OutputDevices::DISPLAY_LENGTH) << "\n";
   display << (currentPosition == 0 ? "  " : "< ");
   std::string name = entries[currentPosition]->getName();
   name = name.substr(0, MAX_ENTRY_LENGTH);
