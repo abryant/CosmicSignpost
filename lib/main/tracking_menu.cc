@@ -60,7 +60,6 @@ void setTrackedObject(std::string name, Tracker &tracker) {
 
 std::shared_ptr<Menu> buildTrackableObjectsMenu(
     std::string menuName,
-    std::string menuTitle,
     std::vector<std::string> trackableObjectNames,
     Tracker &tracker,
     bool includeDistance = true) {
@@ -76,15 +75,38 @@ std::shared_ptr<Menu> buildTrackableObjectsMenu(
             infoFunction,
             INFO_UPDATE_INTERVAL_MICROS));
   }
-  return std::make_shared<Menu>(menuName, menuTitle, menuEntries);
+  return std::make_shared<Menu>(menuName, menuName, menuEntries);
 }
 
-std::shared_ptr<Menu> buildTrackableObjectsMenu(
+std::shared_ptr<Menu> buildSatellitesMenu(
     std::string menuName,
-    std::vector<std::string> trackableObjectNames,
+    std::string menuTitle,
+    std::vector<std::string> satelliteNames,
     Tracker &tracker,
-    bool includeDistance = true) {
-  return buildTrackableObjectsMenu(menuName, menuName, trackableObjectNames, tracker, includeDistance);
+    std::function<std::optional<std::string>(std::string)> urlFetchFunction) {
+  std::vector<std::shared_ptr<MenuEntry>> menuEntries = {};
+  for (std::string &name : satelliteNames) {
+    SatelliteOrbit &sat = TrackableObjects::getSatelliteOrbit(name);
+    menuEntries.push_back(
+        std::make_shared<ActionMenuEntry>(
+            name,
+            [&tracker, &sat, name, urlFetchFunction]() {
+              bool success = sat.fetchElements(urlFetchFunction);
+              if (success) {
+                tracker.setTrackingFunction(TrackableObjects::getTrackingFunction(name));
+                currentInfoFunction = buildInfoFunction(name, tracker, /* includeDistance= */ true);
+              } else {
+                std::string info = name + "\nFailed to load.";
+                tracker.setTrackingFunction([](int64_t timeMillis) {
+                  return CartesianLocation::fixed(Vector(0, 0, 0));
+                });
+                currentInfoFunction = [info]() { return info; };
+              }
+            },
+            []() { return currentInfoFunction(); },
+            INFO_UPDATE_INTERVAL_MICROS));
+  }
+  return std::make_shared<Menu>(menuName, menuTitle, menuEntries);
 }
 
 std::shared_ptr<MenuEntry> buildManualGpsMenuEntry(Tracker &tracker, std::shared_ptr<MenuEntry> currentInfoEntry) {
@@ -171,18 +193,28 @@ std::shared_ptr<MenuEntry> buildManualNoradIdEntry(
   return manualNoradIdMenuEntry;
 }
 
-std::shared_ptr<Menu> buildTrackingMenu(Tracker &tracker, std::function<std::optional<std::string>(std::string)> urlFetchFunction) {
+std::shared_ptr<Menu> buildTrackingMenu(
+    Tracker &tracker,
+    std::function<std::optional<std::string>(std::string)> urlFetchFunction) {
   std::shared_ptr<MenuEntry> currentInfoEntry =
       std::make_shared<InfoMenuEntry>(
         "Current",
-        []() {
-          return currentInfoFunction();
-        },
+        []() { return currentInfoFunction(); },
         INFO_UPDATE_INTERVAL_MICROS);
 
   std::vector<std::shared_ptr<MenuEntry>> satelliteEntries = {
-    buildTrackableObjectsMenu("LEO Sats", "Low earth orbit", TrackableObjects::LOW_EARTH_ORBIT_SATELLITES, tracker),
-    buildTrackableObjectsMenu("GEO Sats", "Geosynchronous", TrackableObjects::GEOSYNCHRONOUS_SATELLITES, tracker),
+    buildSatellitesMenu(
+        "LEO Sats",
+        "Low earth orbit",
+        TrackableObjects::LOW_EARTH_ORBIT_SATELLITES,
+        tracker,
+        urlFetchFunction),
+    buildSatellitesMenu(
+        "GEO Sats",
+        "Geosynchronous",
+        TrackableObjects::GEOSYNCHRONOUS_SATELLITES,
+        tracker,
+        urlFetchFunction),
   };
   std::vector<std::shared_ptr<MenuEntry>> manualEntries = {
     buildManualGpsMenuEntry(tracker, currentInfoEntry),

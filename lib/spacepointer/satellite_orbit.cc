@@ -21,6 +21,9 @@ SatelliteOrbit::SatelliteOrbit(std::string catalogNumber)
 
 bool SatelliteOrbit::fetchElements(
     std::function<std::optional<std::string>(std::string)> urlFetchFunction) {
+  if (sgp4OrbitalElements.has_value()) {
+    return true;
+  }
   std::string url = CELESTRAK_URL_CATALOG_NUMBER + catalogNumber;
   std::optional<std::string> json = urlFetchFunction(url);
   if (!json.has_value()) {

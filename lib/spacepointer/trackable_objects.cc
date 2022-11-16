@@ -55,6 +55,10 @@ TrackableObjects::tracking_function getSatellite(std::string name) {
   return [name](int64_t timeMillis) { return TRACKABLE_SATELLITES.at(name).toCartesian(timeMillis); };
 }
 
+SatelliteOrbit& TrackableObjects::getSatelliteOrbit(std::string name) {
+  return TRACKABLE_SATELLITES.at(name);
+}
+
 TrackableObjects::tracking_function TrackableObjects::getTrackingFunction(std::string name) {
   if (TRACKABLE_SATELLITES.count(name) != 0) {
     return getSatellite(name);

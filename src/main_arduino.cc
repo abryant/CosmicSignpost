@@ -17,6 +17,7 @@
 #include "cartesian_location.h"
 #include "direction_queue.h"
 #include "equatorial_location.h"
+#include "satellite_orbit.h"
 #include "moon_orbit.h"
 #include "stepper_motors.h"
 #include "time_utils.h"
@@ -49,7 +50,9 @@ std::shared_ptr<Menu> menu;
 Tracker tracker(
   Location(51.500804, -0.124340, 10),
   Direction(0, 0),
-  TrackableObjects::getTrackingFunction("ISS"));
+  [](int64_t timeMillis) {
+      return CartesianLocation::fixed(Vector(0, 0, 0));
+  });
 
 TaskHandle_t motorControlTaskHandle;
 Direction currentDirection;
@@ -108,18 +111,17 @@ void setup() {
   configTime(0, 0, "pool.ntp.org");
   waitForTime();
 
-  OutputDevices::display("Downloading\norbit data...");
+  OutputDevices::display("Downloading ISS\norbit data...");
 
-  Serial.println("Initializing satellites...");
-  bool initialized = TrackableObjects::initSatellites(fetchUrl);
-  if (!initialized) {
-    Serial.println("Failed to get satellite data, restarting...");
-    delay(10000);
-    Serial.println("Restarting now.");
-    ESP.restart();
-    return;
+  Serial.println("Initializing ISS orbit...");
+  SatelliteOrbit &issOrbit = TrackableObjects::getSatelliteOrbit("ISS");
+  bool initialized = issOrbit.fetchElements(fetchUrl);
+  if (initialized) {
+    tracker.setTrackingFunction(TrackableObjects::getTrackingFunction("ISS"));
+    Serial.println("Done.");
+  } else {
+    Serial.println("Failed to get ISS satellite data.");
   }
-  Serial.println("Done.");
 
   directionQueue = std::make_shared<DirectionQueue>();
 

@@ -25,6 +25,7 @@ namespace TrackableObjects {
 
   bool initSatellites(std::function<std::optional<std::string>(std::string)> urlFetchFunction);
 
+  SatelliteOrbit& getSatelliteOrbit(std::string name);
   tracking_function getTrackingFunction(std::string name);
 };
 
