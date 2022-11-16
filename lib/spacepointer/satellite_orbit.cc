@@ -37,6 +37,20 @@ bool SatelliteOrbit::fetchElements(
   return true;
 }
 
+std::string SatelliteOrbit::getName() {
+  if (sgp4OrbitalElements.has_value()) {
+    return sgp4OrbitalElements->name;
+  }
+  return "";
+}
+
+double SatelliteOrbit::getOrbitalPeriodSeconds() {
+  if (sgp4OrbitalElements.has_value()) {
+    return 86400.0 / sgp4OrbitalElements->meanMotionRevsPerDay;
+  }
+  return 0.0;
+}
+
 CartesianLocation SatelliteOrbit::toCartesian(int64_t timeMillis) {
   if (currentCatalogNumber != catalogNumber) {
     currentCatalogNumber = catalogNumber;
