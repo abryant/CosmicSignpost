@@ -32,6 +32,10 @@ std::pair<int64_t, Direction> DirectionQueue::getDirectionAtOrAfter(int64_t time
     std::unique_lock<std::mutex> lock(mutex);
     std::map<int64_t, Direction>::iterator it = directionsByTimeMillis.lower_bound(timeMillis);
     while (it == directionsByTimeMillis.end()) {
+      if (directionsByTimeMillis.size() >= DirectionQueue::DIRECTION_QUEUE_CAPACITY) {
+        // The queue is full, but doesn't contain the element we need, so clear it and keep waiting.
+        directionsByTimeMillis.clear();
+      }
       condition.wait(lock);
       it = directionsByTimeMillis.lower_bound(timeMillis);
     }
