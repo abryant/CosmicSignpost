@@ -10,6 +10,7 @@ std::map<std::string, SatelliteOrbit> TRACKABLE_SATELLITES = {
   {"Worldview 3", SatelliteOrbit("40115")},
   {"CartoSat 3", SatelliteOrbit("44804")},
   {"KMSL", SatelliteOrbit("47950")}, // Korea Microgravity Science Laboratory
+  {"PolarCube", SatelliteOrbit("47310")},
   // Geosynchronous orbits
   {"Sirius XM-8", SatelliteOrbit("48838")}, // Longitude: -120
   {"SES-17", SatelliteOrbit("49055")}, // Longitude: -61.7 (eventually)
@@ -82,6 +83,7 @@ const std::vector<std::string> TrackableObjects::LOW_EARTH_ORBIT_SATELLITES = {
   "Worldview 3",
   "CartoSat 3",
   "KMSL",
+  "PolarCube",
 };
 
 const std::vector<std::string> TrackableObjects::GEOSYNCHRONOUS_SATELLITES = {
