@@ -9,6 +9,7 @@
 #include <WiFiManager.h>
 #include "freertos/task.h"
 
+#include "async_queue.h"
 #include "input_devices.h"
 #include "output_devices.h"
 #include "menu.h"
@@ -151,6 +152,7 @@ void loop() {
   std::string menuText = menu->getDisplayedText();
   // OutputDevices won't send it to the LCD again unless it has changed.
   OutputDevices::display(menuText);
+  AsyncQueue::runQueue();
 
   if (!directionQueue->isFull()) {
     lastAddedTime = lastAddedTime.plusMicros(50000);
