@@ -16,6 +16,7 @@ class SatelliteOrbit {
     SatelliteOrbit(std::string catalogNumber);
     bool fetchElements(std::function<std::optional<std::string>(std::string)> urlFetchFunction);
     CartesianLocation toCartesian(int64_t timeMillis);
+    std::string getCatalogNumber();
     std::string getName();
     double getOrbitalPeriodSeconds();
 
