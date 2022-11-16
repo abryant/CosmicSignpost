@@ -1,9 +1,66 @@
 #include "satellite_tracking_menu.h"
 
+#include <cmath>
+#include <sstream>
+
 #include "menu_entry.h"
 #include "action_menu_entry.h"
 #include "number_menu_entry.h"
+#include "output_devices.h"
 #include "tracking_menu.h"
+
+std::string splitTextIntoLines(std::string text, int32_t singleLineLength, int32_t lineLength) {
+  if (text.length() <= singleLineLength) {
+    return text;
+  }
+  // Only add an initial newline if we don't have the whole first line to ourselves. If the single
+  // line length is lower, then there is a heading on the first line that we need to add a newline
+  // after.
+  bool addNewline = singleLineLength < lineLength;
+  std::ostringstream ss;
+  while (text.length() > 0) {
+    if (addNewline) {
+      ss << "\n";
+    }
+    addNewline = true;
+    ss << text.substr(0, lineLength);
+    text = text.length() > lineLength ? text.substr(lineLength) : "";
+  }
+  return ss.str();
+}
+
+std::string formatOrbitalPeriod(double orbitalPeriodSeconds) {
+  std::ostringstream ss;
+  if (orbitalPeriodSeconds >= 24*60*60) {
+    ss << ((int32_t) (orbitalPeriodSeconds / (24*60*60))) << "d";
+    orbitalPeriodSeconds = std::fmod(orbitalPeriodSeconds, 24*60*60);
+  }
+  if (orbitalPeriodSeconds >= 60*60) {
+    ss << ((int32_t) (orbitalPeriodSeconds / (60*60))) << "h";
+    orbitalPeriodSeconds = std::fmod(orbitalPeriodSeconds, 60*60);
+  }
+  if (orbitalPeriodSeconds >= 60) {
+    ss << ((int32_t) (orbitalPeriodSeconds / (60))) << "m";
+    orbitalPeriodSeconds = std::fmod(orbitalPeriodSeconds, 60);
+  }
+  ss << ((int32_t) orbitalPeriodSeconds) << "s";
+  return ss.str();
+}
+
+std::string getSatelliteInfo(SatelliteOrbit &orbit) {
+  std::ostringstream ss;
+  ss << splitTextIntoLines(
+      orbit.getName(),
+      OutputDevices::DISPLAY_LENGTH - 1,
+      OutputDevices::DISPLAY_LENGTH - 1);
+  ss << "\nNORAD ID: " << orbit.getCatalogNumber();
+  ss << "\nPer: ";
+  ss << splitTextIntoLines(
+      formatOrbitalPeriod(orbit.getOrbitalPeriodSeconds()),
+      OutputDevices::DISPLAY_LENGTH - 6,
+      OutputDevices::DISPLAY_LENGTH - 1);
+  return ss.str();
+}
 
 std::shared_ptr<Menu> SatelliteTrackingMenu::buildSatellitesMenu(
     std::string menuName,
@@ -20,8 +77,9 @@ std::shared_ptr<Menu> SatelliteTrackingMenu::buildSatellitesMenu(
             [&tracker, &sat, name, urlFetchFunction]() {
               bool success = sat.fetchElements(urlFetchFunction);
               if (success) {
+                std::string info = getSatelliteInfo(sat);
                 tracker.setTrackingFunction(TrackableObjects::getTrackingFunction(name));
-                TrackingMenu::currentInfoFunction = TrackingMenu::buildInfoFunction(name, tracker, /* includeDistance= */ true);
+                TrackingMenu::currentInfoFunction = TrackingMenu::buildInfoFunction(info, tracker, /* includeDistance= */ true);
               } else {
                 std::string info = name + "\nFailed to load.";
                 tracker.setTrackingFunction([](int64_t timeMillis) {
@@ -50,7 +108,7 @@ std::shared_ptr<MenuEntry> SatelliteTrackingMenu::buildManualNoradIdEntry(
             currentOrbit = SatelliteOrbit(noradId);
             bool success = currentOrbit.fetchElements(urlFetchFunction);
             if (success) {
-              std::string info = "NORAD ID: " + noradId;
+              std::string info = getSatelliteInfo(currentOrbit);
               tracker.setTrackingFunction([](int64_t timeMillis) {
                 return currentOrbit.toCartesian(timeMillis);
               });
