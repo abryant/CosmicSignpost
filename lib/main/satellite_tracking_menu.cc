@@ -3,6 +3,7 @@
 #include <cmath>
 #include <sstream>
 
+#include "async_queue.h"
 #include "menu_entry.h"
 #include "action_menu_entry.h"
 #include "number_menu_entry.h"
@@ -75,17 +76,26 @@ std::shared_ptr<Menu> SatelliteTrackingMenu::buildSatellitesMenu(
         std::make_shared<ActionMenuEntry>(
             name,
             [&tracker, &sat, name, urlFetchFunction]() {
-              bool success = sat.fetchElements(urlFetchFunction);
-              if (success) {
-                std::string info = getSatelliteInfo(sat);
-                tracker.setTrackingFunction(TrackableObjects::getTrackingFunction(name));
-                TrackingMenu::currentInfoFunction = TrackingMenu::buildInfoFunction(info, tracker, /* includeDistance= */ true);
+              std::string downloadingInfo = name + "\nDownloading...";
+              TrackingMenu::currentInfoFunction = [downloadingInfo]() { return downloadingInfo; };
+              std::function<void()> fetchAndContinueFunction = [&tracker, &sat, name, urlFetchFunction]() -> void {
+                bool success = sat.fetchElements(urlFetchFunction);
+                if (success) {
+                  std::string info = getSatelliteInfo(sat);
+                  tracker.setTrackingFunction(TrackableObjects::getTrackingFunction(name));
+                  TrackingMenu::currentInfoFunction = TrackingMenu::buildInfoFunction(info, tracker, /* includeDistance= */ true);
+                } else {
+                  std::string info = name + "\nFailed to load.";
+                  tracker.setTrackingFunction([](int64_t timeMillis) {
+                    return CartesianLocation::fixed(Vector(0, 0, 0));
+                  });
+                  TrackingMenu::currentInfoFunction = [info]() { return info; };
+                }
+              };
+              if (sat.hasOrbitalElements()) {
+                fetchAndContinueFunction();
               } else {
-                std::string info = name + "\nFailed to load.";
-                tracker.setTrackingFunction([](int64_t timeMillis) {
-                  return CartesianLocation::fixed(Vector(0, 0, 0));
-                });
-                TrackingMenu::currentInfoFunction = [info]() { return info; };
+                AsyncQueue::addToQueue(fetchAndContinueFunction);
               }
             },
             []() { return TrackingMenu::currentInfoFunction(); },
@@ -106,21 +116,25 @@ std::shared_ptr<MenuEntry> SatelliteTrackingMenu::buildManualNoradIdEntry(
           [&tracker, urlFetchFunction](std::string idStr) {
             std::string noradId = idStr.substr(4, 5);
             currentOrbit = SatelliteOrbit(noradId);
-            bool success = currentOrbit.fetchElements(urlFetchFunction);
-            if (success) {
-              std::string info = getSatelliteInfo(currentOrbit);
-              tracker.setTrackingFunction([](int64_t timeMillis) {
-                return currentOrbit.toCartesian(timeMillis);
-              });
-              TrackingMenu::currentInfoFunction =
-                  TrackingMenu::buildInfoFunction(info, tracker, /* includeDistance= */ true);
-            } else {
-              std::string info = "NORAD ID: " + noradId + "\nFailed to load.";
-              tracker.setTrackingFunction([](int64_t timeMillis) {
-                return CartesianLocation::fixed(Vector(0, 0, 0));
-              });
-              TrackingMenu::currentInfoFunction = [info]() { return info; };
-            }
+            std::string downloadingInfo = "NORAD ID: " + noradId + "\nDownloading...";
+            TrackingMenu::currentInfoFunction = [downloadingInfo]() { return downloadingInfo; };
+            AsyncQueue::addToQueue([&tracker, noradId, urlFetchFunction]() -> void {
+              bool success = currentOrbit.fetchElements(urlFetchFunction);
+              if (success) {
+                std::string info = getSatelliteInfo(currentOrbit);
+                tracker.setTrackingFunction([](int64_t timeMillis) {
+                  return currentOrbit.toCartesian(timeMillis);
+                });
+                TrackingMenu::currentInfoFunction =
+                    TrackingMenu::buildInfoFunction(info, tracker, /* includeDistance= */ true);
+              } else {
+                std::string info = "NORAD ID: " + noradId + "\nFailed to load.";
+                tracker.setTrackingFunction([](int64_t timeMillis) {
+                  return CartesianLocation::fixed(Vector(0, 0, 0));
+                });
+                TrackingMenu::currentInfoFunction = [info]() { return info; };
+              }
+            });
           });
   manualNoradIdMenuEntry->setFollowOnMenuEntry(currentInfoEntry);
   return manualNoradIdMenuEntry;

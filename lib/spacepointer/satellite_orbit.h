@@ -19,6 +19,7 @@ class SatelliteOrbit {
     std::string getCatalogNumber();
     std::string getName();
     double getOrbitalPeriodSeconds();
+    bool hasOrbitalElements();
 
   private:
     std::string catalogNumber;

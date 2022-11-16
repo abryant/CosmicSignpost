@@ -37,6 +37,10 @@ bool SatelliteOrbit::fetchElements(
   return true;
 }
 
+bool SatelliteOrbit::hasOrbitalElements() {
+  return sgp4OrbitalElements.has_value();
+}
+
 std::string SatelliteOrbit::getCatalogNumber() {
   return catalogNumber;
 }
