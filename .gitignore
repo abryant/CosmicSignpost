@@ -5,4 +5,4 @@
 .vscode/ipch
 .vscode/settings.json
 secrets.ini
-lib/spacepointer/secrets.h
+lib/main/secrets.h
