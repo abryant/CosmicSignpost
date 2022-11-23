@@ -57,7 +57,7 @@ std::optional<std::string> fetchSxm8OmmMessage(std::string ignoredUrl) {
 }
 
 TEST(Tracker, IssOn6thNovember2022) {
-  bool initSuccess = TrackableObjects::initSatellites(fetchIssOmmMessage);
+  bool initSuccess = TrackableObjects::getSatelliteOrbit("ISS").fetchElements(fetchIssOmmMessage);
   EXPECT_EQ(initSuccess, true);
   Tracker tracker(Location(0, 0, 0), Direction(0, 0), TrackableObjects::getTrackingFunction("ISS"));
   Direction direction = tracker.getDirectionAt(1667757600000LL);
@@ -67,7 +67,7 @@ TEST(Tracker, IssOn6thNovember2022) {
 }
 
 TEST(Tracker, Sxm8On6thNovember2022) {
-  bool initSuccess = TrackableObjects::initSatellites(fetchSxm8OmmMessage);
+  bool initSuccess = TrackableObjects::getSatelliteOrbit("Sirius XM-8").fetchElements(fetchSxm8OmmMessage);
   EXPECT_EQ(initSuccess, true);
   Tracker tracker(Location(0, 0, 0), Direction(0, 0), TrackableObjects::getTrackingFunction("Sirius XM-8"));
   Direction direction = tracker.getDirectionAt(1667757600000LL);
