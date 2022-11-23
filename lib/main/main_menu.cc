@@ -1,4 +1,4 @@
-#include "space_pointer_menu.h"
+#include "main_menu.h"
 
 #include <memory>
 #include <string>
@@ -80,12 +80,12 @@ std::shared_ptr<Menu> buildConfigMenu(Tracker &tracker) {
   return std::make_shared<Menu>("Config", sensorsEntries);
 }
 
-std::shared_ptr<Menu> buildSpacePointerMenu(Tracker &tracker, std::function<std::optional<std::string>(std::string)> urlFetchFunction) {
+std::shared_ptr<Menu> buildMainMenu(Tracker &tracker, std::function<std::optional<std::string>(std::string)> urlFetchFunction) {
   std::vector<std::shared_ptr<MenuEntry>> mainEntries = {
     TrackingMenu::buildTrackingMenu(tracker, urlFetchFunction),
     buildConfigMenu(tracker),
     std::make_shared<BrightnessMenuEntry>(),
     buildViewMenu(tracker),
   };
-  return std::make_shared<Menu>("Space Pointer", mainEntries);
+  return std::make_shared<Menu>("Cosmic Signpost", mainEntries);
 }

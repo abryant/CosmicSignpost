@@ -13,7 +13,7 @@
 #include "input_devices.h"
 #include "output_devices.h"
 #include "menu.h"
-#include "space_pointer_menu.h"
+#include "main_menu.h"
 
 #include "cartesian_location.h"
 #include "direction_queue.h"
@@ -98,12 +98,12 @@ void setup() {
   InputDevices::initSelectButton(ENCODER_BUTTON_PIN);
   InputDevices::initBackButton(BUTTON_PIN);
   OutputDevices::initLcd(LCD_ADDRESS);
-  OutputDevices::displayAndSetSplashScreen("Space Pointer");
+  OutputDevices::displayAndSetSplashScreen("Cosmic Signpost");
   delay(500);
   OutputDevices::display("Connecting to\nWIFI...");
 
-  wifiManager.setHostname("spacepointer");
-  wifiManager.autoConnect("Space Pointer", WIFI_MANAGER_PASSWORD.c_str());
+  wifiManager.setHostname("cosmicsignpost");
+  wifiManager.autoConnect("Cosmic Signpost", WIFI_MANAGER_PASSWORD.c_str());
   ota::setUp(1420, OTA_PASSWORD);
 
   // Set the timezone to UTC, as some time parsing functions depend on that.
@@ -143,7 +143,7 @@ void setup() {
       /* core= */ 0);
 
   currentDirection = Direction(90, 0);
-  menu = buildSpacePointerMenu(tracker, fetchUrl);
+  menu = buildMainMenu(tracker, fetchUrl);
   lastAddedTime = TimeMillisMicros::now();
 }
 

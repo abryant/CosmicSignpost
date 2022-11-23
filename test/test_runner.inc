@@ -12,8 +12,8 @@ WiFiManager wifiManager;
 void setup() {
   // To match test_speed in platformio.ini
   Serial.begin(115200);
-  wifiManager.setHostname("spacepointer");
-  wifiManager.autoConnect("Space Pointer", WIFI_MANAGER_PASSWORD.c_str());
+  wifiManager.setHostname("cosmicsignpost");
+  wifiManager.autoConnect("Cosmic Signpost", WIFI_MANAGER_PASSWORD.c_str());
   ota::setUp(1420, OTA_PASSWORD);
 
   // Set the timezone to UTC, as some time parsing functions depend on that.
