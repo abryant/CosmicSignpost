@@ -156,6 +156,7 @@ std::shared_ptr<Menu> TrackingMenu::buildTrackingMenu(
     buildTrackableObjectsMenu("Planets", TrackableObjects::PLANETS, tracker),
     buildTrackableObjectsMenu("Stars", TrackableObjects::STARS, tracker, /* includeDistance= */ false),
     buildTrackableObjectsMenu("Cities", TrackableObjects::CITIES, tracker),
+    buildTrackableObjectsMenu("Places", TrackableObjects::PLACES, tracker),
     buildTrackableObjectsMenu("Other", TrackableObjects::OTHER, tracker),
     std::make_shared<Menu>("Coordinates", coordinatesEntries),
   };

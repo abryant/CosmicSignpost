@@ -21,6 +21,7 @@ namespace TrackableObjects {
   extern const std::vector<std::string> PLANETS;
   extern const std::vector<std::string> STARS;
   extern const std::vector<std::string> CITIES;
+  extern const std::vector<std::string> PLACES;
   extern const std::vector<std::string> OTHER;
 
   bool initSatellites(std::function<std::optional<std::string>(std::string)> urlFetchFunction);
