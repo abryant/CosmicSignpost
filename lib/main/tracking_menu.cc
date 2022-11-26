@@ -119,6 +119,11 @@ std::shared_ptr<MenuEntry> TrackingMenu::buildManualRaDeclCoordsMenuEntry(
             // The degree symbol (°) is two bytes long.
             int32_t decArcminute = std::stoi(raDeclStr.substr(24, 2));
             int32_t decArcsecond = std::stoi(raDeclStr.substr(27, 2));
+            if (raDeclStr.at(19) == '-') {
+              // Negative declinations need all components to be negated.
+              decArcminute = -decArcminute;
+              decArcsecond = -decArcsecond;
+            }
             CartesianLocation cartesian =
                 EquatorialLocation(
                     raHour, raMinute, raSecond,
