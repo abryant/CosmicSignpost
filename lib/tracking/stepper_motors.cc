@@ -13,7 +13,7 @@
 #include "direction_queue.h"
 #include "time_utils.h"
 
-const int32_t STEPS_PER_AZIMUTH_360_DEGREES = 200 * 16;
+const int32_t STEPS_PER_AZIMUTH_360_DEGREES = 200 * 16 * 2;
 const int32_t STEPS_PER_ALTITUDE_360_DEGREES = 200 * 16;
 
 StepperMotors::StepperMotors(
