@@ -20,7 +20,7 @@ class ActionMenuEntry : public InfoMenuEntry {
         std::string name,
         std::function<void()> activatedFunction,
         std::function<std::string()> infoFunction,
-        int64_t updateIntervalMicros = 0);
+        uint64_t updateIntervalMicros = 0);
     virtual void onActivate(Menu *parent);
 };
 

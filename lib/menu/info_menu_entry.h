@@ -13,16 +13,16 @@
 class InfoMenuEntry : public MenuEntry {
   private:
     std::function<std::string()> infoFunction;
-    int64_t updateIntervalMicros;
+    uint64_t updateIntervalMicros;
     std::string lastInfo;
-    int64_t lastUpdateMicros;
+    uint64_t lastUpdateMicros;
     size_t scrollPosition;
 
   public:
     InfoMenuEntry(
         std::string name,
         std::function<std::string()> infoFunction,
-        int64_t updateIntervalMicros = 0);
+        uint64_t updateIntervalMicros = 0);
     virtual void onSelect();
     virtual void onBack();
     virtual void onRotateClockwise();

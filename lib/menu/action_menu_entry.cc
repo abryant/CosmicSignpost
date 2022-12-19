@@ -4,7 +4,7 @@ ActionMenuEntry::ActionMenuEntry(
     std::string name,
     std::function<void()> activatedFunction,
     std::function<std::string()> infoFunction,
-    int64_t updateIntervalMicros)
+    uint64_t updateIntervalMicros)
   : InfoMenuEntry(name, infoFunction, updateIntervalMicros),
     activatedFunction(activatedFunction) {
 }
