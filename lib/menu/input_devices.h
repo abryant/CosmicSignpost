@@ -29,15 +29,15 @@ namespace InputDevices {
   // A 2-bit number representing the state.
   // pin A uses the high bit (0x2), and pin B uses the low bit (0x1).
   extern volatile int8_t encoderState;
-  extern volatile int64_t lastEncoderTimeMicros;
+  extern volatile uint64_t lastEncoderTimeMicros;
 
   extern int32_t selectPin;
   extern volatile bool selectState;
-  extern volatile int64_t lastSelectTimeMicros;
+  extern volatile uint64_t lastSelectTimeMicros;
 
   extern int32_t backPin;
   extern volatile bool backState;
-  extern volatile int64_t lastBackTimeMicros;
+  extern volatile uint64_t lastBackTimeMicros;
 
   // Input queue functions, for internal use only.
   // The caller must hold inputQueueMux while calling these.

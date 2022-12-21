@@ -11,15 +11,15 @@ int32_t InputDevices::rotaryEncoderCount;
 int32_t InputDevices::encoderPinA;
 int32_t InputDevices::encoderPinB;
 volatile int8_t InputDevices::encoderState;
-volatile int64_t InputDevices::lastEncoderTimeMicros;
+volatile uint64_t InputDevices::lastEncoderTimeMicros;
 
 int32_t InputDevices::selectPin;
 volatile bool InputDevices::selectState;
-volatile int64_t InputDevices::lastSelectTimeMicros;
+volatile uint64_t InputDevices::lastSelectTimeMicros;
 
 int32_t InputDevices::backPin;
 volatile bool InputDevices::backState;
-volatile int64_t InputDevices::lastBackTimeMicros;
+volatile uint64_t InputDevices::lastBackTimeMicros;
 
 void InputDevices::addToInputQueue(InputDevices::InputButton button) {
   size_t newWritePos = (inputQueueWritePos + 1) % INPUT_BUFFER_SIZE;
@@ -78,7 +78,7 @@ void InputDevices::initRotaryEncoder(int32_t pinA, int32_t pinB) {
 void IRAM_ATTR InputDevices::handleRotaryEncoderInterrupt(int32_t pin, int8_t bitMask) {
   portENTER_CRITICAL_ISR(&InputDevices::inputQueueMux);
   bool toggleInterrupt = false;
-  int64_t time = micros();
+  uint64_t time = micros();
   // Debounce with 10 microseconds. It seems that maybe toggling the interrupt type from low to
   // high or vice versa can cause another interrupt. We don't want an infinite loop of interrupts,
   // as it makes the ESP32 reset itself with the WDT (watchdog timer), so we need to wait between
@@ -131,7 +131,7 @@ void InputDevices::initSelectButton(int32_t pin) {
 
 void IRAM_ATTR InputDevices::handleSelectButtonInterrupt() {
   portENTER_CRITICAL_ISR(&InputDevices::inputQueueMux);
-  int64_t time = micros();
+  uint64_t time = micros();
   bool toggleInterrupt = false;
   // We need to use a software debounce even if there is a hardware debounce circuit, because the
   // ESP32 treats intermediate voltages (between VIL and VIH) as undefined, and sees random digital
@@ -173,7 +173,7 @@ void InputDevices::initBackButton(int32_t pin) {
 
 void IRAM_ATTR InputDevices::handleBackButtonInterrupt() {
   portENTER_CRITICAL_ISR(&InputDevices::inputQueueMux);
-  int64_t time = micros();
+  uint64_t time = micros();
   bool toggleInterrupt = false;
   // We need to use a software debounce even if there is a hardware debounce circuit, because the
   // ESP32 treats intermediate voltages (between VIL and VIH) as undefined, and sees random digital
