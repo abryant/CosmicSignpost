@@ -245,7 +245,7 @@ void StepperMotors::control() {
 
 void StepperMotors::stepAzimuth(bool clockwise) {
 #ifdef ARDUINO
-  digitalWrite(azimuthDirectionPin, clockwise);
+  digitalWrite(azimuthDirectionPin, !clockwise);
   delayMicroseconds(2);
   digitalWrite(azimuthStepPin, HIGH);
   delayMicroseconds(2);
