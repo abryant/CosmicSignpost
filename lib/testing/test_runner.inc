@@ -1,7 +1,6 @@
 #if defined(ARDUINO)
 
 #include <Arduino.h>
-
 #include <WiFiManager.h>
 
 #include "ota.h"
