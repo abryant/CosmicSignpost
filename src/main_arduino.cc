@@ -5,7 +5,6 @@
 #include <Wire.h>
 #include <HTTPClient.h>
 
-#include <AccelStepper.h>
 #include <WiFiManager.h>
 #include "freertos/task.h"
 
@@ -56,19 +55,10 @@ Tracker tracker(
   });
 
 TaskHandle_t motorControlTaskHandle;
-Direction currentDirection;
 std::shared_ptr<DirectionQueue> directionQueue;
 TimeMillisMicros lastAddedTime;
 
 std::shared_ptr<StepperMotors> motors;
-
-void controlStepperMotors(void *param) {
-  (void) param;
-
-  while (true) {
-    motors->control();
-  }
-}
 
 void waitForTime() {
   int year = 0;
@@ -90,30 +80,43 @@ std::optional<std::string> fetchUrl(std::string url) {
   return std::optional(payload);
 }
 
-void setup() {
+void initSerialComms() {
   Serial.begin(115200);
   Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
+}
 
+void initInputDevices() {
   InputDevices::initRotaryEncoder(ENCODER_A_PIN, ENCODER_B_PIN);
   InputDevices::initSelectButton(ENCODER_BUTTON_PIN);
   InputDevices::initBackButton(BUTTON_PIN);
+}
+
+void initOutputDevices() {
   OutputDevices::initLcd(LCD_ADDRESS);
   OutputDevices::displayAndSetSplashScreen("Cosmic Signpost");
   delay(500);
-  OutputDevices::display("Connecting to\nWIFI...");
+}
 
+void initWifi() {
+  OutputDevices::display("Connecting to\nWIFI...");
   wifiManager.setHostname("cosmicsignpost");
   wifiManager.autoConnect("Cosmic Signpost", WIFI_MANAGER_PASSWORD.c_str());
-  ota::setUp(1420, OTA_PASSWORD);
+}
 
+void initOta() {
+  ota::setUp(1420, OTA_PASSWORD);
+}
+
+void initNetworkTime() {
   // Set the timezone to UTC, as some time parsing functions depend on that.
   setenv("TZ", "", 1);
   // Get the current time from an NTP server.
   configTime(0, 0, "pool.ntp.org");
   waitForTime();
+}
 
+void initTracking() {
   OutputDevices::display("Downloading ISS\norbit data...");
-
   Serial.println("Initializing ISS orbit...");
   SatelliteOrbit &issOrbit = TrackableObjects::getSatelliteOrbit("ISS");
   bool initialized = issOrbit.fetchElements(fetchUrl);
@@ -125,7 +128,18 @@ void setup() {
   }
 
   directionQueue = std::make_shared<DirectionQueue>();
+  lastAddedTime = TimeMillisMicros::now();
+}
 
+void controlStepperMotors(void *param) {
+  (void) param;
+
+  while (true) {
+    motors->control();
+  }
+}
+
+void initMotors() {
   motors = std::make_shared<StepperMotors>(
       directionQueue,
       AZIMUTH_STEP_PIN,
@@ -141,10 +155,22 @@ void setup() {
       /* priority= */ 0,
       &motorControlTaskHandle,
       /* core= */ 0);
+}
 
-  currentDirection = Direction(90, 0);
+void initMenu() {
   menu = buildMainMenu(tracker, fetchUrl);
-  lastAddedTime = TimeMillisMicros::now();
+}
+
+void setup() {
+  initSerialComms();
+  initInputDevices();
+  initOutputDevices();
+  initWifi();
+  initOta();
+  initNetworkTime();
+  initTracking();
+  initMotors();
+  initMenu();
 }
 
 void loop() {
