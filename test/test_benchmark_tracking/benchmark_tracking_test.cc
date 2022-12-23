@@ -33,7 +33,7 @@ TEST(BenchmarkTracking, MarsForOneSecond) {
 }
 
 TEST(BenchmarkTracking, IssForOneSecond) {
-  initSatellites(fetchUrl);
+  TrackableObjects::initSatellites(fetchUrl);
   Tracker tracker = Tracker(Location(51.500804, -0.124340, 10), Direction(0, 0), TrackableObjects::getTrackingFunction("ISS"));
   const int ITERATIONS = 1000;
   Direction benchmarkData;
@@ -47,7 +47,7 @@ TEST(BenchmarkTracking, IssForOneSecond) {
 }
 
 TEST(BenchmarkTracking, Sxm8ForOneSecond) {
-  initSatellites(fetchUrl);
+  TrackableObjects::initSatellites(fetchUrl);
   Tracker tracker = Tracker(Location(51.500804, -0.124340, 10), Direction(0, 0), TrackableObjects::getTrackingFunction("Sirius XM-8"));
   const int ITERATIONS = 1000;
   Direction benchmarkData;
