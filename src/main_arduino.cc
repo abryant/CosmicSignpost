@@ -24,6 +24,7 @@
 #include "tracker.h"
 #include "vector.h"
 
+#include "gps.h"
 #include "ota.h"
 #include "secrets.h"
 
@@ -168,6 +169,10 @@ void setup() {
   initWifi();
   initOta();
   initNetworkTime();
+  gps::initGps([](Location location) {
+    Serial.printf("GPS update: lat=%f, long=%f, alt=%f\n", location.getLatitude(), location.getLongitude(), location.getElevation());
+    tracker.setCurrentLocation(location);
+  });
   initTracking();
   initMotors();
   initMenu();
@@ -185,6 +190,8 @@ void loop() {
     int64_t timeMillis = (lastAddedTime.millis / 50) * 50;
     directionQueue->addDirection(timeMillis, tracker.getDirectionAt(timeMillis));
   }
+
+  gps::checkForUpdates();
 
   ota::checkForOta();
 }
