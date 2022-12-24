@@ -19,6 +19,8 @@
 #include "tracking_menu.h"
 #include "tracker.h"
 
+#include "gps.h"
+
 std::shared_ptr<Menu> buildViewMenu(Tracker &tracker) {
   std::vector<std::shared_ptr<MenuEntry>> viewEntries = {
     std::make_shared<InfoMenuEntry>("Lat/Long/El", [&tracker]() {
@@ -50,11 +52,17 @@ std::shared_ptr<Menu> buildViewMenu(Tracker &tracker) {
   return std::make_shared<Menu>("View", viewEntries);
 }
 
-std::shared_ptr<MenuEntry> buildSetCurrentLocationEntry(Tracker &tracker) {
+std::shared_ptr<BooleanMenuEntry> buildGpsEnabledMenuEntry() {
+  return std::make_shared<BooleanMenuEntry>("GPS", [](bool newValue) {
+    gps::setEnabled(newValue);
+  }, true);
+}
+
+std::shared_ptr<MenuEntry> buildSetCurrentLocationEntry(Tracker &tracker, std::shared_ptr<BooleanMenuEntry> gpsEnabledMenuEntry) {
   static std::string lastEnteredGpsLocation = "";
   std::shared_ptr<MenuEntry> manualGpsMenuEntry =
       std::make_shared<NumberMenuEntry>(
-          "GPS",
+          "Current Loc",
           "Lat: ~##.#####N\nLng:~###.#####E",
           [](std::string location) {
             lastEnteredGpsLocation = location;
@@ -63,10 +71,11 @@ std::shared_ptr<MenuEntry> buildSetCurrentLocationEntry(Tracker &tracker) {
       std::make_shared<NumberMenuEntry>(
           "Elevation",
           "Elev: ~#####m",
-          [&tracker](std::string elevationStr) {
+          [&tracker, gpsEnabledMenuEntry](std::string elevationStr) {
             double latitude = std::stod(lastEnteredGpsLocation.substr(5, 9));
             double longitude = std::stod(lastEnteredGpsLocation.substr(20, 10));
             double elevation = std::stod(elevationStr.substr(6, 6));
+            gpsEnabledMenuEntry->setState(false);
             tracker.setCurrentLocation(Location(latitude, longitude, elevation));
           });
   manualGpsMenuEntry->setFollowOnMenuEntry(elevationMenuEntry);
@@ -74,8 +83,10 @@ std::shared_ptr<MenuEntry> buildSetCurrentLocationEntry(Tracker &tracker) {
 }
 
 std::shared_ptr<Menu> buildConfigMenu(Tracker &tracker) {
+  std::shared_ptr<BooleanMenuEntry> gpsEnabledMenuEntry = buildGpsEnabledMenuEntry();
   std::vector<std::shared_ptr<MenuEntry>> sensorsEntries = {
-    buildSetCurrentLocationEntry(tracker),
+    gpsEnabledMenuEntry,
+    buildSetCurrentLocationEntry(tracker, gpsEnabledMenuEntry),
   };
   return std::make_shared<Menu>("Config", sensorsEntries);
 }
