@@ -9,11 +9,15 @@ void BooleanMenuEntry::updateMenuEntryName() {
   setName(name + ": " + (state ? "ON" : "OFF"));
 }
 
-void BooleanMenuEntry::onActivate(Menu *parent) {
-  MenuEntry::onActivate(parent);
-  state = !state;
+void BooleanMenuEntry::setState(bool newState) {
+  state = newState;
   updateMenuEntryName();
   updateFunction(state);
+}
+
+void BooleanMenuEntry::onActivate(Menu *parent) {
+  MenuEntry::onActivate(parent);
+  setState(!state);
   deactivate(/* goToFollowOn= */ true);
 }
 

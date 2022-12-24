@@ -18,6 +18,7 @@ class BooleanMenuEntry : public MenuEntry {
 
   public:
     BooleanMenuEntry(std::string name, std::function<void(bool)> updateFunction, bool initialState);
+    void setState(bool newState);
     virtual void onActivate(Menu *parent);
     virtual void onSelect();
     virtual void onBack();
