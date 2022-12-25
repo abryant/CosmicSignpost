@@ -19,6 +19,7 @@
 #include "tracking_menu.h"
 #include "tracker.h"
 
+#include "config.h"
 #include "gps.h"
 
 std::shared_ptr<Menu> buildViewMenu(Tracker &tracker) {
@@ -75,8 +76,10 @@ std::shared_ptr<MenuEntry> buildSetCurrentLocationEntry(Tracker &tracker, std::s
             double latitude = std::stod(lastEnteredGpsLocation.substr(5, 9));
             double longitude = std::stod(lastEnteredGpsLocation.substr(20, 10));
             double elevation = std::stod(elevationStr.substr(6, 6));
+            Location newLocation = Location(latitude, longitude, elevation);
+            config::writeDefaultLocation(newLocation);
             gpsEnabledMenuEntry->setState(false);
-            tracker.setCurrentLocation(Location(latitude, longitude, elevation));
+            tracker.setCurrentLocation(newLocation);
           });
   manualGpsMenuEntry->setFollowOnMenuEntry(elevationMenuEntry);
   return manualGpsMenuEntry;

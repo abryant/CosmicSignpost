@@ -24,6 +24,7 @@
 #include "tracker.h"
 #include "vector.h"
 
+#include "config.h"
 #include "gps.h"
 #include "ota.h"
 #include "secrets.h"
@@ -124,6 +125,8 @@ void initGps() {
 }
 
 void initTracking() {
+  tracker.setCurrentLocation(config::readDefaultLocation());
+
   OutputDevices::display("Downloading ISS\norbit data...");
   Serial.println("Initializing ISS orbit...");
   SatelliteOrbit &issOrbit = TrackableObjects::getSatelliteOrbit("ISS");
