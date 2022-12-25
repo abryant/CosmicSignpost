@@ -116,6 +116,13 @@ void initNetworkTime() {
   waitForTime();
 }
 
+void initGps() {
+  gps::initGps([](Location location) {
+    Serial.printf("GPS update: lat=%f, long=%f, alt=%f\n", location.getLatitude(), location.getLongitude(), location.getElevation());
+    tracker.setCurrentLocation(location);
+  });
+}
+
 void initTracking() {
   OutputDevices::display("Downloading ISS\norbit data...");
   Serial.println("Initializing ISS orbit...");
@@ -169,10 +176,7 @@ void setup() {
   initWifi();
   initOta();
   initNetworkTime();
-  gps::initGps([](Location location) {
-    Serial.printf("GPS update: lat=%f, long=%f, alt=%f\n", location.getLatitude(), location.getLongitude(), location.getElevation());
-    tracker.setCurrentLocation(location);
-  });
+  initGps();
   initTracking();
   initMotors();
   initMenu();
