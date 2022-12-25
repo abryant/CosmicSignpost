@@ -87,6 +87,9 @@ std::shared_ptr<Menu> buildConfigMenu(Tracker &tracker) {
   std::vector<std::shared_ptr<MenuEntry>> sensorsEntries = {
     gpsEnabledMenuEntry,
     buildSetCurrentLocationEntry(tracker, gpsEnabledMenuEntry),
+    std::make_shared<BooleanMenuEntry>("Spin", [&tracker](bool newValue) {
+      tracker.setSpinning(newValue);
+    }, false),
   };
   return std::make_shared<Menu>("Config", sensorsEntries);
 }

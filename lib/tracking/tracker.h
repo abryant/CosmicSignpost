@@ -20,6 +20,8 @@ class Tracker {
 
     // Tracked location.
     TrackableObjects::tracking_function trackingFunction;
+    // Whether the tracker is in spinning mode.
+    bool spinning;
 
   public:
     Tracker(
@@ -28,9 +30,11 @@ class Tracker {
       TrackableObjects::tracking_function trackingFunction);
     void setCurrentLocation(Location currentLocation);
     void setCurrentDirection(Direction direction);
+    void setSpinning(bool spinning);
     void setTrackingFunction(TrackableObjects::tracking_function trackingFunction);
     Location getCurrentLocation();
 
+    Direction getSpinningDirectionAt(int64_t timeMillis);
     Direction getDirectionAt(int64_t timeMillis);
     double getDistanceAt(int64_t timeMillis);
 };
