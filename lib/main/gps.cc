@@ -9,6 +9,7 @@ bool gps::connected = false;
 bool gps::enabled = true;
 TimeMillisMicros gps::lastUpdateTime;
 std::function<void(Location)> gps::updateFunction;
+std::function<void(bool)> gps::connectionStatusFunction;
 
 void gps::processPvt(UBX_NAV_PVT_data_t *data) {
   if (enabled && updateFunction) {
@@ -19,9 +20,10 @@ void gps::processPvt(UBX_NAV_PVT_data_t *data) {
   }
 }
 
-void gps::initGps(std::function<void(Location)> updateFunction) {
+void gps::initGps(std::function<void(Location)> updateFunction, std::function<void(bool)> connectionStatusFunction) {
   connected = receiver.begin();
   gps::updateFunction = updateFunction;
+  gps::connectionStatusFunction = connectionStatusFunction;
   if (connected) {
     Serial.println("GPS connected at startup. Setting frequency to 1Hz");
     receiver.setNavigationFrequency(1, GNSS_MAX_WAIT);
@@ -32,6 +34,7 @@ void gps::initGps(std::function<void(Location)> updateFunction) {
   } else {
     Serial.println("No GPS at startup.");
   }
+  connectionStatusFunction(connected);
   lastUpdateTime = TimeMillisMicros::now();
 }
 
@@ -58,7 +61,10 @@ void gps::checkForUpdates() {
       receiver.setNavigationFrequency(1, GNSS_MAX_WAIT);
       receiver.setAutoPVTcallbackPtr(&processPvt, GNSS_MAX_WAIT);
     }
-    connected = newConnected;
+    if (newConnected != connected) {
+      connectionStatusFunction(newConnected);
+      connected = newConnected;
+    }
     lastUpdateTime = TimeMillisMicros::now();
   }
 }

@@ -118,10 +118,12 @@ void initNetworkTime() {
 }
 
 void initGps() {
-  gps::initGps([](Location location) {
-    Serial.printf("GPS update: lat=%f, long=%f, alt=%f\n", location.getLatitude(), location.getLongitude(), location.getElevation());
-    tracker.setCurrentLocation(location);
-  });
+  gps::initGps(
+    [](Location location) {
+      Serial.printf("GPS update: lat=%f, long=%f, alt=%f\n", location.getLatitude(), location.getLongitude(), location.getElevation());
+      tracker.setCurrentLocation(location);
+    },
+    main_menu::updateGpsMenuEntry);
 }
 
 void initTracking() {
@@ -169,7 +171,7 @@ void initMotors() {
 }
 
 void initMenu() {
-  menu = buildMainMenu(tracker, fetchUrl);
+  menu = main_menu::buildMainMenu(tracker, fetchUrl);
 }
 
 void setup() {
@@ -179,10 +181,10 @@ void setup() {
   initWifi();
   initOta();
   initNetworkTime();
-  initGps();
   initTracking();
   initMotors();
   initMenu();
+  initGps();
 }
 
 void loop() {

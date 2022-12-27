@@ -15,8 +15,9 @@ namespace gps {
   extern bool enabled;
   extern TimeMillisMicros lastUpdateTime;
   extern std::function<void(Location)> updateFunction;
+  extern std::function<void(bool)> connectionStatusFunction;
 
-  void initGps(std::function<void(Location)> updateFunction);
+  void initGps(std::function<void(Location)> updateFunction, std::function<void(bool)> connectionStatusFunction);
   void setEnabled(bool newEnabled);
   void checkForUpdates();
   std::optional<Location> getCurrentLocation(UBX_NAV_PVT_data_t *data);
