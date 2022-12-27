@@ -1,12 +1,17 @@
 #include "boolean_menu_entry.h"
 
-BooleanMenuEntry::BooleanMenuEntry(std::string name, std::function<void(bool)> updateFunction, bool initialState)
-  : MenuEntry(""), name(name), updateFunction(updateFunction), state(initialState) {
+BooleanMenuEntry::BooleanMenuEntry(std::string name, std::function<void(bool)> updateFunction, bool initialState, std::string disabledText, bool enabled)
+  : MenuEntry(""), name(name), updateFunction(updateFunction), state(initialState), disabledText(disabledText), enabled(enabled) {
   updateMenuEntryName();
 }
 
 void BooleanMenuEntry::updateMenuEntryName() {
-  setName(name + ": " + (state ? "ON" : "OFF"));
+  setName(name + ": " + (enabled ? (state ? "ON" : "OFF") : disabledText));
+}
+
+void BooleanMenuEntry::setEnabled(bool enabled) {
+  this->enabled = enabled;
+  updateMenuEntryName();
 }
 
 void BooleanMenuEntry::setState(bool newState) {
@@ -17,7 +22,9 @@ void BooleanMenuEntry::setState(bool newState) {
 
 void BooleanMenuEntry::onActivate(Menu *parent) {
   MenuEntry::onActivate(parent);
-  setState(!state);
+  if (enabled) {
+    setState(!state);
+  }
   deactivate(/* goToFollowOn= */ true);
 }
 

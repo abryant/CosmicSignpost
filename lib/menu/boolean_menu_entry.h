@@ -14,10 +14,13 @@ class BooleanMenuEntry : public MenuEntry {
     std::string name;
     std::function<void(bool)> updateFunction;
     bool state;
+    std::string disabledText;
+    bool enabled;
     void updateMenuEntryName();
 
   public:
-    BooleanMenuEntry(std::string name, std::function<void(bool)> updateFunction, bool initialState);
+    BooleanMenuEntry(std::string name, std::function<void(bool)> updateFunction, bool initialState, std::string disabledText = "", bool enabled = true);
+    void setEnabled(bool enabled);
     void setState(bool newState);
     virtual void onActivate(Menu *parent);
     virtual void onSelect();
