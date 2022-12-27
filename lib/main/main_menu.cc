@@ -22,8 +22,8 @@
 #include "config.h"
 #include "gps.h"
 
-std::shared_ptr<Menu> buildViewMenu(Tracker &tracker) {
-  std::vector<std::shared_ptr<MenuEntry>> viewEntries = {
+std::shared_ptr<Menu> buildInfoMenu(Tracker &tracker) {
+  std::vector<std::shared_ptr<MenuEntry>> infoEntries = {
     std::make_shared<InfoMenuEntry>("Lat/Long/El", [&tracker]() {
       Location location = tracker.getCurrentLocation();
       std::ostringstream locationStr;
@@ -50,7 +50,7 @@ std::shared_ptr<Menu> buildViewMenu(Tracker &tracker) {
       return std::string(WiFi.localIP().toString().c_str());
     }),
   };
-  return std::make_shared<Menu>("View", viewEntries);
+  return std::make_shared<Menu>("Info", infoEntries);
 }
 
 std::shared_ptr<BooleanMenuEntry> buildGpsEnabledMenuEntry() {
@@ -102,7 +102,7 @@ std::shared_ptr<Menu> buildMainMenu(Tracker &tracker, std::function<std::optiona
     TrackingMenu::buildTrackingMenu(tracker, urlFetchFunction),
     buildConfigMenu(tracker),
     std::make_shared<BrightnessMenuEntry>(),
-    buildViewMenu(tracker),
+    buildInfoMenu(tracker),
   };
   return std::make_shared<Menu>("Cosmic Signpost", mainEntries);
 }
