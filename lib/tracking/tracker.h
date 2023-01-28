@@ -3,11 +3,14 @@
 
 #include <cstdint>
 #include <functional>
+#include <optional>
 
 #include "cartesian_location.h"
 #include "direction.h"
 #include "location.h"
 #include "trackable_objects.h"
+
+typedef std::function<Direction(int64_t)> direction_function;
 
 // Tracks an object's position from the current position.
 // This accounts for movement, by finding angular velocities.
@@ -20,6 +23,8 @@ class Tracker {
 
     // Tracked location.
     TrackableObjects::tracking_function trackingFunction;
+    // Pointing direction, used for calibration.
+    std::optional<direction_function> directionFunction;
     // Whether the tracker is in spinning mode.
     bool spinning;
 
@@ -32,6 +37,7 @@ class Tracker {
     void setCurrentDirection(Direction direction);
     void setSpinning(bool spinning);
     void setTrackingFunction(TrackableObjects::tracking_function trackingFunction);
+    void setDirectionFunction(std::optional<direction_function> directionFunction);
     Location getCurrentLocation();
 
     Direction getSpinningDirectionAt(int64_t timeMillis);
