@@ -21,6 +21,7 @@
 
 #include "config.h"
 #include "gps.h"
+#include "orientation.h"
 
 std::shared_ptr<BooleanMenuEntry> main_menu::gpsEnabledMenuEntry;
 
@@ -98,11 +99,37 @@ std::shared_ptr<MenuEntry> main_menu::buildSetCurrentLocationEntry(Tracker &trac
   return manualGpsMenuEntry;
 }
 
+std::shared_ptr<MenuEntry> main_menu::buildCalibrateCompassEntry(Tracker &tracker) {
+  std::shared_ptr<MenuEntry> calibrateMenuEntry =
+      std::make_shared<ActionMenuEntry>(
+          "Compass Cal",
+          []() {
+            // reset calibration state
+            orientation::init();
+          },
+          []() {
+            std::ostringstream orientationStr;
+            if (orientation::connected) {
+              orientation::calibration::updateCalibrationStatuses();
+              orientationStr << std::to_string(orientation::calibration::systemCalibrationStatus) << " ";
+              orientationStr << std::to_string(orientation::calibration::gyroscopeCalibrationStatus) << " ";
+              orientationStr << std::to_string(orientation::calibration::accelerometerCalibrationStatus) << " ";
+              orientationStr << std::to_string(orientation::calibration::magnetometerCalibrationStatus);
+            } else {
+              orientationStr << "No Compass";
+            }
+            // perform calibration updates based on current state
+            return orientationStr.str();
+          });
+  return calibrateMenuEntry;
+}
+
 std::shared_ptr<Menu> main_menu::buildConfigMenu(Tracker &tracker) {
   gpsEnabledMenuEntry = buildGpsEnabledMenuEntry();
   std::vector<std::shared_ptr<MenuEntry>> sensorsEntries = {
     gpsEnabledMenuEntry,
     buildSetCurrentLocationEntry(tracker),
+    buildCalibrateCompassEntry(tracker),
     std::make_shared<BooleanMenuEntry>("Spin", [&tracker](bool newValue) {
       tracker.setSpinning(newValue);
     }, false),

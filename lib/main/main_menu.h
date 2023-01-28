@@ -19,6 +19,7 @@ namespace main_menu {
   std::shared_ptr<Menu> buildInfoMenu(Tracker &tracker);
   std::shared_ptr<BooleanMenuEntry> buildGpsEnabledMenuEntry();
   std::shared_ptr<MenuEntry> buildSetCurrentLocationEntry(Tracker &tracker);
+  std::shared_ptr<MenuEntry> buildCalibrateCompassEntry(Tracker &tracker);
   std::shared_ptr<Menu> buildConfigMenu(Tracker &tracker);
 }
 
