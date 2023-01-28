@@ -67,7 +67,7 @@ double altitudeDegreesToSteps(double degrees) {
 // full rotation to compensate for two full azimuth rotations, then this just applies a linear
 // conversion factor.
 double convertAzimuthToAltitude(double azimuth) {
-  return (azimuth * STEPS_PER_ALTITUDE_360_DEGREES) / STEPS_PER_AZIMUTH_360_DEGREES;
+  return -(azimuth * STEPS_PER_ALTITUDE_360_DEGREES) / STEPS_PER_AZIMUTH_360_DEGREES;
 }
 
 double findSpeedCorrection(double diffSteps) {
