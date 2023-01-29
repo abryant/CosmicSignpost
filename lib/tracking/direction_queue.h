@@ -2,6 +2,7 @@
 #define COSMIC_SIGNPOST_LIB_TRACKING_DIRECTION_QUEUE_H_
 
 #include <condition_variable>
+#include <optional>
 #include <stdint.h>
 #include <map>
 #include <mutex>
@@ -35,6 +36,17 @@ class DirectionQueue {
     // (time and Direction) without modifying the queue.
     // Blocks if the queue is empty.
     std::pair<int64_t, Direction> peekDirectionAtOrAfter(int64_t timeMillis);
+
+    // Finds the first time in the queue that is at least timeMillis, returns the whole entry
+    // (time and Direction), and removes any times before it from the queue.
+    // The returned element remains in the queue until an element after it is removed.
+    // Returns nullopt if the queue is does not contain such an element.
+    std::optional<std::pair<int64_t, Direction>> getDirectionAtOrAfterNonBlocking(int64_t timeMillis);
+
+    // Finds the first time in the queue that is at least timeMillis, and returns the whole entry
+    // (time and Direction) without modifying the queue.
+    // Returns nullopt if the queue is does not contain such an element.
+    std::optional<std::pair<int64_t, Direction>> peekDirectionAtOrAfterNonBlocking(int64_t timeMillis);
 };
 
 #endif

@@ -4,6 +4,7 @@
 #include <functional>
 #include <cstdint>
 #include <memory>
+#include <optional>
 
 #include "direction.h"
 #include "direction_queue.h"
@@ -18,7 +19,7 @@ class StepperMotors {
 
     void stepAzimuth(bool clockwise);
     void stepAltitude(bool north);
-    Direction getDirectionAt(int64_t timeMillis);
+    std::optional<Direction> getDirectionAt(int64_t timeMillis);
 
   public:
     StepperMotors(

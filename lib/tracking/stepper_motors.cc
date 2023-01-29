@@ -35,11 +35,18 @@ StepperMotors::StepperMotors(
 #endif
 }
 
-Direction StepperMotors::getDirectionAt(int64_t timeMillis) {
+std::optional<Direction> StepperMotors::getDirectionAt(int64_t timeMillis) {
   int64_t lowerTime = (timeMillis / 50) * 50;
   int64_t upperTime = lowerTime + 50;
-  std::pair<int64_t, Direction> lower = directionQueue->getDirectionAtOrAfter(lowerTime);
-  std::pair<int64_t, Direction> upper = directionQueue->peekDirectionAtOrAfter(upperTime);
+  std::optional<std::pair<int64_t, Direction>> lowerOpt =
+      directionQueue->getDirectionAtOrAfter(lowerTime);
+  std::optional<std::pair<int64_t, Direction>> upperOpt =
+      directionQueue->peekDirectionAtOrAfter(upperTime);
+  if (!lowerOpt.has_value() || !upperOpt.has_value()) {
+    return std::nullopt;
+  }
+  std::pair<int64_t, Direction> lower = lowerOpt.value();
+  std::pair<int64_t, Direction> upper = upperOpt.value();
   int64_t timeDiff = upper.first - lower.first;
   if (timeDiff <= 0) {
     return lower.second;
@@ -185,7 +192,8 @@ void StepperMotors::control() {
       }
       current = next;
       next = afterNext;
-      afterNext = getDirectionAt(afterNextSliceStart.millis);
+      std::optional<Direction> afterNextOpt = getDirectionAt(afterNextSliceStart.millis);
+      afterNext = afterNextOpt.value_or(afterNext);
       int64_t lastSliceMicros = timeDeltaMicros;
       int64_t nextSliceMicros = nextSliceStart.deltaMicrosSince(sliceStart);
 
