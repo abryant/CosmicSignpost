@@ -48,6 +48,8 @@ namespace orientation {
     void startCalibration(Tracker &tracker);
     // Stops calibration and cleans up (resets to the previous tracking target).
     void stopCalibration(Tracker &tracker);
+    bool isCalibrating();
+
     void updateCalibrationStatuses();
 
     // Finds the direction that the calibration routine currently wants us to point in.

@@ -80,6 +80,10 @@ void orientation::calibration::stopCalibration(Tracker &tracker) {
   tracker.setDirectionFunction(std::nullopt);
 }
 
+bool orientation::calibration::isCalibrating() {
+  return stage != CalibrationStage::NOT_CALIBRATING && stage != CalibrationStage::FINISHED_CALIBRATING;
+}
+
 double findAngleToHorizontalDegrees(Quaternion sensorQuaternion) {
   Vector pointerDirection = Vector(-1, 0, 0);
   pointerDirection = sensorQuaternion.rotate(pointerDirection);

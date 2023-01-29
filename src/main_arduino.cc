@@ -172,6 +172,24 @@ void initMotors() {
       /* core= */ 0);
 }
 
+void calibrateOrientation() {
+  orientation::init();
+  orientation::calibration::startCalibration(tracker);
+  OutputDevices::display("Calibrating...");
+
+  while (orientation::calibration::isCalibrating()) {
+    if (!directionQueue->isFull()) {
+      lastAddedTime = lastAddedTime.plusMicros(50000);
+      int64_t timeMillis = (lastAddedTime.millis / 50) * 50;
+      directionQueue->addDirection(timeMillis, tracker.getDirectionAt(timeMillis));
+    }
+
+    ota::checkForOta();
+  }
+
+  orientation::calibration::stopCalibration(tracker);
+}
+
 void initMenu() {
   menu = main_menu::buildMainMenu(tracker, fetchUrl);
 }
@@ -185,6 +203,7 @@ void setup() {
   initNetworkTime();
   initTracking();
   initMotors();
+  calibrateOrientation();
   initMenu();
   initGps();
 }
