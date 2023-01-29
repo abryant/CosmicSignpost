@@ -1,6 +1,7 @@
 #ifndef COSMIC_SIGNPOST_LIB_MAIN_ORIENTATION_H_
 #define COSMIC_SIGNPOST_LIB_MAIN_ORIENTATION_H_
 
+#include <memory>
 #include <optional>
 
 #include <Adafruit_Sensor.h>
@@ -9,6 +10,7 @@
 // Without an explicit path, the LDF uses BNO055's quaternion.h
 #include "tracking/quaternion.h"
 
+#include "stepper_motors.h"
 #include "time_utils.h"
 #include "tracker.h"
 
@@ -17,6 +19,9 @@ namespace orientation {
   extern bool connected;
 
   namespace calibration {
+    // To calibrate the motors, we need to be able to reset their coordinates.
+    extern std::shared_ptr<StepperMotors> motors;
+
     extern uint8_t systemCalibrationStatus;
     extern uint8_t gyroscopeCalibrationStatus;
     extern uint8_t accelerometerCalibrationStatus;

@@ -23,6 +23,7 @@ StepperMotors::StepperMotors(
     int32_t altitudeStepPin,
     int32_t altitudeDirectionPin)
     : directionQueue(directionQueue),
+      shouldResetCoordinates(false),
       azimuthStepPin(azimuthStepPin),
       azimuthDirectionPin(azimuthDirectionPin),
       altitudeStepPin(altitudeStepPin),
@@ -33,6 +34,10 @@ StepperMotors::StepperMotors(
   pinMode(altitudeStepPin, OUTPUT);
   pinMode(altitudeDirectionPin, OUTPUT);
 #endif
+}
+
+void StepperMotors::requestCoordinateReset() {
+  shouldResetCoordinates.store(true);
 }
 
 std::optional<Direction> StepperMotors::getDirectionAt(int64_t timeMillis) {
@@ -194,6 +199,19 @@ void StepperMotors::control() {
       next = afterNext;
       std::optional<Direction> afterNextOpt = getDirectionAt(afterNextSliceStart.millis);
       afterNext = afterNextOpt.value_or(afterNext);
+
+      bool coordinateReset = shouldResetCoordinates.exchange(false);
+      if (coordinateReset) {
+        // Reset steps and directions.
+        currentAzimuthSteps = 0;
+        currentAltitudeSteps = 0;
+        directionQueue->clear();
+        current = next = afterNext = Direction(0, 0);
+        // Don't reset speeds or accelerations, they should be maintained so that the motor drivers
+        // don't skip steps if we happen to be moving fast (although hopefully we're not moving
+        // fast when this happens).
+      }
+
       int64_t lastSliceMicros = timeDeltaMicros;
       int64_t nextSliceMicros = nextSliceStart.deltaMicrosSince(sliceStart);
 

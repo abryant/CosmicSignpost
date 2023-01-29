@@ -15,6 +15,11 @@ bool DirectionQueue::isFull() {
   return result;
 }
 
+void DirectionQueue::clear() {
+  std::unique_lock<std::mutex> lock(mutex);
+  directionsByTimeMillis.clear();
+}
+
 void DirectionQueue::addDirection(int64_t timeMillis, Direction direction) {
   {
     std::unique_lock<std::mutex> lock(mutex);

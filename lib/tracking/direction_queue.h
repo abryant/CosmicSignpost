@@ -22,6 +22,9 @@ class DirectionQueue {
     // Returns true iff the queue is full.
     bool isFull();
 
+    // Removes all elements from the queue.
+    void clear();
+
     // Adds the given direction at the given time.
     // Blocks if the queue is full.
     void addDirection(int64_t timeMillis, Direction direction);

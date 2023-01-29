@@ -10,6 +10,8 @@
 Adafruit_BNO055 orientation::sensor = Adafruit_BNO055();
 bool orientation::connected = false;
 
+std::shared_ptr<StepperMotors> orientation::calibration::motors = nullptr;
+
 uint8_t orientation::calibration::systemCalibrationStatus = 0;
 uint8_t orientation::calibration::gyroscopeCalibrationStatus = 0;
 uint8_t orientation::calibration::accelerometerCalibrationStatus = 0;
@@ -156,9 +158,10 @@ Direction orientation::calibration::getCalibrationDirection(int64_t timeMillis) 
         return zeroAltitudeDirection;
       }
     case CalibrationStage::RESET_MOTORS_TO_ZERO_ALTITUDE:
-      // TODO: tell the motors to reset zero
+      motors->requestCoordinateReset();
+      zeroAltitudeDirection = Direction(0, 0);
       stage = CalibrationStage::FINISHED_CALIBRATING;
-      return zeroAltitudeDirection;
+      return Direction(0, 0);
     default:
     case CalibrationStage::NOT_CALIBRATING:
     case CalibrationStage::FINISHED_CALIBRATING:

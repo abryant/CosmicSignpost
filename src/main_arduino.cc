@@ -26,6 +26,7 @@
 
 #include "config.h"
 #include "gps.h"
+#include "orientation.h"
 #include "ota.h"
 #include "secrets.h"
 
@@ -159,6 +160,7 @@ void initMotors() {
       AZIMUTH_DIR_PIN,
       ALTITUDE_STEP_PIN,
       ALTITUDE_DIR_PIN);
+  orientation::calibration::motors = motors;
 
   xTaskCreatePinnedToCore(
       &controlStepperMotors,
