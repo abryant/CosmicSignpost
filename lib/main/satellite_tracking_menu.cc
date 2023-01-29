@@ -98,6 +98,7 @@ std::shared_ptr<Menu> SatelliteTrackingMenu::buildSatellitesMenu(
                 AsyncQueue::addToQueue(fetchAndContinueFunction);
               }
             },
+            []() {},
             []() { return TrackingMenu::currentInfoFunction(); },
             TrackingMenu::INFO_UPDATE_INTERVAL_MICROS));
   }

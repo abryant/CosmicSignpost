@@ -107,6 +107,7 @@ std::shared_ptr<MenuEntry> main_menu::buildCalibrateCompassEntry(Tracker &tracke
             // reset calibration state
             orientation::init();
           },
+          []() {},
           []() {
             std::ostringstream orientationStr;
             if (orientation::connected) {

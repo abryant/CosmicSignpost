@@ -14,14 +14,17 @@
 class ActionMenuEntry : public InfoMenuEntry {
   private:
     std::function<void()> activatedFunction;
+    std::function<void()> deactivatedFunction;
 
   public:
     ActionMenuEntry(
         std::string name,
         std::function<void()> activatedFunction,
+        std::function<void()> deactivatedFunction,
         std::function<std::string()> infoFunction,
         uint64_t updateIntervalMicros = 0);
     virtual void onActivate(Menu *parent);
+    virtual void onDeactivate();
 };
 
 #endif

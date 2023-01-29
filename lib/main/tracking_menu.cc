@@ -69,6 +69,7 @@ std::shared_ptr<Menu> TrackingMenu::buildTrackableObjectsMenu(
                   buildInfoFunction(name, tracker, includeDistance);
               tracker.setTrackingFunction(TrackableObjects::getTrackingFunction(name));
             },
+            []() {},
             []() { return TrackingMenu::currentInfoFunction(); },
             INFO_UPDATE_INTERVAL_MICROS));
   }

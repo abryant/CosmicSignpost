@@ -19,6 +19,7 @@ class MenuEntry {
     MenuEntry(std::string name);
     std::string getName();
     virtual void onActivate(Menu *parent);
+    virtual void onDeactivate();
     void deactivate(bool goToFollowOn);
     bool hasParent();
     virtual void onSelect() = 0;

@@ -19,7 +19,11 @@ void MenuEntry::onActivate(Menu *parent) {
   this->parent = parent;
 }
 
+void MenuEntry::onDeactivate() {
+}
+
 void MenuEntry::deactivate(bool goToFollowOn) {
+  onDeactivate();
   parent->deactivateChild(goToFollowOn);
   parent = NULL;
 }
