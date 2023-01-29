@@ -1,15 +1,18 @@
 #include "orientation.h"
 
 #include <Arduino.h>
+#include <Adafruit_BNO055.h>
 
 Adafruit_BNO055 orientation::sensor = Adafruit_BNO055();
 bool orientation::connected = false;
 
-adafruit_bno055_offsets_t orientation::calibration::lastCalibrationData = {};
 uint8_t orientation::calibration::systemCalibrationStatus = 0;
 uint8_t orientation::calibration::gyroscopeCalibrationStatus = 0;
 uint8_t orientation::calibration::accelerometerCalibrationStatus = 0;
 uint8_t orientation::calibration::magnetometerCalibrationStatus = 0;
+
+bool orientation::calibration::calibrating = false;
+int64_t orientation::calibration::calibrationStartTimeMillis = 0;
 
 void orientation::init() {
   connected = sensor.begin(OPERATION_MODE_NDOF);
@@ -36,6 +39,41 @@ bool orientation::isConnected() {
   return result == 0;
 }
 
+std::optional<Quaternion> orientation::getQuaternion() {
+  if (!connected) {
+    return std::nullopt;
+  }
+  imu::Quaternion imuQuat = sensor.getQuat();
+  if (imuQuat.w() == 0 && imuQuat.x() == 0 && imuQuat.y() == 0 && imuQuat.z() == 0) {
+    return std::nullopt;
+  }
+  return Quaternion(imuQuat.w(), imuQuat.x(), imuQuat.y(), imuQuat.z());
+}
+
+void orientation::calibration::startCalibration(Tracker &tracker) {
+  calibrating = true;
+  tracker.setDirectionFunction(getCalibrationDirection);
+}
+
+void orientation::calibration::stopCalibration(Tracker &tracker) {
+  calibrating = false;
+  tracker.setDirectionFunction(std::nullopt);
+}
+
+Direction orientation::calibration::getCalibrationDirection(int64_t timeMillis) {
+  if (calibrating && calibrationStartTimeMillis == 0) {
+    calibrationStartTimeMillis = timeMillis;
+  }
+  updateCalibrationStatuses();
+  if (gyroscopeCalibrationStatus != 3) {
+    // Stay at 0,0 and wait for it to become 3.
+    return Direction(0, 0);
+  }
+  calibrating = false;
+  calibrationStartTimeMillis = 0;
+  return Direction(0, 0);
+}
+
 void orientation::calibration::updateCalibrationStatuses() {
   if (!orientation::connected) {
     return;
@@ -45,11 +83,4 @@ void orientation::calibration::updateCalibrationStatuses() {
       &gyroscopeCalibrationStatus,
       &accelerometerCalibrationStatus,
       &magnetometerCalibrationStatus);
-  if (systemCalibrationStatus == 3
-      && gyroscopeCalibrationStatus == 3
-      && accelerometerCalibrationStatus == 3
-      && magnetometerCalibrationStatus == 3) {
-    orientation::sensor.getSensorOffsets(lastCalibrationData);
-  }
 }
-

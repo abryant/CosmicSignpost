@@ -103,15 +103,20 @@ std::shared_ptr<MenuEntry> main_menu::buildCalibrateCompassEntry(Tracker &tracke
   std::shared_ptr<MenuEntry> calibrateMenuEntry =
       std::make_shared<ActionMenuEntry>(
           "Compass Cal",
-          []() {
+          [&tracker]() {
             // reset calibration state
             orientation::init();
+            orientation::calibration::startCalibration(tracker);
           },
-          []() {},
+          [&tracker]() {
+            orientation::calibration::stopCalibration(tracker);
+          },
           []() {
+            if (!orientation::calibration::calibrating) {
+              return std::string("Done");
+            }
             std::ostringstream orientationStr;
             if (orientation::connected) {
-              orientation::calibration::updateCalibrationStatuses();
               orientationStr << std::to_string(orientation::calibration::systemCalibrationStatus) << " ";
               orientationStr << std::to_string(orientation::calibration::gyroscopeCalibrationStatus) << " ";
               orientationStr << std::to_string(orientation::calibration::accelerometerCalibrationStatus) << " ";
@@ -119,7 +124,6 @@ std::shared_ptr<MenuEntry> main_menu::buildCalibrateCompassEntry(Tracker &tracke
             } else {
               orientationStr << "No Compass";
             }
-            // perform calibration updates based on current state
             return orientationStr.str();
           });
   return calibrateMenuEntry;

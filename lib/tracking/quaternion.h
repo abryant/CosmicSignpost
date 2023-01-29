@@ -9,9 +9,9 @@ class Quaternion {
     double b;
     double c;
     double d;
-    Quaternion(double a, double b, double c, double d);
 
   public:
+    Quaternion(double a, double b, double c, double d);
     Quaternion(double angleRadians, Vector axis);
 
     Vector rotate(Vector v);
