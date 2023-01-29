@@ -21,17 +21,23 @@ namespace orientation {
     extern uint8_t gyroscopeCalibrationStatus;
     extern uint8_t accelerometerCalibrationStatus;
     extern uint8_t magnetometerCalibrationStatus;
+    extern std::string debug;
 
     enum class CalibrationStage {
       NOT_CALIBRATING,
       CALIBRATE_GYROSCOPE,
-      ZERO_ALTITUDE,
+      CALCULATE_ZERO_ALTITUDE,
+      WAIT_FOR_ZERO_ALTITUDE,
+      RESET_MOTORS_TO_ZERO_ALTITUDE,
       FINISHED_CALIBRATING,
     };
 
     extern CalibrationStage stage;
     extern int64_t calibrationStartTimeMillis;
     extern int64_t lastGyroscopeTimeMillis;
+    extern Direction zeroAltitudeDirection;
+    extern int64_t waitForZeroAltitudeLastMovementTimeMillis;
+    extern Quaternion waitForZeroAltitudeLastQuaternion;
 
     // Starts calibration, by telling the tracker to use the calibration direction function.
     void startCalibration(Tracker &tracker);

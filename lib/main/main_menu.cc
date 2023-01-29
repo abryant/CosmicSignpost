@@ -114,26 +114,32 @@ std::shared_ptr<MenuEntry> main_menu::buildCalibrateCompassEntry(Tracker &tracke
           []() {
             std::ostringstream orientationStr;
             if (orientation::connected) {
-              switch (orientation::calibration::stage) {
-                case orientation::calibration::CalibrationStage::NOT_CALIBRATING:
-                  // We shouldn't usually see this, it only happens when calibration stops early
-                  // (via this MenuEntry being deactivated).
-                  orientationStr << "Stopped     ";
-                  break;
-                case orientation::calibration::CalibrationStage::CALIBRATE_GYROSCOPE:
-                  orientationStr << "Tuning Gyro ";
-                  break;
-                case orientation::calibration::CalibrationStage::ZERO_ALTITUDE:
-                  orientationStr << "Zeroing Alt ";
-                  break;
-                case orientation::calibration::CalibrationStage::FINISHED_CALIBRATING:
-                  orientationStr << "Finished    ";
-                  break;
+              if (!orientation::calibration::debug.empty()) {
+                orientationStr << orientation::calibration::debug;
+              } else {
+                switch (orientation::calibration::stage) {
+                  case orientation::calibration::CalibrationStage::NOT_CALIBRATING:
+                    // We shouldn't usually see this, it only happens when calibration stops early
+                    // (via this MenuEntry being deactivated).
+                    orientationStr << "Stopped     ";
+                    break;
+                  case orientation::calibration::CalibrationStage::CALIBRATE_GYROSCOPE:
+                    orientationStr << "Tuning Gyro ";
+                    break;
+                  case orientation::calibration::CalibrationStage::CALCULATE_ZERO_ALTITUDE:
+                  case orientation::calibration::CalibrationStage::WAIT_FOR_ZERO_ALTITUDE:
+                  case orientation::calibration::CalibrationStage::RESET_MOTORS_TO_ZERO_ALTITUDE:
+                    orientationStr << "Zeroing Alt ";
+                    break;
+                  case orientation::calibration::CalibrationStage::FINISHED_CALIBRATING:
+                    orientationStr << "Finished    ";
+                    break;
+                }
+                orientationStr << std::to_string(orientation::calibration::systemCalibrationStatus);
+                orientationStr << std::to_string(orientation::calibration::gyroscopeCalibrationStatus);
+                orientationStr << std::to_string(orientation::calibration::accelerometerCalibrationStatus);
+                orientationStr << std::to_string(orientation::calibration::magnetometerCalibrationStatus);
               }
-              orientationStr << std::to_string(orientation::calibration::systemCalibrationStatus);
-              orientationStr << std::to_string(orientation::calibration::gyroscopeCalibrationStatus);
-              orientationStr << std::to_string(orientation::calibration::accelerometerCalibrationStatus);
-              orientationStr << std::to_string(orientation::calibration::magnetometerCalibrationStatus);
             } else {
               orientationStr << "No Compass";
             }
