@@ -11,8 +11,10 @@ uint8_t orientation::calibration::gyroscopeCalibrationStatus = 0;
 uint8_t orientation::calibration::accelerometerCalibrationStatus = 0;
 uint8_t orientation::calibration::magnetometerCalibrationStatus = 0;
 
-bool orientation::calibration::calibrating = false;
+orientation::calibration::CalibrationStage orientation::calibration::stage =
+    orientation::calibration::CalibrationStage::NOT_CALIBRATING;
 int64_t orientation::calibration::calibrationStartTimeMillis = 0;
+int64_t orientation::calibration::lastGyroscopeTimeMillis = 0;
 
 void orientation::init() {
   connected = sensor.begin(OPERATION_MODE_NDOF);
@@ -51,27 +53,49 @@ std::optional<Quaternion> orientation::getQuaternion() {
 }
 
 void orientation::calibration::startCalibration(Tracker &tracker) {
-  calibrating = true;
+  if (!connected) {
+    stopCalibration(tracker);
+    return;
+  }
+  stage = CalibrationStage::CALIBRATE_GYROSCOPE;
+  calibrationStartTimeMillis = 0;
   tracker.setDirectionFunction(getCalibrationDirection);
 }
 
 void orientation::calibration::stopCalibration(Tracker &tracker) {
-  calibrating = false;
+  stage = CalibrationStage::NOT_CALIBRATING;
+  calibrationStartTimeMillis = 0;
   tracker.setDirectionFunction(std::nullopt);
 }
 
 Direction orientation::calibration::getCalibrationDirection(int64_t timeMillis) {
-  if (calibrating && calibrationStartTimeMillis == 0) {
-    calibrationStartTimeMillis = timeMillis;
-  }
-  updateCalibrationStatuses();
-  if (gyroscopeCalibrationStatus != 3) {
-    // Stay at 0,0 and wait for it to become 3.
+  if (!orientation::connected) {
+    stage = CalibrationStage::NOT_CALIBRATING;
+    calibrationStartTimeMillis = 0;
     return Direction(0, 0);
   }
-  calibrating = false;
-  calibrationStartTimeMillis = 0;
-  return Direction(0, 0);
+  updateCalibrationStatuses();
+
+  switch (stage) {
+    case CalibrationStage::CALIBRATE_GYROSCOPE:
+      if (calibrationStartTimeMillis == 0) {
+        calibrationStartTimeMillis = timeMillis;
+      }
+      if (gyroscopeCalibrationStatus == 3) {
+        stage = CalibrationStage::ZERO_ALTITUDE;
+      }
+      // Stay at 0,0 and wait for it to become 3.
+      lastGyroscopeTimeMillis = timeMillis;
+      return Direction(0, 0);
+    case CalibrationStage::ZERO_ALTITUDE:
+      // TODO: move to where 0,0 should be, wait for it to stabilise, and then tell the motors that
+      // this is their new zero and wait for them to accept it, then move on to the next stage.
+      return Direction(0, 0);
+    default:
+    case CalibrationStage::NOT_CALIBRATING:
+    case CalibrationStage::FINISHED_CALIBRATING:
+      return Direction(0, 0);
+  }
 }
 
 void orientation::calibration::updateCalibrationStatuses() {

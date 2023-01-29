@@ -22,8 +22,16 @@ namespace orientation {
     extern uint8_t accelerometerCalibrationStatus;
     extern uint8_t magnetometerCalibrationStatus;
 
-    extern bool calibrating;
+    enum class CalibrationStage {
+      NOT_CALIBRATING,
+      CALIBRATE_GYROSCOPE,
+      ZERO_ALTITUDE,
+      FINISHED_CALIBRATING,
+    };
+
+    extern CalibrationStage stage;
     extern int64_t calibrationStartTimeMillis;
+    extern int64_t lastGyroscopeTimeMillis;
 
     // Starts calibration, by telling the tracker to use the calibration direction function.
     void startCalibration(Tracker &tracker);
