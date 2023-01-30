@@ -131,6 +131,14 @@ std::shared_ptr<MenuEntry> main_menu::buildCalibrateCompassEntry(Tracker &tracke
                   case orientation::calibration::CalibrationStage::RESET_MOTORS_TO_ZERO_ALTITUDE:
                     orientationStr << "Zeroing Alt ";
                     break;
+                  case orientation::calibration::CalibrationStage::CALIBRATE_MAGNETOMETER:
+                    orientationStr << "Compass     ";
+                    break;
+                  case orientation::calibration::CalibrationStage::CALCULATE_ZERO_AZIMUTH:
+                  case orientation::calibration::CalibrationStage::WAIT_FOR_ZERO_AZIMUTH:
+                  case orientation::calibration::CalibrationStage::RESET_MOTORS_TO_ZERO_AZIMUTH:
+                    orientationStr << "Zeroing Azi ";
+                    break;
                   case orientation::calibration::CalibrationStage::FINISHED_CALIBRATING:
                     orientationStr << "Finished    ";
                     break;

@@ -34,6 +34,10 @@ namespace orientation {
       CALCULATE_ZERO_ALTITUDE,
       WAIT_FOR_ZERO_ALTITUDE,
       RESET_MOTORS_TO_ZERO_ALTITUDE,
+      CALIBRATE_MAGNETOMETER,
+      CALCULATE_ZERO_AZIMUTH,
+      WAIT_FOR_ZERO_AZIMUTH,
+      RESET_MOTORS_TO_ZERO_AZIMUTH,
       FINISHED_CALIBRATING,
     };
 
@@ -41,8 +45,10 @@ namespace orientation {
     extern int64_t calibrationStartTimeMillis;
     extern int64_t lastGyroscopeTimeMillis;
     extern Direction zeroAltitudeDirection;
-    extern int64_t waitForZeroAltitudeLastMovementTimeMillis;
-    extern Quaternion waitForZeroAltitudeLastQuaternion;
+    extern int64_t lastMovementTimeMillis;
+    extern Quaternion lastMovementQuaternion;
+    extern Direction lastCompassDirection;
+    extern Direction zeroAzimuthDirection;
 
     // Starts calibration, by telling the tracker to use the calibration direction function.
     void startCalibration(Tracker &tracker);
@@ -51,6 +57,8 @@ namespace orientation {
     bool isCalibrating();
 
     void updateCalibrationStatuses();
+    void resetMovementCheck(int64_t timeMillis, Quaternion sensorQuaternion);
+    bool hasStoppedMoving(int64_t timeMillis, Quaternion sensorQuaternion);
 
     // Finds the direction that the calibration routine currently wants us to point in.
     Direction getCalibrationDirection(int64_t timeMillis);
