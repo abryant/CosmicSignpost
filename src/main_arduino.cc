@@ -177,11 +177,18 @@ void calibrateOrientation() {
   orientation::calibration::startCalibration(tracker);
   OutputDevices::display("Calibrating...");
 
+  uint64_t lastDisplayUpdateTimeMicros = micros();
   while (orientation::calibration::isCalibrating()) {
     if (!directionQueue->isFull()) {
       lastAddedTime = lastAddedTime.plusMicros(50000);
       int64_t timeMillis = (lastAddedTime.millis / 50) * 50;
       directionQueue->addDirection(timeMillis, tracker.getDirectionAt(timeMillis));
+    }
+
+    uint64_t timeMicros = micros();
+    if ((timeMicros - lastDisplayUpdateTimeMicros) > 500000) {
+      lastDisplayUpdateTimeMicros = timeMicros;
+      OutputDevices::display("Calibrating...\n" + orientation::calibration::getStatusString());
     }
 
     ota::checkForOta();

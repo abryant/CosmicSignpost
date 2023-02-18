@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <optional>
+#include <string>
 
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
@@ -26,7 +27,6 @@ namespace orientation {
     extern uint8_t gyroscopeCalibrationStatus;
     extern uint8_t accelerometerCalibrationStatus;
     extern uint8_t magnetometerCalibrationStatus;
-    extern std::string debug;
 
     enum class CalibrationStage {
       NOT_CALIBRATING,
@@ -55,6 +55,7 @@ namespace orientation {
     // Stops calibration and cleans up (resets to the previous tracking target).
     void stopCalibration(Tracker &tracker);
     bool isCalibrating();
+    std::string getStatusString();
 
     void updateCalibrationStatuses();
     void resetMovementCheck(int64_t timeMillis, Quaternion sensorQuaternion);
