@@ -20,6 +20,7 @@
 #include "tracker.h"
 
 #include "config.h"
+#include "direction_menu_entry.h"
 #include "gps.h"
 #include "orientation.h"
 
@@ -123,6 +124,7 @@ std::shared_ptr<Menu> main_menu::buildConfigMenu(Tracker &tracker) {
     gpsEnabledMenuEntry,
     buildSetCurrentLocationEntry(tracker),
     buildCalibrateCompassEntry(tracker),
+    std::make_shared<DirectionMenuEntry>("Control", tracker),
     std::make_shared<BooleanMenuEntry>("Spin", [&tracker](bool newValue) {
       tracker.setSpinning(newValue);
     }, false),
