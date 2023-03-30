@@ -1,5 +1,6 @@
 #include "orientation.h"
 
+#include <cmath>
 #include <optional>
 #include <sstream>
 #include <iomanip>
@@ -126,7 +127,9 @@ std::string orientation::calibration::getStatusString() {
 }
 
 void orientation::calibration::resetMovementCheck(int64_t timeMillis, Quaternion sensorQuaternion) {
-  lastMovementTimeMillis = timeMillis;
+  // If we've already reset the movement with a time later than now, then keep waiting until that
+  // time instead of bringing it forward.
+  lastMovementTimeMillis = std::max(lastMovementTimeMillis, timeMillis);
   lastMovementQuaternion = sensorQuaternion;
 }
 
@@ -199,12 +202,7 @@ Direction orientation::calibration::getCalibrationDirection(int64_t timeMillis) 
     case CalibrationStage::CALCULATE_ZERO_ALTITUDE:
       {
         double angleToHorizontalDegrees = findAngleToHorizontalDegrees(sensorQuaternion.value());
-        // In case this isn't the first round of calculations, add on our calculated angle to the
-        // existing altitude. Note because the Directions we return don't take effect immediately,
-        // we can't do this without first waiting for the movement to stop (i.e. the
-        // WAIT_FOR_ZERO_ALTITUDE stage), otherwise we'd keep adding the same correction and it
-        // would compound and overshoot.
-        zeroAltitudeDirection = Direction(0, zeroAltitudeDirection.getAltitude() + angleToHorizontalDegrees);
+        zeroAltitudeDirection = Direction(0, angleToHorizontalDegrees);
 
         stage = CalibrationStage::WAIT_FOR_ZERO_ALTITUDE;
         resetMovementCheck(timeMillis, sensorQuaternion.value());
@@ -213,12 +211,7 @@ Direction orientation::calibration::getCalibrationDirection(int64_t timeMillis) 
     case CalibrationStage::WAIT_FOR_ZERO_ALTITUDE:
       {
         if (hasStoppedMoving(timeMillis, sensorQuaternion.value())) {
-          double angleToHorizontalDegrees = findAngleToHorizontalDegrees(sensorQuaternion.value());
-          if (std::fabs(angleToHorizontalDegrees) < 0.25) {
-            stage = CalibrationStage::RESET_MOTORS_TO_ZERO_ALTITUDE;
-          } else {
-            stage = CalibrationStage::CALCULATE_ZERO_ALTITUDE;
-          }
+          stage = CalibrationStage::RESET_MOTORS_TO_ZERO_ALTITUDE;
         }
         return zeroAltitudeDirection;
       }
@@ -227,14 +220,26 @@ Direction orientation::calibration::getCalibrationDirection(int64_t timeMillis) 
         motors->requestCoordinateReset();
         zeroAltitudeDirection = Direction(0, 0);
 
-        stage = CalibrationStage::CALIBRATE_MAGNETOMETER;
         // Resetting the motors clears the direction queue. The way we measure time is the
         // timestamp that we're adding to the queue, so our time measurement will be off for as
         // many time intervals as the queue can contain.
         // This is usually only half a second, so we're going to reset the movement check with a
         // time that's half a second later than "now".
         resetMovementCheck(timeMillis + 500, sensorQuaternion.value());
-        lastCompassDirection = Direction(-90, 0);
+
+        double angleToHorizontalDegrees = findAngleToHorizontalDegrees(sensorQuaternion.value());
+        if (std::fabs(angleToHorizontalDegrees) < 0.25) {
+          if (magnetometerCalibrationStatus == 3) {
+            // We're already calibrated and stopped at 0, 0.
+            // Skip calibration, and move to finding zero azimuth.
+            stage = CalibrationStage::CALCULATE_ZERO_AZIMUTH;
+          } else {
+            stage = CalibrationStage::CALIBRATE_MAGNETOMETER;
+            lastCompassDirection = Direction(-90, 0);
+          }
+        } else {
+          stage = CalibrationStage::CALCULATE_ZERO_ALTITUDE;
+        }
         return Direction(0, 0);
       }
     case CalibrationStage::CALIBRATE_MAGNETOMETER:
@@ -259,12 +264,7 @@ Direction orientation::calibration::getCalibrationDirection(int64_t timeMillis) 
     case CalibrationStage::CALCULATE_ZERO_AZIMUTH:
       {
         double angleToNorthDegrees = findAngleToNorthDegrees(sensorQuaternion.value());
-        // In case this isn't the first round of calculations, add on our calculated angle to the
-        // existing azimuth. Note because the Directions we return don't take effect immediately,
-        // we can't do this without first waiting for the movement to stop (i.e. the
-        // WAIT_FOR_ZERO_AZIMUTH stage), otherwise we'd keep adding the same correction and it
-        // would compound and overshoot.
-        zeroAzimuthDirection = Direction(zeroAzimuthDirection.getAzimuth() + angleToNorthDegrees, 0);
+        zeroAzimuthDirection = Direction(angleToNorthDegrees, 0);
         stage = CalibrationStage::WAIT_FOR_ZERO_AZIMUTH;
         resetMovementCheck(timeMillis, sensorQuaternion.value());
         return zeroAzimuthDirection;
@@ -272,20 +272,36 @@ Direction orientation::calibration::getCalibrationDirection(int64_t timeMillis) 
     case CalibrationStage::WAIT_FOR_ZERO_AZIMUTH:
       {
         if (hasStoppedMoving(timeMillis, sensorQuaternion.value())) {
-          double angleToNorthDegrees = findAngleToNorthDegrees(sensorQuaternion.value());
-          if (std::fabs(angleToNorthDegrees) < 0.25) {
-            stage = CalibrationStage::RESET_MOTORS_TO_ZERO_AZIMUTH;
-          } else {
-            stage = CalibrationStage::CALCULATE_ZERO_AZIMUTH;
-          }
+          stage = CalibrationStage::RESET_MOTORS_TO_ZERO_AZIMUTH;
         }
         return zeroAzimuthDirection;
       }
     case CalibrationStage::RESET_MOTORS_TO_ZERO_AZIMUTH:
-      motors->requestCoordinateReset();
-      zeroAzimuthDirection = Direction(0, 0);
-      stage = CalibrationStage::FINISHED_CALIBRATING;
-      return Direction(0, 0);
+      {
+        motors->requestCoordinateReset();
+        zeroAzimuthDirection = Direction(0, 0);
+
+        // Resetting the motors clears the direction queue. The way we measure time is the
+        // timestamp that we're adding to the queue, so our time measurement will be off for as
+        // many time intervals as the queue can contain.
+        // This is usually only half a second, so we're going to reset the movement check with a
+        // time that's half a second later than "now".
+        resetMovementCheck(timeMillis + 500, sensorQuaternion.value());
+
+        // Make sure the altitude is zero before we check whether we're pointing north.
+        double angleToHorizontalDegrees = findAngleToHorizontalDegrees(sensorQuaternion.value());
+        if (std::fabs(angleToHorizontalDegrees) >= 0.25) {
+          stage = CalibrationStage::CALCULATE_ZERO_ALTITUDE;
+        }
+
+        double angleToNorthDegrees = findAngleToNorthDegrees(sensorQuaternion.value());
+        if (std::fabs(angleToNorthDegrees) < 0.25) {
+          stage = CalibrationStage::FINISHED_CALIBRATING;
+        } else {
+          stage = CalibrationStage::CALCULATE_ZERO_AZIMUTH;
+        }
+        return Direction(0, 0);
+      }
     default:
     case CalibrationStage::NOT_CALIBRATING:
     case CalibrationStage::FINISHED_CALIBRATING:
